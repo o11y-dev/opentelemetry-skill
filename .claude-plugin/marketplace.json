@@ -1,0 +1,26 @@
+{
+  "name": "opentelemetry-skill",
+  "version": "1.0.0",
+  "description": "Expert OpenTelemetry observability engineering assistant with progressive disclosure of best practices, deployment architectures, and production-ready configurations",
+  "author": "o11y.dev",
+  "tags": ["opentelemetry", "observability", "telemetry", "monitoring", "tracing", "metrics", "logs"],
+  "categories": ["DevOps", "Observability", "Infrastructure"],
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/semyont/o11y.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/semyont/o11y.dev"
+  },
+  "capabilities": {
+    "progressive_disclosure": true,
+    "context_aware": true,
+    "production_ready": true
+  },
+  "metadata": {
+    "skill_type": "expert_assistant",
+    "domain": "observability_engineering",
+    "expertise_level": "principal",
+    "primary_technology": "opentelemetry",
+    "supported_languages": ["yaml", "go", "python", "java", "javascript", "typescript"]
+  }
+}
