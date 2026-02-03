@@ -14,6 +14,8 @@ The OpenTelemetry Collector is a vendor-agnostic telemetry pipeline that receive
 6. [Batch Processor: Network Optimization](#batch-processor-network-optimization)
 7. [Extensions](#extensions)
 8. [Configuration Patterns](#configuration-patterns)
+9. [Component Docs & Example Configs](#component-docs--example-configs)
+9. [Component Docs & Example Configs](#component-docs--example-configs)
 
 ---
 
@@ -204,6 +206,12 @@ service:
       processors: [memory_limiter, k8sattributes, filter, attributes, batch]
       exporters: [otlp]
 ```
+
+## Component Docs & Example Configs
+
+- **Component reference (contrib)**: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main – each receiver/processor/exporter has a README with configuration examples and stability levels.
+- **Example configurations**: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/examples – curated collector configs (gateways, agents, tail sampling, logging).
+- **Validate configs**: `otelcol-contrib validate --config config.yaml` to catch deprecated/invalid settings before deployment.
 
 ### Common Ordering Mistakes
 
