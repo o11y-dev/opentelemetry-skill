@@ -173,6 +173,35 @@ Deep-dive guides are available in the `references/` directory:
 - **[security.md](references/security.md)**: PII redaction, TLS, extension security
 - **[monitoring.md](references/monitoring.md)**: Collector metrics, dashboards, alerts
 
+## Contrib Components & Example Configs
+
+The OpenTelemetry Collector Contrib repository contains extended components and curated example configurations. Always verify component stability and pin to released versions (e.g., `v0.100.0+`) instead of `main`.
+
+### Stability & Registry
+- **[VERSIONING.md](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/VERSIONING.md)**: Component stability matrix (Stable/Beta/Alpha/Development)
+
+### Component Directories
+- **[Receivers](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver)**: Entry points for telemetry data
+- **[Processors](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor)**: Transform, filter, and enrich data
+- **[Exporters](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter)**: Send data to backends
+
+### Key Components (Production-Ready)
+- **[transformprocessor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/transformprocessor)**: Apply OTTL transformations
+- **[filterprocessor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/filterprocessor)**: Drop spans/metrics based on conditions
+- **[k8sattributesprocessor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/k8sattributesprocessor)**: Enrich with Kubernetes metadata
+- **[tail_sampling processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/tailsamplingprocessor)**: Intelligent sampling decisions (Beta)
+- **[filelogreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver)**: Read logs from disk
+- **[loadbalancingexporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/loadbalancingexporter)**: Route to multiple backends with consistent hashing
+
+### Example Configurations
+- **[examples/](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/examples)**: Curated collector configurations
+  - Gateway deployments with tail sampling
+  - Agent/DaemonSet configurations for Kubernetes
+  - Logging and filelog receiver examples
+  - Kubernetes attribute enrichment patterns
+
+**Best Practice**: Always pin to released tags matching your compatibility version (e.g., `v0.100.0+`) instead of using `main` branch for production stability.
+
 ## Testing & Validation
 
 This skill includes a comprehensive test and validation framework following TDD (Test-Driven Development) principles:
