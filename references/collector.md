@@ -236,7 +236,7 @@ Each component directory contains a README with configuration examples, stabilit
 | **transformprocessor** | Apply OTTL transformations | Stable | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/transformprocessor) |
 | **filterprocessor** | Drop spans/metrics based on conditions | Stable | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/filterprocessor) |
 | **k8sattributesprocessor** | Enrich with Kubernetes metadata | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/k8sattributesprocessor) |
-| **tail_samplingprocessor** | Intelligent sampling decisions | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/tailsamplingprocessor) |
+| **tailsamplingprocessor** | Intelligent sampling decisions | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/tailsamplingprocessor) |
 | **filelogreceiver** | Read logs from disk | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver) |
 | **loadbalancingexporter** | Route to multiple backends with consistent hashing | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/loadbalancingexporter) |
 

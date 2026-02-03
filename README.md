@@ -189,7 +189,7 @@ The OpenTelemetry Collector Contrib repository contains extended components and 
 - **[transformprocessor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/transformprocessor)**: Apply OTTL transformations
 - **[filterprocessor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/filterprocessor)**: Drop spans/metrics based on conditions
 - **[k8sattributesprocessor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/k8sattributesprocessor)**: Enrich with Kubernetes metadata
-- **[tail_sampling processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/tailsamplingprocessor)**: Intelligent sampling decisions (Beta)
+- **[tailsamplingprocessor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/tailsamplingprocessor)**: Intelligent sampling decisions (Beta)
 - **[filelogreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver)**: Read logs from disk
 - **[loadbalancingexporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/loadbalancingexporter)**: Route to multiple backends with consistent hashing
 
