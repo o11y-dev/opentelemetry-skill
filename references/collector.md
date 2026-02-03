@@ -224,7 +224,7 @@ Component stability badges:
 ### Component Directories (Contrib)
 
 - **[Receivers](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver)**: Entry points for telemetry data (filelogreceiver, kafkareceiver, sqlqueryreceiver, etc.)
-- **[Processors](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor)**: Transform, filter, and enrich data (transformprocessor, filterprocessor, k8sattributesprocessor, tail_samplingprocessor, etc.)
+- **[Processors](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor)**: Transform, filter, and enrich data (transformprocessor, filterprocessor, k8sattributesprocessor, tailsamplingprocessor, etc.)
 - **[Exporters](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter)**: Send data to backends (loadbalancingexporter, awsxrayexporter, googlecloudexporter, azuremonitorexporter, etc.)
 
 Each component directory contains a README with configuration examples, stability level, and usage guidance.
