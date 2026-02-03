@@ -1,7 +1,16 @@
 {
   "name": "opentelemetry-skill",
+  "owner": {
+    "name": "o11y.dev"
+  },
   "version": "1.0.0",
-  "description": "Expert OpenTelemetry observability engineering assistant with progressive disclosure of best practices, deployment architectures, and production-ready configurations",
+  "plugins": [
+    {
+      "name": "opentelemetry-skill",
+      "description": "Expert OpenTelemetry observability engineering assistant with progressive disclosure of best practices, deployment architectures, and production-ready configurations",
+      "source": "SKILL.md"
+    }
+  ],
   "author": "o11y.dev",
   "tags": ["opentelemetry", "observability", "telemetry", "monitoring", "tracing", "metrics", "logs"],
   "categories": ["DevOps", "Observability", "Infrastructure"],

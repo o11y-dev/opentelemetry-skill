@@ -209,8 +209,57 @@ service:
 
 ## Component Docs & Example Configs
 
-- **Component reference (contrib)**: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main – each receiver/processor/exporter has a README with configuration examples and stability levels.
-- **Example configurations**: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/examples – curated collector configs (gateways, agents, tail sampling, logging).
+The OpenTelemetry Collector Contrib repository contains extended components and curated example configurations. Always verify component stability and pin to released versions.
+
+### Contrib Stability & Registry
+
+⚠️ **Check stability before production use**: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/VERSIONING.md
+
+Component stability badges:
+- **Stable**: Production-ready, backward compatibility guaranteed
+- **Beta**: Feature-complete, may have breaking changes
+- **Alpha**: Experimental, expect breaking changes
+- **Development**: Not for production use
+
+### Component Directories (Contrib)
+
+- **[Receivers](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver)**: Entry points for telemetry data (filelogreceiver, kafkareceiver, sqlqueryreceiver, etc.)
+- **[Processors](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor)**: Transform, filter, and enrich data (transformprocessor, filterprocessor, k8sattributesprocessor, tailsamplingprocessor, etc.)
+- **[Exporters](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter)**: Send data to backends (loadbalancingexporter, awsxrayexporter, googlecloudexporter, azuremonitorexporter, etc.)
+
+Each component directory contains a README with configuration examples, stability level, and usage guidance.
+
+### Key Contrib Components
+
+| Component | Purpose | Stability | Link |
+|-----------|---------|-----------|------|
+| **transformprocessor** | Apply OTTL transformations | Stable | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/transformprocessor) |
+| **filterprocessor** | Drop spans/metrics based on conditions | Stable | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/filterprocessor) |
+| **k8sattributesprocessor** | Enrich with Kubernetes metadata | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/k8sattributesprocessor) |
+| **tailsamplingprocessor** | Intelligent sampling decisions | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/tailsamplingprocessor) |
+| **filelogreceiver** | Read logs from disk | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver) |
+| **loadbalancingexporter** | Route to multiple backends with consistent hashing | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/loadbalancingexporter) |
+
+### Example Configurations
+
+**Main examples directory**: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/examples
+
+### Pick the Right Example
+
+Browse the [examples/ directory](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/examples) for curated collector configurations. Common use cases include:
+
+| Use Case | Example Type | Description |
+|----------|-------------|-------------|
+| **Gateway with tail sampling** | Gateway deployment | Stateful sampling across traces, requires consistent routing (e.g., via loadbalancing exporter) |
+| **Kubernetes node agents** | Agent/DaemonSet | Lightweight per-node collectors, hostmetrics, log collection |
+| **Log collection from files** | Filelog receiver | Parse and enrich logs from disk, multiline support |
+| **K8s metadata enrichment** | k8sattributes processor | Add pod/namespace/node attributes to telemetry |
+| **Basic debugging** | Logging exporter | Output telemetry to stdout for troubleshooting |
+
+**Best Practice**: Pin to released tags (e.g., `v0.100.0+`) matching your collector version instead of using `main` branch. This ensures production stability and avoids unexpected breaking changes.
+
+### Validation
+
 - **Validate configs**: `otelcol-contrib validate --config config.yaml` to catch deprecated/invalid settings before deployment.
 
 ### Common Ordering Mistakes
