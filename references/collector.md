@@ -250,7 +250,7 @@ Browse the [examples/ directory](https://github.com/open-telemetry/opentelemetry
 
 | Use Case | Example Type | Description |
 |----------|-------------|-------------|
-| **Gateway with tail sampling** | Gateway deployment | Stateful sampling across traces, requires sticky sessions with loadbalancing exporter |
+| **Gateway with tail sampling** | Gateway deployment | Stateful sampling across traces, requires consistent routing (e.g., via loadbalancing exporter) |
 | **Kubernetes node agents** | Agent/DaemonSet | Lightweight per-node collectors, hostmetrics, log collection |
 | **Log collection from files** | Filelog receiver | Parse and enrich logs from disk, multiline support |
 | **K8s metadata enrichment** | k8sattributes processor | Add pod/namespace/node attributes to telemetry |
