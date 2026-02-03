@@ -246,13 +246,15 @@ Each component directory contains a README with configuration examples, stabilit
 
 ### Pick the Right Example
 
-| Use Case | Example Type | Description | Example Link |
-|----------|-------------|-------------|--------------|
-| **Gateway with tail sampling** | Gateway deployment | Stateful sampling across traces, requires sticky sessions with loadbalancing exporter | [tail-sampling examples](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/examples) |
-| **Kubernetes node agents** | Agent/DaemonSet | Lightweight per-node collectors, hostmetrics, log collection | [agent examples](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/examples) |
-| **Log collection from files** | Filelog receiver | Parse and enrich logs from disk, multiline support | [logging examples](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/examples) |
-| **K8s metadata enrichment** | k8sattributes processor | Add pod/namespace/node attributes to telemetry | [Kubernetes examples](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/examples) |
-| **Basic debugging** | Logging exporter | Output telemetry to stdout for troubleshooting | [logging examples](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/examples) |
+Browse the [examples/ directory](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/examples) for curated collector configurations. Common use cases include:
+
+| Use Case | Example Type | Description |
+|----------|-------------|-------------|
+| **Gateway with tail sampling** | Gateway deployment | Stateful sampling across traces, requires sticky sessions with loadbalancing exporter |
+| **Kubernetes node agents** | Agent/DaemonSet | Lightweight per-node collectors, hostmetrics, log collection |
+| **Log collection from files** | Filelog receiver | Parse and enrich logs from disk, multiline support |
+| **K8s metadata enrichment** | k8sattributes processor | Add pod/namespace/node attributes to telemetry |
+| **Basic debugging** | Logging exporter | Output telemetry to stdout for troubleshooting |
 
 **Best Practice**: Pin to released tags (e.g., `v0.100.0+`) matching your collector version instead of using `main` branch. This ensures production stability and avoids unexpected breaking changes.
 
