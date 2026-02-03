@@ -254,7 +254,7 @@ Each component directory contains a README with configuration examples, stabilit
 | **K8s metadata enrichment** | k8sattributes processor | Add pod/namespace/node attributes to telemetry | [Kubernetes examples](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/examples) |
 | **Basic debugging** | Logging exporter | Output telemetry to stdout for troubleshooting | [logging examples](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/examples) |
 
-**Best Practice**: Pin to released tags (e.g., `v0.100.0+`) matching your stated compatibility instead of using `main` branch. This ensures production stability and avoids unexpected breaking changes.
+**Best Practice**: Pin to released tags (e.g., `v0.100.0+`) matching your collector version instead of using `main` branch. This ensures production stability and avoids unexpected breaking changes.
 
 ### Validation
 

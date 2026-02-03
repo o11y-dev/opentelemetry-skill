@@ -200,7 +200,7 @@ The OpenTelemetry Collector Contrib repository contains extended components and 
   - Logging and filelog receiver examples
   - Kubernetes attribute enrichment patterns
 
-**Best Practice**: Always pin to released tags matching your compatibility version (e.g., `v0.100.0+`) instead of using `main` branch for production stability.
+**Best Practice**: Always pin to released tags matching your collector version (e.g., `v0.100.0+`) instead of using `main` branch for production stability.
 
 ## Testing & Validation
 
