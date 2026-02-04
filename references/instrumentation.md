@@ -512,6 +512,10 @@ app.use((req, res, next) => {
 - **Instrumentation Documentation**: https://opentelemetry.io/docs/instrumentation/
 - **Semantic Conventions**: https://opentelemetry.io/docs/specs/semconv/
 - **Language SDKs**: https://opentelemetry.io/docs/languages/
+  - Python: https://opentelemetry.io/docs/languages/python/
+  - Go: https://opentelemetry.io/docs/languages/go/
+  - JavaScript: https://opentelemetry.io/docs/languages/javascript/
+  - TypeScript: https://opentelemetry.io/docs/languages/js/
 - **Auto-Instrumentation**: https://opentelemetry.io/docs/zero-code/
 - **Registry (Instrumentation Libraries)**: https://opentelemetry.io/ecosystem/registry/
 
