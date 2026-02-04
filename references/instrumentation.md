@@ -485,6 +485,15 @@ app.use((req, res, next) => {
 5. **Record Exceptions**: Use `span.record_exception(e)` for error tracking
 6. **Set Status**: Use `span.set_status(StatusCode.ERROR)` on failures
 7. **Use Views**: Filter high-cardinality attributes at the SDK level
+8. **Use Baggage Intentionally**: Leverage baggage for low-cardinality cross-cutting attributes (e.g., tenant, release) and avoid storing PII or unbounded values
+9. **Keep Instrumentation Vendor-Neutral**: Default to OTLP and semantic conventions; avoid backend-specific attributes unless gated
+10. **Name Scopes Clearly**: Use unique `instrumentation_scope` names and versions (e.g., `my-company-http-client@1.2.0`) to trace signal provenance
+11. **Separate Library vs App Packaging**:
+    - **Library**: Depend only on the OpenTelemetry **API**, stay silent until the host app wires an SDK
+    - **Application**: Bundle SDK + exporters/resources/samplers in a single “init” entry point (e.g., `MyCompanyOTel.Initialize()`)
+12. **Expose a Single Setup Path**: Provide a thin initializer that configures propagators (TraceContext/Baggage), OTLP exporters, resource attributes, and sampling defaults
+13. **Auto-Instrument Safely**: When wrapping frameworks, use monkey-patching/wrappers that start/stop spans and enrich with semantic attributes; guard against double-instrumentation
+14. **Context Propagation Everywhere**: Ensure inbound/outbound HTTP/RPC handlers extract/inject context so traces stitch across services
 
 ### ❌ DON'T
 
