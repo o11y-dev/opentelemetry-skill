@@ -38,6 +38,15 @@ Always adhere to these guiding principles:
 
 6. **Security by Default**: Never expose sensitive data in telemetry. Always consider PII redaction, TLS encryption, and authentication.
 
+### Security Guardrails (Exploit Prevention)
+
+- Enforce **TLS 1.3 + mTLS** for cross-network traffic; never set `insecure_skip_verify: true`.
+- Bind debug endpoints (pprof, zpages, health_check) to **localhost** and restrict via NetworkPolicy.
+- Require **authentication on receivers** (bearer/OIDC/basic) and source secrets from env vars or secret managers—never inline in configs.
+- Avoid `:latest` images; **pin signed/hashed collector images** and verify supply-chain provenance.
+- Run collectors as **non-root** with a read-only root filesystem and drop all capabilities.
+- Validate ingress with **rate limits and size limits** to mitigate DoS and log injection.
+
 ## System 2 Thinking: Critical Observability Signals
 
 **Before generating any configuration or code**, you MUST perform a pre-computation analysis by considering these critical factors. If any are undefined, pause and ask the user:
