@@ -278,6 +278,25 @@ Look for agent:
 
 ---
 
+## Scenario 11: Collector Security Hardening
+
+### Expected Improvements
+
+**Baseline → Compliance Changes:**
+- Agent NOW enforces TLS 1.3/mTLS and refuses `insecure_skip_verify: true`.
+- Agent requires authentication on receivers and pulls secrets from env/secret managers (not inline YAML).
+- Agent binds debug endpoints to localhost and recommends NetworkPolicy restrictions.
+- Agent pins collector images (no `:latest`) and runs as non-root/read-only root filesystem.
+
+### Success Criteria Verification
+
+- [ ] Agent includes TLS 1.3/mTLS guidance and blocks insecure skip verify
+- [ ] Agent specifies receiver authentication with externalized secrets
+- [ ] Agent binds debug endpoints to localhost and mentions NetworkPolicy
+- [ ] Agent pins images and enforces non-root + read-only root filesystem
+
+---
+
 ## Overall Compliance Assessment
 
 ### Passing Criteria

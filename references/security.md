@@ -381,6 +381,18 @@ processors:
 
 ---
 
+## Exploit Mitigations & Hardening Checklist
+
+- **Transport**: Enforce TLS 1.3 with mTLS for cross-network traffic; never set `insecure_skip_verify: true`.
+- **Authentication**: Require bearer/OIDC/basic auth on receivers; pull secrets from env vars/secret managers, not inline YAML.
+- **Image Provenance**: Pin collector images to specific tags or digests (no `:latest`); prefer signed images and verify SBOMs.
+- **Ingress Defense**: Apply rate limits/body size limits in gateways/proxies to reduce DoS and log-injection risk.
+- **Surface Area**: Bind pprof/zpages/health_check to `localhost`; restrict via NetworkPolicy or firewall rules.
+- **Runtime Hardening**: Run as non-root with read-only root filesystem, drop all Linux capabilities, and mount tmpfs for scratch.
+- **Auditability**: Enable audit logging for auth failures and config changes; rotate tokens/certs on a defined schedule.
+
+---
+
 ## Extension Security
 
 ### Dangerous Extensions
