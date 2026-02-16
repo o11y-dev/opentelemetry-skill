@@ -212,6 +212,8 @@ This skill includes a comprehensive test and validation framework following TDD 
 
 The testing framework validates that the skill actually changes AI behavior and doesn't allow common anti-patterns. GitHub Actions workflow automatically validates skill structure and content on every change.
 
+An additional GitHub Agentic Workflow (`.github/workflows/otel-upstream-maintenance.yml`) runs weekly to create an upstream maintenance digest issue with recent OpenTelemetry GitHub issues, releases, and blog/community updates for practical repository refreshes.
+
 ## Contributing
 
 This skill is designed to evolve with the OpenTelemetry ecosystem. Contributions are welcome:

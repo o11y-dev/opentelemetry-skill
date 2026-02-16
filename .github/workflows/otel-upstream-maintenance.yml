@@ -1,0 +1,245 @@
+name: OTel Upstream Maintenance Digest
+
+on:
+  schedule:
+    - cron: '0 14 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  upstream-digest:
+    name: Build upstream digest issue
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build digest content
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 << 'EOF'
+          import datetime
+          import json
+          import os
+          import sys
+          import time
+          import urllib.parse
+          import urllib.error
+          import urllib.request
+          import xml.etree.ElementTree as ET
+
+          token = os.environ.get("GITHUB_TOKEN", "")
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "User-Agent": "otel-upstream-maintenance-workflow",
+          }
+          if token:
+              headers["Authorization"] = f"Bearer {token}"
+
+          REQUEST_TIMEOUT_SECONDS = 60
+          MAX_RETRIES = 3
+          MAX_FEED_BYTES = 1_000_000
+          ISSUE_REPOS = [
+              "open-telemetry/opentelemetry-specification",
+              "open-telemetry/opentelemetry-collector-contrib",
+              "open-telemetry/opentelemetry-go",
+          ]
+          RELEASE_REPOS = [
+              "open-telemetry/opentelemetry-collector",
+              "open-telemetry/opentelemetry-python",
+          ]
+
+          def fetch_url_bytes(url, max_bytes=None):
+              for attempt in range(MAX_RETRIES):
+                  try:
+                      req = urllib.request.Request(url, headers=headers)
+                      with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT_SECONDS) as resp:
+                          if max_bytes is not None:
+                              data = resp.read(max_bytes + 1)
+                              if len(data) > max_bytes:
+                                  raise ValueError(f"Response exceeded {max_bytes} bytes")
+                              return data
+                          return resp.read()
+                  except urllib.error.HTTPError as exc:
+                      reset = exc.headers.get("X-RateLimit-Reset")
+                      remaining = exc.headers.get("X-RateLimit-Remaining")
+                      print(
+                          f"HTTP error for {url}: {exc.code} {exc.reason} "
+                          f"(remaining={remaining}, reset={reset})",
+                          file=sys.stderr,
+                      )
+                      if attempt == MAX_RETRIES - 1:
+                          return None
+                      if remaining == "0" and reset and reset.isdigit():
+                          sleep_seconds = max(1, min(120, int(reset) - int(time.time())))
+                      else:
+                          sleep_seconds = 2 ** (attempt + 1)
+                      print(f"Retrying in {sleep_seconds}s...", file=sys.stderr)
+                      time.sleep(sleep_seconds)
+                  except Exception as exc:
+                      print(f"Error fetching {url}: {exc}", file=sys.stderr)
+                      if attempt == MAX_RETRIES - 1:
+                          return None
+                      sleep_seconds = 2 ** (attempt + 1)
+                      print(f"Retrying in {sleep_seconds}s...", file=sys.stderr)
+                      time.sleep(sleep_seconds)
+
+          def fetch_json(url):
+              raw = fetch_url_bytes(url)
+              if raw is None:
+                  return None
+              try:
+                  return json.loads(raw.decode("utf-8"))
+              except Exception as exc:
+                  print(f"JSON parse error for {url}: {exc}", file=sys.stderr)
+                  return None
+
+          def fetch_recent_issues(repo, days=14, limit=5):
+              base = f"https://api.github.com/repos/{repo}/issues"
+              since = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=days)).isoformat()
+              issues = []
+              for page in range(1, 4):
+                  params = {
+                      "state": "all",
+                      "sort": "updated",
+                      "direction": "desc",
+                      "since": since,
+                      "per_page": "30",
+                      "page": str(page),
+                  }
+                  data = fetch_json(f"{base}?{urllib.parse.urlencode(params)}")
+                  if not isinstance(data, list):
+                      if not issues:
+                          return [("Unable to fetch recent issues (transient API error/rate limit)", f"https://github.com/{repo}/issues")]
+                      break
+                  batch = [item for item in data if "pull_request" not in item]
+                  issues.extend(batch)
+                  if len(issues) >= limit or len(data) == 0:
+                      break
+              return [(i["title"], i["html_url"]) for i in issues[:limit]]
+
+          def fetch_latest_release(repo):
+              url = f"https://api.github.com/repos/{repo}/releases/latest"
+              data = fetch_json(url)
+              if not isinstance(data, dict):
+                  return "Unavailable (API error/rate limit)", f"https://github.com/{repo}/releases"
+              return data.get("name") or data.get("tag_name", "latest"), data.get("html_url")
+
+          def fetch_blog_posts(limit=5):
+              url = "https://opentelemetry.io/feed.xml"
+              xml_data = fetch_url_bytes(url, max_bytes=MAX_FEED_BYTES)
+              if xml_data is None:
+                  return [("Unable to fetch feed (transient network/API error)", "https://opentelemetry.io/blog/")]
+              upper_sample = xml_data[:4096].upper()
+              if b"<!DOCTYPE" in upper_sample or b"<!ENTITY" in upper_sample:
+                  print(f"Unsafe XML declarations detected in {url}; skipping parse", file=sys.stderr)
+                  return [("Unable to parse feed safely", "https://opentelemetry.io/blog/")]
+              try:
+                  root = ET.fromstring(xml_data)
+                  items = []
+                  for item in root.findall(".//item")[:limit]:
+                      title = item.findtext("title", default="(untitled)")
+                      link = item.findtext("link", default="https://opentelemetry.io/blog/")
+                      items.append((title, link))
+                  return items
+              except Exception as exc:
+                  print(f"XML parse error for {url}: {exc}", file=sys.stderr)
+                  return [("Unable to fetch feed (transient network/API error)", "https://opentelemetry.io/blog/")]
+
+          today = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
+          lines = [
+              f"# OpenTelemetry upstream digest ({today})",
+              "",
+              "This issue is generated by the `OTel Upstream Maintenance Digest` workflow to keep this skill practical and up to date.",
+              "",
+              "## Recent upstream GitHub issues",
+              "",
+          ]
+
+          for repo in ISSUE_REPOS:
+              lines.append(f"### {repo}")
+              for title, url in fetch_recent_issues(repo):
+                  lines.append(f"- [{title}]({url})")
+              lines.append("")
+
+          lines.extend([
+              "## Latest upstream releases",
+              "",
+          ])
+          for repo in RELEASE_REPOS:
+              name, url = fetch_latest_release(repo)
+              lines.append(f"- **{repo}**: [{name}]({url})")
+
+          lines.extend([
+              "",
+              "## Recent OpenTelemetry blog posts / community updates",
+              "",
+          ])
+          for title, url in fetch_blog_posts():
+              lines.append(f"- [{title}]({url})")
+
+          lines.extend([
+              "",
+              "## Maintainer checklist",
+              "",
+              "- [ ] Review linked upstream issues for guidance changes relevant to `SKILL.md` and `references/`.",
+              "- [ ] Capture useful committee/community/blog updates and add practical guidance updates to this repository.",
+              "- [ ] Open or update follow-up issue(s) for concrete docs/skill improvements.",
+          ])
+
+          with open("upstream-digest.md", "w", encoding="utf-8") as f:
+              f.write("\n".join(lines) + "\n")
+          EOF
+
+      - name: Create maintenance issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const today = new Date().toISOString().slice(0, 10);
+            const title = `OpenTelemetry upstream maintenance digest - ${today}`;
+            const body = fs.readFileSync('upstream-digest.md', 'utf8');
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const label = 'upstream-maintenance';
+            const existingIssues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: 'open',
+              labels: label,
+              per_page: 100,
+            });
+            if (existingIssues.some((issue) => issue.title === title)) {
+              core.info(`Issue already exists for ${today}; skipping creation.`);
+              return;
+            }
+            try {
+              await github.rest.issues.createLabel({
+                owner,
+                repo,
+                name: label,
+                color: '0e8a16',
+                description: 'Automated upstream maintenance tracking',
+              });
+            } catch (error) {
+              if (error.status === 422) {
+                await github.rest.issues.updateLabel({
+                  owner,
+                  repo,
+                  name: label,
+                  new_name: label,
+                  color: '0e8a16',
+                  description: 'Automated upstream maintenance tracking',
+                });
+              } else {
+                throw error;
+              }
+            }
+            await github.rest.issues.create({
+              owner,
+              repo,
+              title,
+              body,
+              labels: [label],
+            });
