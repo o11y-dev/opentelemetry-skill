@@ -50,6 +50,7 @@ Critical processors:
 - `transform`: Applies OTTL transformations
 - `filter`: Drops spans/metrics based on conditions
 - `tail_sampling`: Intelligent sampling decisions (stateful)
+  - **⚠️ Stateful Processor Note**: Stateful processors like `tail_sampling` and `spanmetrics` require sticky routing—all spans of a trace must reach the same collector instance. Pair with `loadbalancing` exporter using deterministic routing keys (e.g., `traceID`) to preserve stickiness.
 - `attributes`: Adds/removes/hashes attributes
 - `resource`: Modifies resource attributes
 
@@ -62,6 +63,7 @@ Common exporters:
 - `prometheus`: Exposes metrics for Prometheus scraping
 - `jaeger`: Exports to Jaeger (legacy)
 - `loadbalancing`: Routes to multiple backends with consistent hashing
+  - **⚠️ Routing Key Requirement**: The `routing_key` must be a stable, deterministic string (e.g., `traceID`, `tenant_id`, `cluster`). Convert non-string routing attributes to normalized strings before hashing to avoid shard churn and ensure even load distribution.
 - `logging`: Outputs to stdout (debug only)
 - `file`: Writes to disk (debug only)
 

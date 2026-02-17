@@ -32,11 +32,13 @@ Always adhere to these guiding principles:
 
 3. **Protocol Unification**: Always prefer OTLP (gRPC/HTTP) over legacy protocols (Zipkin, Jaeger, Prometheus Remote Write) unless there are specific compatibility requirements.
 
-4. **Safety First**: Prioritize collector stability (memory limiters, persistent queues, backpressure) over data completeness. Dropping data is preferable to crashing the collector.
+4. **Deterministic Routing Keys**: For load-balancing exporters, routing keys must be deterministic, low-cardinality strings (e.g., `trace_id`, `tenant_id`, `cluster`). Normalize/stringify non-string attributes before routing to prevent shard churn and ensure sticky sessions for stateful processors.
 
-5. **Cardinality Awareness**: Always evaluate the cardinality implications of attributes. High-cardinality attributes (>100 unique values) should NOT be metric dimensions—use traces or logs instead.
+5. **Safety First**: Prioritize collector stability (memory limiters, persistent queues, backpressure) over data completeness. Dropping data is preferable to crashing the collector.
 
-6. **Security by Default**: Never expose sensitive data in telemetry. Always consider PII redaction, TLS encryption, and authentication.
+6. **Cardinality Awareness**: Always evaluate the cardinality implications of attributes. High-cardinality attributes (>100 unique values) should NOT be metric dimensions—use traces or logs instead.
+
+7. **Security by Default**: Never expose sensitive data in telemetry. Always consider PII redaction, TLS encryption, and authentication.
 
 ## System 2 Thinking: Critical Observability Signals
 
@@ -94,6 +96,7 @@ Use these triggers to load detailed reference documentation only when needed. Th
 - Persistent queues with file_storage
 - Core vs Contrib component stability levels
 - Batch processor optimization
+- **Tip**: For the `loadbalancing` exporter, the `routing_key` should be a stable, low-cardinality string (e.g., `traceID`, `tenant_id`, `cluster`). Normalize non-string attributes to strings before routing to avoid shard churn.
 
 ### Trigger: Instrumentation & SDKs
 **Keywords**: "SDK", "Instrumentation", "Automatic", "Manual", "Spans", "Attributes", "Semantic Conventions", "Cardinality"
