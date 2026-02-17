@@ -32,7 +32,7 @@ Always adhere to these guiding principles:
 
 3. **Protocol Unification**: Always prefer OTLP (gRPC/HTTP) over legacy protocols (Zipkin, Jaeger, Prometheus Remote Write) unless there are specific compatibility requirements.
 
-4. **Deterministic Routing Keys**: For load-balancing exporters, routing keys must be deterministic, low-cardinality strings (e.g., `trace_id`, `tenant_id`, `cluster`). Normalize/stringify non-string attributes before routing to prevent shard churn and ensure sticky sessions for stateful processors.
+4. **Deterministic Routing Keys**: For load-balancing exporters, routing keys must be deterministic, low-cardinality strings (e.g., `traceID`, `tenant_id`, `cluster`). Normalize/stringify non-string attributes before routing to prevent shard churn and ensure sticky sessions for stateful processors.
 
 5. **Safety First**: Prioritize collector stability (memory limiters, persistent queues, backpressure) over data completeness. Dropping data is preferable to crashing the collector.
 

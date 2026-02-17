@@ -50,7 +50,7 @@ Critical processors:
 - `transform`: Applies OTTL transformations
 - `filter`: Drops spans/metrics based on conditions
 - `tail_sampling`: Intelligent sampling decisions (stateful)
-  - **⚠️ Stateful Processor Note**: Stateful processors like `tail_sampling` and `spanmetrics` require sticky routing—all spans of a trace must reach the same collector instance. Pair with `loadbalancing` exporter using deterministic routing keys (e.g., `traceID`) to preserve stickiness.
+  - **⚠️ Stateful Processor Note**: Stateful processors like `tail_sampling` and `spanmetrics` require sticky routing (routing all spans of a trace to the same collector instance). Pair with `loadbalancing` exporter using deterministic routing keys (e.g., `traceID`) to preserve stickiness.
 - `attributes`: Adds/removes/hashes attributes
 - `resource`: Modifies resource attributes
 
