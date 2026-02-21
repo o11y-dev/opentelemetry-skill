@@ -53,7 +53,7 @@ This skill establishes structured patterns for observability engineering:
 2. **Verify installation**:
    ```bash
    ls -la ~/.claude/skills/opentelemetry-skill/
-   # Should show: SKILL.md, README.md, references/, .claude-plugin/
+   # Should show: SKILL.md, README.md, references/, .claude-plugin/, .cursor-plugin/
    ```
 
 3. **Activate in conversation**:
@@ -63,12 +63,19 @@ This skill establishes structured patterns for observability engineering:
 
 Copy the skill directory structure into your AI agent's skill library path. The `SKILL.md` file serves as the primary instruction set.
 
+### For Cursor Plugin Marketplace
+
+This repository now includes Cursor-compatible plugin manifests in `.cursor-plugin/` following the [cursor/plugin-template](https://github.com/cursor/plugin-template) structure.
+
 ## Architecture
 
 ```
 opentelemetry-skill/
 ├── .claude-plugin/
 │   └── marketplace.json      # Plugin metadata
+├── .cursor-plugin/
+│   ├── marketplace.json      # Cursor marketplace metadata
+│   └── plugin.json           # Cursor plugin manifest
 ├── SKILL.md                  # Cognitive router (the "brain")
 ├── README.md                 # This file
 ├── references/
