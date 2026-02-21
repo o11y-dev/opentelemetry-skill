@@ -419,6 +419,8 @@ Use a **two-tier architecture**:
 1. **Pre-Gateway (Agents)**: Use loadbalancing exporter with traceID routing
 2. **Gateway**: Runs tail_sampling processor
 
+**Best Practice**: Configure the `loadbalancing` exporter with deterministic, low-cardinality string routing keys such as `traceID`, `tenant_id`, or `cluster`. Avoid non-string or high-cardinality volatile attributes (e.g., timestamps, session IDs) to preserve stickiness for stateful pipelines. Always normalize attributes to strings before routing to prevent shard churn and ensure consistent load distribution.
+
 ### Architecture
 
 ```

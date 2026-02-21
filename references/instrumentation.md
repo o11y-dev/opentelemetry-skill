@@ -507,6 +507,20 @@ app.use((req, res, next) => {
 
 ---
 
+## Version-Specific Notes
+
+### Go SDK 1.40.0+
+
+⚠️ **Non-Backward-Compatible Change**: Go SDK version 1.40.0 includes breaking changes to sampling and propagation behavior. If upgrading from an earlier version:
+
+- **Re-test instrumentation examples**: Verify that `ParentBased` and `TraceIDRatio` samplers work as expected in your environment
+- **Verify custom propagators/samplers**: If you have custom implementations, test thoroughly on 1.40.x
+- **Pin or upgrade together**: Avoid mixing SDK minor versions (e.g., 1.39.x and 1.40.x) in the same service graph to prevent inconsistent sampling/propagation behavior
+
+**Recommendation**: Pin dependencies to a specific minor version or upgrade all services together to 1.40.x+.
+
+---
+
 ## Reference Links
 
 - **Instrumentation Documentation**: https://opentelemetry.io/docs/instrumentation/
