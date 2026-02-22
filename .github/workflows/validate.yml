@@ -6,12 +6,14 @@ on:
       - 'SKILL.md'
       - 'references/**/*.md'
       - '.claude-plugin/**'
+      - '.cursor-plugin/**'
   push:
     branches: [master, main]
     paths:
       - 'SKILL.md'
       - 'references/**/*.md'
       - '.claude-plugin/**'
+      - '.cursor-plugin/**'
   workflow_dispatch:
 
 jobs:
