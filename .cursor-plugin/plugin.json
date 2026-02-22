@@ -1,0 +1,20 @@
+{
+  "name": "opentelemetry-skill",
+  "displayName": "OpenTelemetry Skill",
+  "version": "1.1.0",
+  "description": "Expert OpenTelemetry observability engineering assistant with progressive disclosure and production-ready guidance",
+  "author": {
+    "name": "o11y.dev"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "opentelemetry",
+    "observability",
+    "telemetry",
+    "monitoring",
+    "tracing",
+    "metrics",
+    "logs"
+  ],
+  "skills": "SKILL.md"
+}
