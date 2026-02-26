@@ -44,10 +44,13 @@ jobs:
               "open-telemetry/opentelemetry-specification",
               "open-telemetry/opentelemetry-collector-contrib",
               "open-telemetry/opentelemetry-go",
+              "etcd-io/bbolt",
           ]
           RELEASE_REPOS = [
               "open-telemetry/opentelemetry-collector",
               "open-telemetry/opentelemetry-python",
+              "etcd-io/bbolt",
+              "open-telemetry/opentelemetry-collector-contrib",
           ]
 
           def fetch_url_bytes(url, max_bytes=None):
@@ -147,6 +150,97 @@ jobs:
                   print(f"XML parse error for {url}: {exc}", file=sys.stderr)
                   return [("Unable to fetch feed (transient network/API error)", "https://opentelemetry.io/blog/")]
 
+          KEYWORD_GROUPS = [
+              {
+                  "title": "Storage & Filesystem Safety",
+                  "queries": [
+                      {
+                          "repos": ["open-telemetry/opentelemetry-collector-contrib", "etcd-io/bbolt"],
+                          "keywords": 'mmap OR NFS OR flock OR corruption OR SIGBUS OR EFS OR "file_storage"',
+                      }
+                  ],
+              },
+              {
+                  "title": "Semantic Convention Breaking Changes",
+                  "queries": [
+                      {
+                          "repos": ["open-telemetry/semantic-conventions"],
+                          "keywords": '"breaking change" OR rename OR deprecated OR "semantic conventions"',
+                      }
+                  ],
+              },
+              {
+                  "title": "OTTL Language Changes",
+                  "queries": [
+                      {
+                          "repos": ["open-telemetry/opentelemetry-collector-contrib"],
+                          "keywords": 'OTTL OR "transform processor" OR "breaking change"',
+                          "path": "pkg/ottl",
+                      }
+                  ],
+              },
+              {
+                  "title": "Security Advisories",
+                  "queries": [
+                      {
+                          "repos": [
+                              "open-telemetry/opentelemetry-collector",
+                              "open-telemetry/opentelemetry-collector-contrib",
+                          ],
+                          "keywords": 'CVE OR vulnerability OR "security advisory"',
+                      }
+                  ],
+              },
+              {
+                  "title": "Component Stability Changes",
+                  "queries": [
+                      {
+                          "repos": ["open-telemetry/opentelemetry-collector-contrib"],
+                          "keywords": '"stability level" OR "promoted to stable" OR "deprecated" OR "removed"',
+                      }
+                  ],
+              },
+              {
+                  "title": "Kubernetes Deprecations",
+                  "queries": [
+                      {
+                          "repos": ["open-telemetry/opentelemetry-helm-charts"],
+                          "keywords": 'deprecated OR "removed in" OR "breaking change"',
+                      }
+                  ],
+              },
+          ]
+
+          def fetch_keyword_issues(repos, keywords, path=None, days=14, limit=3):
+              """Search GitHub issues for keyword-filtered risk signals.
+
+              Args:
+                  repos: List of 'owner/repo' strings to scope the search.
+                  keywords: GitHub search keyword expression (e.g. 'mmap OR NFS').
+                  path: Optional path filter for the search (e.g. 'pkg/ottl').
+                  days: Only return issues updated within this many days.
+                  limit: Maximum number of results to return.
+
+              Returns:
+                  List of (title, url) tuples. Returns a single-item error tuple
+                  if the API call fails or returns an unexpected response.
+              """
+              cutoff = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=days)).strftime("%Y-%m-%d")
+              repo_filter = " ".join(f"repo:{r}" for r in repos)
+              q = f"is:issue {repo_filter} {keywords} updated:>{cutoff}"
+              if path:
+                  q += f" path:{path}"
+              params = {"q": q, "per_page": str(limit), "sort": "updated", "order": "desc"}
+              url = f"https://api.github.com/search/issues?{urllib.parse.urlencode(params)}"
+              data = fetch_json(url)
+              if not isinstance(data, dict) or "items" not in data:
+                  print(f"Unexpected response from search API for query {q!r}: {type(data)}", file=sys.stderr)
+                  return [("Unable to fetch keyword issues (transient API error/rate limit)", "https://github.com/search")]
+              items = data["items"][:limit]
+              if not items:
+                  return []
+              return [(i["title"], i["html_url"]) for i in items]
+
           today = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
           lines = [
               f"# OpenTelemetry upstream digest ({today})",
@@ -181,11 +275,35 @@ jobs:
 
           lines.extend([
               "",
+              "## ⚠️ Keyword-filtered risk signals",
+              "",
+          ])
+          for group in KEYWORD_GROUPS:
+              lines.append(f"### {group['title']}")
+              results = []
+              for q in group["queries"]:
+                  results.extend(fetch_keyword_issues(
+                      q["repos"],
+                      q["keywords"],
+                      path=q.get("path"),
+                  ))
+              if results:
+                  for title, url in results:
+                      lines.append(f"- [{title}]({url})")
+              else:
+                  lines.append("- _(no matching issues in the last 14 days)_")
+              lines.append("")
+
+          lines.extend([
+              "",
               "## Maintainer checklist",
               "",
               "- [ ] Review linked upstream issues for guidance changes relevant to `SKILL.md` and `references/`.",
               "- [ ] Capture useful committee/community/blog updates and add practical guidance updates to this repository.",
               "- [ ] Open or update follow-up issue(s) for concrete docs/skill improvements.",
+              "- [ ] Check keyword-filtered risk signals for items requiring immediate skill updates.",
+              "- [ ] Verify filesystem compatibility warnings in references/collector.md remain accurate against latest bbolt release.",
+              "- [ ] Review semantic convention changes for attribute renames that affect skill examples.",
           ])
 
           with open("upstream-digest.md", "w", encoding="utf-8") as f:
