@@ -468,6 +468,49 @@ Watch these metrics:
 - Monitor disk usage: `df -h /var/lib/otelcol`
 - Set up alerts for disk space exhaustion
 
+### ⚠️ Filesystem Compatibility: Critical Storage Backend Requirements
+
+The `file_storage` extension uses [bbolt](https://github.com/etcd-io/bbolt) (`go.etcd.io/bbolt`) as its storage engine. bbolt relies on `mmap()` for memory-mapped I/O and POSIX `flock()` for exclusive file locking. These kernel-level primitives have strict filesystem requirements that are **NOT met** by network or distributed filesystems. Using an incompatible filesystem can result in **silent data corruption**, crashes (SIGBUS/SIGSEGV), or split-brain locking failures with no error messages.
+
+#### Compatibility Matrix
+
+| Filesystem | Type | mmap Support | flock Support | Verdict |
+|---|---|---|---|---|
+| ext4 / xfs | Local | Full | Full | ✅ Supported |
+| AWS EBS (gp3/io2) | Block device | Full | Full | ✅ Supported |
+| GCP Persistent Disk | Block device | Full | Full | ✅ Supported |
+| Azure Managed Disk | Block device | Full | Full | ✅ Supported |
+| AWS EFS | NFS v4.1 | Partial | Advisory only | ❌ NOT Supported — risk of silent corruption |
+| NFS v3/v4 | Network | Partial | Advisory only | ❌ NOT Supported — flock is advisory, not mandatory |
+| SMB/CIFS | Network | Partial | No | ❌ NOT Supported |
+| GlusterFS | Distributed | Partial | Varies | ❌ NOT Supported |
+| CephFS | Distributed | Partial | Varies | ⚠️ Not recommended |
+
+#### Known Upstream Issues
+
+- [bbolt#71](https://github.com/etcd-io/bbolt/issues/71) — SIGBUS/SIGSEGV on mmap errors
+- [bbolt#562](https://github.com/etcd-io/bbolt/issues/562) — ext4 fast-commit corruption on Linux 5.10–5.15
+- [otelcol-contrib#35899](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/35899) — file_storage does not recover gracefully from corruption
+- The bbolt README explicitly warns: "Bolt uses an exclusive write lock on the database file so it cannot be shared by multiple processes"
+
+#### Kubernetes Volume Guidance
+
+⚠️ **`accessModes: ReadWriteMany` (RWX) volumes almost always imply a network filesystem and MUST NOT be used with `file_storage`.** `ReadWriteOnce` (RWO) backed by a block device (EBS gp3, GCP pd-ssd, Azure Managed Disk) is the only supported configuration.
+
+```yaml
+spec:
+  accessModes:
+    - ReadWriteOnce        # RWX (ReadWriteMany) is NOT safe — implies NFS/EFS
+  storageClassName: gp3   # AWS EBS gp3; use pd-ssd (GCP) or managed-premium (Azure)
+  resources:
+    requests:
+      storage: 50Gi
+```
+
+#### ext4 Fast-Commit Warning
+
+Linux kernel versions 5.10–5.15 with ext4 fast-commit enabled can corrupt bbolt databases. Fixes were backported to 5.10.94+, 5.15.17+, 5.15.27+, and are included in 5.17+. If you are running a kernel in this range, verify your kernel patch level or disable fast-commit (`tune2fs -O ^fast_commit /dev/...`). See the [bbolt README Known Issues](https://github.com/etcd-io/bbolt#known-issues) section.
+
 ---
 
 ## Batch Processor: Network Optimization
