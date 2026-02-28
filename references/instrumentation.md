@@ -521,6 +521,31 @@ app.use((req, res, next) => {
 
 ---
 
+## Complex Attribute Types
+
+OpenTelemetry is expanding support for complex attribute types — EMPTY, BYTES, SLICE, and MAP — tracked in the Go SDK under issues [#7932](https://github.com/open-telemetry/opentelemetry-go/issues/7932), [#7933](https://github.com/open-telemetry/opentelemetry-go/issues/7933), [#7934](https://github.com/open-telemetry/opentelemetry-go/issues/7934), and [#7935](https://github.com/open-telemetry/opentelemetry-go/issues/7935) (targeting Go SDK v1.42.0). This extends complex types — which were previously only available in logs — to **all signals (traces, metrics, logs)**.
+
+See the [OTel blog post on complex attribute types](https://opentelemetry.io/blog/2025/complex-attribute-types/) for full context.
+
+### New Attribute Types
+
+| Type | Description |
+|------|-------------|
+| `EMPTY` | Explicitly null/absent attribute value |
+| `BYTES` | Raw byte array (e.g., binary IDs, encoded payloads) |
+| `SLICE` | Ordered list of attribute values |
+| `MAP` | Key-value map of nested attribute values |
+
+### Usage Guidance
+
+⚠️ **Backend compatibility varies**: Not all backends and exporters handle complex attribute types equally. Some may flatten, silently drop, or fail to index nested `SLICE` and `MAP` data.
+
+- **Prefer flat, primitive attributes for metric dimensions** (counters, histograms, gauges): metrics backends optimized for label cardinality often cannot efficiently store or query nested structures.
+- **Use complex types (SLICE, MAP, BYTES) for traces and logs** where your backend explicitly supports structured attribute querying.
+- **Test your export pipeline end-to-end** before relying on complex attribute types in production — check that the exporter serializes them and the backend indexes them as expected.
+
+---
+
 ## Reference Links
 
 - **Instrumentation Documentation**: https://opentelemetry.io/docs/instrumentation/

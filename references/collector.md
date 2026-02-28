@@ -152,6 +152,22 @@ exporters:
 ✅ Reduced attack surface
 ✅ Only include components you actually use
 
+### ⚠️ Minimum Go Version: Go 1.25 (Breaking Change in v0.146.0)
+
+Starting with Collector **v0.146.0** (released February 2025), the minimum required Go version is **Go 1.25**. This is a breaking change for any custom collector builds or OCB-based distributions compiled with an older Go toolchain. Upgrade your Go toolchain to 1.25+ before building or upgrading to v0.146.0+.
+
+Reference: [Collector v0.146.0 release notes](https://github.com/open-telemetry/opentelemetry-collector/releases/tag/v0.146.0)
+
+### `cmd/builder` — New `init` Subcommand (Experimental)
+
+The `cmd/builder` (OCB) tool introduced an experimental **`init` subcommand** in v0.146.0 that scaffolds a new custom collector project with a starter `builder-config.yaml` and directory structure:
+
+```bash
+ocb init --output-path ./my-collector
+```
+
+This is useful for bootstrapping a new custom distribution without manually writing configuration from scratch.
+
 ---
 
 ## Processor Ordering: The Critical Path
@@ -461,6 +477,22 @@ Watch these metrics:
 
 **Alert**: `queue_size / queue_capacity > 0.8` → Backend is struggling
 
+### `otelcol_exporter_send_failed` — Error Detail Attributes (v0.146.0+)
+
+When telemetry level is set to `Detailed`, the `otelcol_exporter_send_failed` metrics now include two additional attributes:
+
+- **`error.type`**: The class of error (e.g., network timeout, HTTP 5xx, connection refused), useful for routing alerts to the right on-call team.
+- **`error.permanent`**: Boolean indicating whether the failure is permanent (no retry will succeed) vs transient (retry may recover).
+
+This allows operators to distinguish **transient export failures** (backend temporarily unavailable — safe to retry) from **permanent failures** (data format or auth errors — retrying wastes resources).
+
+```yaml
+service:
+  telemetry:
+    metrics:
+      level: Detailed
+```
+
 ### Limitations
 
 ⚠️ **Disk space is not unlimited**: The collector does not enforce a hard cap on disk usage in older versions. You must:
@@ -570,6 +602,19 @@ Extensions provide capabilities outside the pipeline:
 | `pprof` | CPU/memory profiling | 1777 | **High** (exposes internal state) |
 | `zpages` | Live debugging UI | 55679 | **High** (exposes traces in-flight) |
 | `file_storage` | Persistent queues | N/A | Low (disk I/O only) |
+
+### Debug Exporter — `output_paths` Configuration
+
+The `debug` exporter (replacement for the deprecated `logging` exporter) now supports an `output_paths` configuration option, allowing output to be directed to one or more file paths in addition to stdout. This is useful for capturing debug output to a file without redirecting the entire collector process:
+
+```yaml
+exporters:
+  debug:
+    verbosity: detailed
+    output_paths:
+      - stdout
+      - /tmp/otelcol-debug.log
+```
 
 ### Configuration
 

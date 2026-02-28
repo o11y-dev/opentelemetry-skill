@@ -12,6 +12,7 @@ Sampling is the practice of selectively collecting traces to reduce volume and c
 4. [Sampling Math](#sampling-math)
 5. [Architecture Requirements](#architecture-requirements)
 6. [Configuration Examples](#configuration-examples)
+7. [Emerging Specifications](#emerging-specifications)
 
 ---
 
@@ -526,6 +527,22 @@ processors:
 - **Tail Sampling Processor**: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/tailsamplingprocessor
 - **Probabilistic Sampler**: https://opentelemetry.io/docs/specs/otel/trace/sdk/#parentbased
 - **Load Balancing Exporter**: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/loadbalancingexporter
+
+---
+
+## Emerging Specifications
+
+### Metric Links (Proposal)
+
+The OpenTelemetry specification has an active proposal — [open-telemetry/opentelemetry-specification#4854](https://github.com/open-telemetry/opentelemetry-specification/issues/4854) — to introduce **metric links**: a concept analogous to span links, but for metrics.
+
+**What it would enable**:
+- Express relationships between a metric data point and other signals (spans, logs, or other metrics), similar to how span links connect related traces across contexts.
+- Improve root-cause correlation when a metric anomaly is caused by a specific traced request or log event.
+
+**Status**: 📋 Proposal / Discussion — not yet adopted into a stable OTel specification release. Do not implement against this feature in production until it reaches a stable spec.
+
+**Track progress**: https://github.com/open-telemetry/opentelemetry-specification/issues/4854
 
 ---
 
