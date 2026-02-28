@@ -28,44 +28,27 @@ Unlike loading the entire OpenTelemetry documentation into an AI's context (whic
 - 🔍 **Meta-Monitoring**: Self-observability patterns for collector health
 - ✅ **Test & Validation Framework**: TDD-based testing methodology to ensure skill effectiveness
 
-## Architecture Patterns
+## Skill Structure
 
-This skill establishes structured patterns for observability engineering:
-
-| Infrastructure Concept | OpenTelemetry Concept | Rationale |
-|---|---|---|
-| **Modules** | **Collector Components** | Composable building blocks (receivers, processors, exporters) |
-| **State Management** | **Backend Storage** | The "source of truth" for observed system state |
-| **Plan/Apply** | **Instrumentation/Export** | Definition phase → Actuation phase |
-| **Testing** | **Trace-based Testing** | Verification that the system behaves as expected |
-| **Pre-commit Hooks** | **Config Linting** | Static analysis to prevent runtime failures |
-| **Provider Auth** | **Propagators & Auth** | Context boundaries and credential management |
+`SKILL.md` acts as the **cognitive router** — a compact instruction set that tells the AI how to reason about observability before generating any output. The `references/` directory contains deep-dive documentation that is loaded on demand when specific topics are triggered, keeping context lean and focused.
 
 ## Installation
 
-### For Claude Desktop / AI Assistants
+### GitHub Copilot
 
-1. **Clone the skill**:
-   ```bash
-   git clone https://github.com/semyont/o11y.dev ~/.claude/skills/opentelemetry-skill
-   ```
+Attach `SKILL.md` as a custom instructions file, or reference the repository as a Copilot Skill in your Copilot settings: [`https://github.com/o11y-dev/opentelemetry-skill`](https://github.com/o11y-dev/opentelemetry-skill)
 
-2. **Verify installation**:
-   ```bash
-   ls -la ~/.claude/skills/opentelemetry-skill/
-   # Should show: SKILL.md, README.md, references/, .claude-plugin/, .cursor-plugin/
-   ```
+### Claude
 
-3. **Activate in conversation**:
-   Simply mention "OpenTelemetry" or reference the skill, and the AI will automatically engage with the cognitive framework.
+Add `SKILL.md` to your project knowledge or paste it into your system prompt.
 
-### For Custom AI Systems
+### Cursor
 
-Copy the skill directory structure into your AI agent's skill library path. The `SKILL.md` file serves as the primary instruction set.
+Plugin manifests are available in `.cursor-plugin/` for use with the Cursor marketplace.
 
-### For Cursor Plugin Marketplace
+### Other AI Systems
 
-This repository now includes Cursor-compatible plugin manifests in `.cursor-plugin/` following the [cursor/plugin-template](https://github.com/cursor/plugin-template) structure.
+Point your agent at `SKILL.md` as the primary instruction set, with `references/` available for context loading.
 
 ## Architecture
 
@@ -123,49 +106,7 @@ opentelemetry-skill/
 - ✅ Suggests alternative: "Use user_id as a trace attribute instead, and create a metric for aggregated user counts."
 - ✅ Loads `references/instrumentation.md` to explain cardinality management
 
-## Progressive Disclosure Triggers
-
-The skill uses **context triggers** to load reference material only when needed:
-
-| Trigger Keywords | Loaded Reference | Contains |
-|---|---|---|
-| Kubernetes, Scaling, Load Balancing | `architecture.md` | DaemonSet patterns, sticky sessions, HPA |
-| Pipeline, Processor, Queue, Memory | `collector.md` | Processor ordering, memory_limiter, persistence |
-| SDK, Instrumentation, Attributes | `instrumentation.md` | Semantic conventions, cardinality rules |
-| Sampling, Cost, Volume | `sampling.md` | Head/tail strategies, probabilistic math |
-| Security, PII, GDPR, TLS | `security.md` | Redaction, mTLS, least privilege |
-| Monitor collector, Health, Alerts | `monitoring.md` | Meta-monitoring, dashboards |
-
-## System 2 Thinking: Critical Observability Signals
-
-Before generating any configuration, the AI evaluates:
-
-1. **Signal Volume & Throughput**: >10k RPS? → Sampling required
-2. **Cardinality Risk**: Unbounded attributes? → Block metric usage
-3. **Resiliency Requirements**: Data loss tolerance? → Persistent queues
-4. **Network Topology**: Public networks? → TLS mandatory
-5. **Deployment Environment**: K8s, Lambda, EC2? → Architecture choice
-
-## Core Principles
-
-The skill enforces these best practices:
-
-- ✅ **Stability over Features**: Check component maturity (Alpha/Beta/Stable)
-- ✅ **Convention over Configuration**: Use semantic conventions, not custom names
-- ✅ **Protocol Unification**: Prefer OTLP over legacy protocols
-- ✅ **Safety First**: Drop data rather than crash the collector
-- ✅ **Cardinality Awareness**: No unbounded attributes in metrics
-
-## Production-Ready Defaults
-
-The skill generates configurations with:
-
-- **Memory Limiter**: Always first in processor chain (80% limit, 20% spike)
-- **Batch Processor**: Always included (10s timeout, 1024 batch size)
-- **Persistent Queues**: Enabled for production with file_storage
-- **Health Checks**: Port 13133 (localhost-only in shared networks)
-- **TLS**: Enabled for cross-network communication
-- **OTLP**: gRPC on port 4317 (default protocol)
+See [`SKILL.md`](SKILL.md) for the full list of progressive disclosure triggers, System 2 thinking signals, core principles, and production-ready configuration defaults.
 
 ## Reference Documentation
 
