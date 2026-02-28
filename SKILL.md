@@ -220,11 +220,11 @@ Actively prevent these common mistakes:
 
 ## Version and Compatibility
 
-- **Target Version**: OpenTelemetry Collector v0.100.0+ (2024+)
+- **Target Version**: OpenTelemetry Collector v0.146.0+ (2025+)
 - **Semantic Conventions**: v1.24.0+
 - **Kubernetes**: v1.24+ (for native sidecar support)
 - **Go SDK**: v1.24.0+
-- **Python SDK**: v1.23.0+
+- **Python SDK**: v1.39.0+
 
 ## Skill Metadata
 
@@ -232,7 +232,7 @@ Actively prevent these common mistakes:
 - **Version**: 1.0.0
 - **Author**: o11y.dev
 - **License**: Apache 2.0
-- **Last Updated**: 2026-01-31
+- **Last Updated**: 2026-02-28
 
 ---
 

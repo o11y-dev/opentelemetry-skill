@@ -13,6 +13,7 @@ OpenTelemetry is available for a variety of platforms and environments, ensuring
 5. [Google Cloud Functions](#google-cloud-functions)
 6. [Client-Side Applications](#client-side-applications)
 7. [Best Practices Summary](#best-practices-summary)
+8. [Prometheus Interoperability](#prometheus-interoperability)
 
 ---
 
@@ -1012,6 +1013,22 @@ import { DocumentLoadInstrumentation } from '@opentelemetry/instrumentation-docu
 - **Mobile SDKs**: https://opentelemetry.io/docs/instrumentation/
 - **Swift SDK**: https://github.com/open-telemetry/opentelemetry-swift
 - **Android SDK**: https://github.com/open-telemetry/opentelemetry-java
+
+---
+
+## Prometheus Interoperability
+
+### Native Histogram Stabilization (In Progress)
+
+OpenTelemetry and Prometheus are actively working to stabilize the **Prometheus → OTLP Native Histogram** conversion path. The upstream specification issue [open-telemetry/opentelemetry-specification#4748](https://github.com/open-telemetry/opentelemetry-specification/issues/4748) tracks the stabilization of Prometheus Native Histograms in the OTLP conversion layer.
+
+**What this means**:
+- Prometheus Native Histograms (also known as high-resolution histograms or sparse histograms) carry richer bucket data than classic Prometheus histograms.
+- As the conversion path is stabilized, OTLP-compatible backends will be able to receive and store Prometheus Native Histogram data without lossy downsampling.
+
+**Current status**: Stabilization is in progress upstream — check the spec issue for the latest state before relying on end-to-end native histogram fidelity in production.
+
+**Track progress**: https://github.com/open-telemetry/opentelemetry-specification/issues/4748
 
 ---
 
