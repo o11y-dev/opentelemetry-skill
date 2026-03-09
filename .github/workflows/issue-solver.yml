@@ -391,7 +391,7 @@ jobs:
 
             const { data: pr } = await github.rest.pulls.create({
               owner, repo,
-              title: `resolve #${issueNumber}: ${analysis.sub_tasks[0]?.title || 'issue resolution'}`,
+              title: `feat: resolve #${issueNumber} - ${analysis.sub_tasks[0]?.title || 'issue resolution'}`,
               body: prBody,
               head: branchName,
               base: defaultBranch,
