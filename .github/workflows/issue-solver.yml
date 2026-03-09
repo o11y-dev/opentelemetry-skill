@@ -1,0 +1,480 @@
+name: Issue Solver
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to analyze and solve'
+        required: true
+        type: number
+      dry_run:
+        description: 'Only analyze and post a comment (skip sub-issue and PR creation)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  solve-issue:
+    name: Analyze & Solve Issue
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Fetch issue details
+        id: issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ inputs.issue_number }},
+            });
+
+            const labels = issue.data.labels.map(l => l.name);
+
+            const fs = require('fs');
+            fs.writeFileSync('issue-data.json', JSON.stringify({
+              number: issue.data.number,
+              title: issue.data.title,
+              body: issue.data.body || '',
+              labels: labels,
+              state: issue.data.state,
+              url: issue.data.html_url,
+            }, null, 2));
+
+            core.setOutput('title', issue.data.title);
+            core.setOutput('state', issue.data.state);
+
+            console.log(`📋 Issue #${issue.data.number}: ${issue.data.title}`);
+            console.log(`   State: ${issue.data.state}`);
+            console.log(`   Labels: ${labels.join(', ') || '(none)'}`);
+
+      - name: Analyze issue and plan sub-tasks
+        id: analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          AI_API_KEY: ${{ secrets.AI_API_KEY }}
+          AI_MODEL: ${{ vars.AI_MODEL }}
+          AI_BASE_URL: ${{ vars.AI_BASE_URL }}
+        run: |
+          python3 << 'PYEOF'
+          import json
+          import os
+          import sys
+          import urllib.request
+          import urllib.error
+          import glob as globmod
+
+          with open('issue-data.json', 'r') as f:
+              issue = json.load(f)
+
+          # Collect repository file listing for context
+          repo_files = sorted(
+              p for pattern in ['**/*.md', '**/*.yml', '**/*.yaml', '**/*.json']
+              for p in globmod.glob(pattern, recursive=True)
+              if not p.startswith('.git/')
+          )
+
+          analysis_prompt = (
+              "Analyze the following GitHub issue and create a structured plan to solve it.\n\n"
+              "Repository context:\n"
+              "- This is an OpenTelemetry observability skill repository\n"
+              "- It contains documentation, reference guides, and AI skill definitions\n"
+              f"- Repository files: {json.dumps(repo_files)}\n\n"
+              f"Issue #{issue['number']}: {issue['title']}\n"
+              f"Labels: {', '.join(issue['labels']) if issue['labels'] else 'none'}\n\n"
+              f"Issue body:\n{issue['body']}\n\n"
+              "Instructions:\n"
+              "1. Break the issue into concrete, actionable sub-tasks\n"
+              "2. Each sub-task should be independently completable\n"
+              "3. Identify which files need to be created or modified\n"
+              "4. Provide a clear description for each sub-task\n\n"
+              "Respond with ONLY valid JSON (no markdown fences):\n"
+              '{\n'
+              '  "summary": "Brief analysis of what this issue requires",\n'
+              '  "sub_tasks": [\n'
+              '    {\n'
+              '      "title": "Sub-task title",\n'
+              '      "description": "What needs to be done",\n'
+              '      "files": ["list of files to create or modify"],\n'
+              '      "type": "create | modify | delete"\n'
+              '    }\n'
+              '  ],\n'
+              '  "branch_name": "suggested-branch-name"\n'
+              '}'
+          )
+
+          ai_api_key = os.environ.get('AI_API_KEY', '')
+          ai_model = os.environ.get('AI_MODEL') or 'gpt-4o-mini'
+          ai_base_url = (os.environ.get('AI_BASE_URL') or 'https://api.openai.com/v1').rstrip('/')
+
+          analysis = None
+
+          if ai_api_key:
+              print("🤖 Using AI model for issue analysis...")
+              try:
+                  request_body = json.dumps({
+                      "model": ai_model,
+                      "messages": [
+                          {
+                              "role": "system",
+                              "content": (
+                                  "You are a helpful assistant that analyzes GitHub issues and "
+                                  "creates structured implementation plans. Always respond with "
+                                  "valid JSON only — no markdown fences or extra text."
+                              ),
+                          },
+                          {"role": "user", "content": analysis_prompt},
+                      ],
+                      "temperature": 0.3,
+                  }).encode('utf-8')
+
+                  req = urllib.request.Request(
+                      f"{ai_base_url}/chat/completions",
+                      data=request_body,
+                      headers={
+                          'Content-Type': 'application/json',
+                          'Authorization': f'Bearer {ai_api_key}',
+                      },
+                  )
+                  with urllib.request.urlopen(req, timeout=90) as resp:
+                      result = json.loads(resp.read().decode('utf-8'))
+                      content = result['choices'][0]['message']['content']
+                      # Strip markdown code fences if present
+                      content = content.strip()
+                      if content.startswith('```'):
+                          content = content.split('\n', 1)[1]
+                      if content.endswith('```'):
+                          content = content.rsplit('```', 1)[0]
+                      analysis = json.loads(content.strip())
+                      print("✅ AI analysis complete")
+              except Exception as exc:
+                  print(f"⚠️  AI analysis failed: {exc}", file=sys.stderr)
+                  print("Falling back to structured analysis...", file=sys.stderr)
+
+          if analysis is None:
+              print("📝 Using structured analysis (no AI configured or AI unavailable)...")
+              title_lower = issue['title'].lower()
+              body_lower = (issue['body'] or '').lower()
+              combined = f"{title_lower} {body_lower}"
+
+              sub_tasks = []
+
+              if any(kw in combined for kw in ['document', 'docs', 'guide', 'reference', 'add section']):
+                  sub_tasks.append({
+                      "title": f"Draft documentation for: {issue['title']}",
+                      "description": "Create or update documentation based on the issue requirements",
+                      "files": ["references/"],
+                      "type": "modify",
+                  })
+
+              if any(kw in combined for kw in ['workflow', 'action', 'ci', 'automation', 'pipeline']):
+                  sub_tasks.append({
+                      "title": f"Implement workflow changes for: {issue['title']}",
+                      "description": "Create or modify GitHub Actions workflow",
+                      "files": [".github/workflows/"],
+                      "type": "modify",
+                  })
+
+              if any(kw in combined for kw in ['skill', 'prompt', 'instruction', 'behavior']):
+                  sub_tasks.append({
+                      "title": f"Update skill definition for: {issue['title']}",
+                      "description": "Modify SKILL.md to address the requested changes",
+                      "files": ["SKILL.md"],
+                      "type": "modify",
+                  })
+
+              if any(kw in combined for kw in ['plugin', 'marketplace', 'cursor', 'claude']):
+                  sub_tasks.append({
+                      "title": f"Update plugin configuration for: {issue['title']}",
+                      "description": "Update marketplace or plugin configuration files",
+                      "files": [".claude-plugin/", ".cursor-plugin/"],
+                      "type": "modify",
+                  })
+
+              if not sub_tasks:
+                  sub_tasks.append({
+                      "title": f"Implement: {issue['title']}",
+                      "description": issue['body'] or 'Address the requirements described in the issue',
+                      "files": [],
+                      "type": "modify",
+                  })
+
+              sub_tasks.append({
+                  "title": f"Review and validate changes for #{issue['number']}",
+                  "description": "Verify all changes are correct, run validation, and ensure quality",
+                  "files": [],
+                  "type": "modify",
+              })
+
+              slug = issue['title'].lower()
+              for ch in [':', '/', '\\', ' ', '.', ',', '!', '?', "'", '"', '#']:
+                  slug = slug.replace(ch, '-')
+              while '--' in slug:
+                  slug = slug.replace('--', '-')
+              slug = slug.strip('-')[:50]
+
+              analysis = {
+                  "summary": f"Structured analysis of issue #{issue['number']}: {issue['title']}",
+                  "sub_tasks": sub_tasks,
+                  "branch_name": f"issue-{issue['number']}/{slug}",
+              }
+
+          with open('analysis.json', 'w') as f:
+              json.dump(analysis, f, indent=2)
+
+          print(f"\n📊 Analysis Summary:")
+          print(f"   {analysis['summary']}")
+          print(f"   Sub-tasks: {len(analysis['sub_tasks'])}")
+          print(f"   Branch: {analysis['branch_name']}")
+          for i, task in enumerate(analysis['sub_tasks'], 1):
+              print(f"   {i}. {task['title']}")
+          PYEOF
+
+      - name: Create sub-issues
+        id: subtasks
+        if: ${{ !inputs.dry_run }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const analysis = JSON.parse(fs.readFileSync('analysis.json', 'utf8'));
+            const issueNumber = ${{ inputs.issue_number }};
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // Ensure label exists
+            const label = 'auto-subtask';
+            try {
+              await github.rest.issues.createLabel({
+                owner, repo,
+                name: label,
+                color: '1d76db',
+                description: 'Auto-generated sub-task from Issue Solver',
+              });
+            } catch (e) {
+              if (e.status !== 422) throw e;
+            }
+
+            const subIssueNumbers = [];
+            for (const task of analysis.sub_tasks) {
+              const files = task.files?.length
+                ? `\n\n**Files:** ${task.files.join(', ')}`
+                : '';
+
+              const subIssue = await github.rest.issues.create({
+                owner, repo,
+                title: task.title,
+                body: [
+                  `Parent issue: #${issueNumber}`,
+                  '',
+                  task.description,
+                  files,
+                  '',
+                  `**Type:** ${task.type}`,
+                  '',
+                  '---',
+                  `_Auto-generated by Issue Solver from #${issueNumber}_`,
+                ].join('\n'),
+                labels: [label],
+              });
+
+              subIssueNumbers.push(subIssue.data.number);
+              console.log(`✅ Created sub-issue #${subIssue.data.number}: ${task.title}`);
+            }
+
+            fs.writeFileSync('sub-issues.json', JSON.stringify(subIssueNumbers));
+            core.setOutput('numbers', subIssueNumbers.join(','));
+
+      - name: Create branch and draft PR
+        id: pr
+        if: ${{ !inputs.dry_run }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const analysis = JSON.parse(fs.readFileSync('analysis.json', 'utf8'));
+            const subIssues = JSON.parse(fs.readFileSync('sub-issues.json', 'utf8'));
+            const issueNumber = ${{ inputs.issue_number }};
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // Get default branch and its latest SHA
+            const { data: repoData } = await github.rest.repos.get({ owner, repo });
+            const defaultBranch = repoData.default_branch;
+
+            const { data: ref } = await github.rest.git.getRef({
+              owner, repo,
+              ref: `heads/${defaultBranch}`,
+            });
+            const baseSha = ref.object.sha;
+
+            // Create feature branch
+            const branchName = analysis.branch_name;
+            try {
+              await github.rest.git.createRef({
+                owner, repo,
+                ref: `refs/heads/${branchName}`,
+                sha: baseSha,
+              });
+              console.log(`✅ Created branch: ${branchName}`);
+            } catch (e) {
+              if (e.status === 422) {
+                console.log(`ℹ️  Branch ${branchName} already exists`);
+              } else {
+                throw e;
+              }
+            }
+
+            // Build tracking file content
+            const trackingContent = [
+              `# Issue Analysis: #${issueNumber}`,
+              '',
+              `> ${analysis.summary}`,
+              '',
+              '## Sub-tasks',
+              '',
+              ...analysis.sub_tasks.map((t, i) =>
+                `- [ ] #${subIssues[i]} – ${t.title}`
+              ),
+              '',
+              '---',
+              '_This file was auto-generated by the Issue Solver workflow._',
+              '_Update this file as sub-tasks are completed._',
+            ].join('\n');
+
+            // Commit tracking file to the new branch
+            await github.rest.repos.createOrUpdateFileContents({
+              owner, repo,
+              path: `.github/issue-analyses/issue-${issueNumber}.md`,
+              message: `chore: add analysis for issue #${issueNumber}`,
+              content: Buffer.from(trackingContent).toString('base64'),
+              branch: branchName,
+            });
+            console.log('✅ Committed tracking file');
+
+            // Build PR body
+            const prBody = [
+              `## Resolves #${issueNumber}`,
+              '',
+              '### Analysis',
+              analysis.summary,
+              '',
+              '### Sub-tasks',
+              ...analysis.sub_tasks.map((t, i) =>
+                `- [ ] #${subIssues[i]} – ${t.title}`
+              ),
+              '',
+              '### Files to modify',
+              ...analysis.sub_tasks.flatMap(t =>
+                (t.files || []).map(f => `- \`${f}\``)
+              ),
+              '',
+              '---',
+              '_This PR was auto-generated by the Issue Solver workflow._',
+              '_Review the analysis and sub-tasks, then implement the changes on this branch._',
+            ].join('\n');
+
+            const { data: pr } = await github.rest.pulls.create({
+              owner, repo,
+              title: `resolve #${issueNumber}: ${analysis.sub_tasks[0]?.title || 'issue resolution'}`,
+              body: prBody,
+              head: branchName,
+              base: defaultBranch,
+              draft: true,
+            });
+
+            console.log(`✅ Created draft PR #${pr.number}: ${pr.title}`);
+            core.setOutput('pr_number', pr.number);
+            core.setOutput('pr_url', pr.html_url);
+
+      - name: Post analysis comment on issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const analysis = JSON.parse(fs.readFileSync('analysis.json', 'utf8'));
+            const issueNumber = ${{ inputs.issue_number }};
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const dryRun = ${{ inputs.dry_run }};
+
+            let subIssues = [];
+            if (!dryRun) {
+              try {
+                subIssues = JSON.parse(fs.readFileSync('sub-issues.json', 'utf8'));
+              } catch { /* no sub-issues in dry-run mode */ }
+            }
+
+            const lines = [
+              '## 🤖 Issue Solver Analysis',
+              '',
+              `**Summary:** ${analysis.summary}`,
+              '',
+              '### Sub-tasks',
+              '',
+            ];
+
+            analysis.sub_tasks.forEach((task, i) => {
+              const ref = subIssues.length ? `#${subIssues[i]} – ` : '';
+              lines.push(`- [ ] ${ref}${task.title}`);
+              if (task.files?.length) {
+                lines.push(`  - Files: ${task.files.map(f => '`' + f + '`').join(', ')}`);
+              }
+            });
+
+            lines.push('');
+
+            if (dryRun) {
+              lines.push('> ℹ️  **Dry run** — no sub-issues or PR were created.');
+              lines.push('> Re-run the workflow with dry_run disabled to create them.');
+            } else {
+              lines.push(`**Branch:** \`${analysis.branch_name}\``);
+              lines.push('');
+              lines.push(
+                '_A draft PR has been created. Review the analysis, ' +
+                'implement changes on the branch, and mark sub-tasks as complete._'
+              );
+            }
+
+            lines.push('');
+            lines.push('---');
+            lines.push('_Generated by the Issue Solver workflow_');
+
+            await github.rest.issues.createComment({
+              owner, repo,
+              issue_number: issueNumber,
+              body: lines.join('\n'),
+            });
+            console.log(`✅ Posted analysis comment on issue #${issueNumber}`);
+
+      - name: Summary
+        run: |
+          echo "## 🤖 Issue Solver Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          python3 << 'PYEOF' >> $GITHUB_STEP_SUMMARY
+          import json, sys
+          with open('analysis.json') as f:
+              a = json.load(f)
+          print(f"**Issue:** #${{ inputs.issue_number }}")
+          print(f"**Summary:** {a['summary']}")
+          print(f"**Branch:** `{a['branch_name']}`")
+          print()
+          print("### Sub-tasks")
+          for i, t in enumerate(a['sub_tasks'], 1):
+              print(f"{i}. {t['title']}")
+          PYEOF
