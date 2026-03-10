@@ -168,6 +168,21 @@ Use these triggers to load detailed reference documentation only when needed. Th
 - Common use cases (PII redaction, attribute enrichment, filtering)
 - Error handling and debugging transformations
 
+### Trigger: Connectors
+**Keywords**: "Connector", "span-to-metrics", "spanmetrics", "service graph", "servicegraph", "routing connector", "failover connector", "cross-pipeline", "R.E.D. metrics", "pipeline bridge", "signal to metrics"
+
+**Action**: Load `references/connectors.md`
+
+**Contains**:
+- Connector concept: simultaneously an exporter on one pipeline and a receiver on another
+- spanmetricsconnector: R.E.D. (Rate, Errors, Duration) metrics from traces
+- servicegraphconnector: service dependency graph metrics
+- routingconnector: attribute-based pipeline routing
+- failoverconnector: automatic pipeline failover
+- countconnector and signaltometricsconnector
+- Stickiness requirements for stateful connectors (spanmetrics, servicegraph)
+- Stability levels and cardinality warnings
+
 ## Response Framework
 
 When responding to user requests:
@@ -220,8 +235,8 @@ Actively prevent these common mistakes:
 
 ## Version and Compatibility
 
-- **Target Version**: OpenTelemetry Collector v0.146.0+ (2025+)
-- **Semantic Conventions**: v1.24.0+
+- **Target Version**: OpenTelemetry Collector v0.147.0+ (2026+)
+- **Semantic Conventions**: v1.30.0+
 - **Kubernetes**: v1.24+ (for native sidecar support)
 - **Go SDK**: v1.24.0+
 - **Python SDK**: v1.39.0+
@@ -232,7 +247,7 @@ Actively prevent these common mistakes:
 - **Version**: 1.0.0
 - **Author**: o11y.dev
 - **License**: Apache 2.0
-- **Last Updated**: 2026-02-28
+- **Last Updated**: 2026-03-10
 
 ---
 

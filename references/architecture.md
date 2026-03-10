@@ -15,6 +15,7 @@ This reference provides comprehensive guidance on deploying the OpenTelemetry Co
 7. [Load Balancing & Sticky Sessions](#load-balancing--sticky-sessions)
 8. [Target Allocator for Prometheus](#target-allocator-for-prometheus)
 9. [Resource Sizing Guidelines](#resource-sizing-guidelines)
+10. [When NOT to Scale](#when-not-to-scale)
 
 ---
 
@@ -77,7 +78,7 @@ spec:
       serviceAccountName: otel-agent
       containers:
       - name: otel-collector
-        image: otel/opentelemetry-collector-contrib:0.100.0
+        image: otel/opentelemetry-collector-contrib:0.147.0
         env:
         - name: NODE_NAME
           valueFrom:
@@ -182,7 +183,7 @@ spec:
       serviceAccountName: otel-gateway
       containers:
       - name: otel-collector
-        image: otel/opentelemetry-collector-contrib:0.100.0
+        image: otel/opentelemetry-collector-contrib:0.147.0
         ports:
         - containerPort: 4317  # OTLP gRPC
           name: otlp-grpc
@@ -293,7 +294,7 @@ spec:
     - name: OTEL_EXPORTER_OTLP_ENDPOINT
       value: "http://localhost:4317"
   - name: otel-sidecar
-    image: otel/opentelemetry-collector-contrib:0.100.0
+    image: otel/opentelemetry-collector-contrib:0.147.0
     resources:
       requests:
         cpu: 50m
@@ -560,6 +561,69 @@ spec:
 
 ---
 
+## When NOT to Scale
+
+Scaling the collector adds replicas and resources, but it does **not** fix every performance problem. Before scaling, diagnose the actual bottleneck.
+
+### The Key Signal: Queue Saturation
+
+```promql
+otelcol_exporter_queue_size / otelcol_exporter_queue_capacity
+```
+
+| Queue Ratio | Interpretation | Action |
+|-------------|----------------|--------|
+| < 0.5 | Healthy — pipeline has headroom | No action needed |
+| 0.5–0.8 | Warning — backend is slowing down | Investigate backend latency |
+| > 0.8 persistently | ⚠️ Downstream bottleneck | **Scaling the collector won't help** |
+
+**If `otelcol_exporter_queue_size` is persistently near `otelcol_exporter_queue_capacity`, the problem is downstream** (the backend, not the collector). Adding more collector replicas only fills the backend queue faster.
+
+### Root Causes That Scaling Cannot Fix
+
+| Symptom | Likely Root Cause | Correct Fix |
+|---------|------------------|-------------|
+| Queue persistently > 80% | Backend saturated or slow | Scale the backend, reduce ingestion rate, or enable sampling |
+| High `otelcol_exporter_send_failed_spans` | Backend down or misconfigured | Fix the backend; enable persistent queues (file_storage) as a buffer |
+| Network egress throttled | Cloud network limits | Increase network quota; compress data (snappy/gzip); use Kafka as buffer |
+| Memory OOM despite adding replicas | Data cardinality explosion | Apply cardinality limits; use `filter` processor to drop high-volume data |
+| High CPU on all replicas | OTTL transform too complex | Simplify transforms; profile with pprof |
+
+### Decision Tree: Scale vs Fix
+
+```
+Is otelcol_exporter_queue_size / queue_capacity > 0.8?
+├─ YES → Check backend: Is the backend CPU/disk/network saturated?
+│         ├─ YES → Scale the BACKEND, not the collector
+│         └─ NO  → Check export failures: Are there auth/TLS errors?
+│                   ├─ YES → Fix configuration, not scale
+│                   └─ NO  → Check network throughput limits
+└─ NO  → Is collector CPU > 80%?
+          ├─ YES → Scale the COLLECTOR (CPU-bound processing)
+          └─ NO  → Is collector memory > 80% of limit?
+                    ├─ YES → Increase memory limit or reduce queue_size
+                    └─ NO  → Pipeline is healthy
+```
+
+### Scaling Anti-Patterns
+
+❌ **Scaling collectors when backend is the bottleneck** — more replicas = more pressure on an already saturated backend
+
+❌ **Scaling without sampling** — at >50k RPS, you should evaluate tail sampling or head sampling before adding replicas
+
+❌ **Scaling stateful collectors without sticky routing** — more `tail_sampling` replicas without loadbalancing exporter splits traces across instances, breaking sampling correctness
+
+❌ **Scaling to compensate for cardinality explosion** — unbounded attributes cause exponential storage growth regardless of replica count
+
+### When Scaling DOES Help
+
+✅ Collector CPU is the bottleneck (transform/filter heavy workloads)
+✅ Receiver throughput is limited (single node accept queue full)
+✅ Tail sampling replicas need more memory for in-flight traces
+✅ Prometheus scraping needs more targets per collector
+
+---
+
 ## Reference Links
 
 - **Deployment Patterns**: https://opentelemetry.io/docs/collector/deployment/
@@ -578,5 +642,7 @@ spec:
 ✅ Use **Target Allocator** for Prometheus scraping at scale
 ✅ Always configure **HPA** on memory utilization for gateways
 ✅ Always use **Headless Service** with loadbalancing exporter
+✅ Before scaling, check if the problem is **downstream** (backend saturation, not collector)
+✅ Use `otel/opentelemetry-collector-contrib:0.147.0` for current stable image
 
 **Deployment is not just about running a binary—it's about building a resilient, scalable observability pipeline.**

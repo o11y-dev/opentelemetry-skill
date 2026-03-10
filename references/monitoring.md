@@ -8,10 +8,11 @@
 
 1. [Why Meta-Monitoring?](#why-meta-monitoring)
 2. [Collector Telemetry](#collector-telemetry)
-3. [Critical Metrics](#critical-metrics)
-4. [Health Checks](#health-checks)
-5. [Dashboards](#dashboards)
-6. [Alert Rules](#alert-rules)
+3. [OTLP Self-Telemetry](#otlp-self-telemetry)
+4. [Critical Metrics](#critical-metrics)
+5. [Health Checks](#health-checks)
+6. [Dashboards](#dashboards)
+7. [Alert Rules](#alert-rules)
 
 ---
 
@@ -90,6 +91,110 @@ spec:
     interval: 30s
     path: /metrics
 ```
+
+---
+
+## OTLP Self-Telemetry
+
+The [OpenTelemetry Collector Internal Telemetry documentation](https://opentelemetry.io/docs/collector/internal-telemetry/) now recommends using **OTLP periodic readers** for self-observability instead of (or in addition to) the Prometheus scrape pattern. This enables the collector to push its own metrics directly to a backend without requiring an external scraper.
+
+### Why OTLP for Self-Telemetry?
+
+| Pattern | Pros | Cons |
+|---------|------|------|
+| **Prometheus scrape (pull)** | Simple, compatible with existing Prometheus stacks | Requires external scraper; pull model means delayed detection |
+| **OTLP push (recommended)** | No external scraper; metrics arrive as fast as flush interval; unified with app telemetry in same backend | Requires OTLP-capable metrics backend |
+
+### Configuration: OTLP Periodic Reader
+
+Use `service.telemetry.metrics.readers` to configure an OTLP exporter for self-metrics:
+
+```yaml
+service:
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      level: detailed          # none | basic | normal | detailed
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: "0.0.0.0"
+                port: 8888     # keep Prometheus endpoint for existing dashboards
+
+        - periodic:
+            interval: 60000    # push interval in milliseconds (60s)
+            timeout: 30000     # export timeout in milliseconds
+            exporter:
+              otlp:
+                protocol: grpc
+                endpoint: "http://otlp-backend:4317"
+                headers:
+                  authorization: "Bearer ${env:SELF_TELEMETRY_TOKEN:-}"
+```
+
+This configuration simultaneously:
+1. Exposes metrics on `:8888` for existing Prometheus scrapers (backward compatible)
+2. Pushes metrics every 60s via OTLP gRPC to a backend
+
+### Self-Telemetry Pipeline Pattern
+
+For environments where the same collector handles both application telemetry and self-telemetry, you can forward self-metrics through an OTLP loopback:
+
+```yaml
+service:
+  telemetry:
+    metrics:
+      level: detailed
+      readers:
+        - periodic:
+            interval: 30000
+            exporter:
+              otlp:
+                protocol: grpc
+                endpoint: "localhost:4317"   # loopback to own OTLP receiver
+
+  pipelines:
+    metrics:
+      receivers: [otlp]                      # receives both app and self metrics
+      processors: [memory_limiter, batch]
+      exporters: [otlp/backend]
+```
+
+⚠️ **Loopback cardinality warning**: Self-metrics include collector-internal labels (receiver, processor, exporter names). These are low-cardinality and safe to forward, but ensure your backend can handle the additional time series.
+
+### Resource Attributes for Self-Telemetry
+
+Add resource attributes to self-telemetry for multi-collector environments:
+
+```yaml
+service:
+  telemetry:
+    resource:
+      service.name: "otel-gateway"
+      service.instance.id: "${env:POD_NAME}"
+      k8s.namespace.name: "${env:NAMESPACE}"
+      k8s.node.name: "${env:NODE_NAME}"
+    metrics:
+      level: detailed
+      readers:
+        - periodic:
+            interval: 60000
+            exporter:
+              otlp:
+                protocol: grpc
+                endpoint: "http://central-backend:4317"
+```
+
+### When to Use OTLP vs Prometheus for Self-Telemetry
+
+| Scenario | Recommendation |
+|----------|---------------|
+| Existing Prometheus/Grafana stack | Keep pull (`:8888`) + optionally add OTLP push |
+| Backend supports OTLP metrics natively | Use OTLP push exclusively (simpler ops) |
+| Air-gapped or strict network policy environments | Use pull model (no outbound from collector required) |
+| Multi-collector fleet with centralized backend | OTLP push with `service.instance.id` for per-collector attribution |
 
 ---
 
@@ -624,12 +729,13 @@ otelcol_exporter_queue_size
 ## Summary
 
 ✅ **Expose metrics** on port 8888 for Prometheus scraping
+✅ **Or use OTLP push** via `service.telemetry.metrics.readers` for unified self-telemetry
 ✅ **Monitor throughput**: Accepted vs sent spans/metrics/logs
 ✅ **Alert on data loss**: `otelcol_exporter_send_failed_spans > 0`
 ✅ **Track memory usage**: Set alerts at 80% of limit
-✅ **Watch queue saturation**: Alert when > 80% full
+✅ **Watch queue saturation**: Alert when > 80% full — indicates downstream bottleneck
 ✅ **Use health checks**: Configure Kubernetes liveness/readiness probes
 ✅ **Deploy dashboards**: Use monitoringartist/opentelemetry-collector-monitoring
-✅ **Self-observe**: Send collector metrics to the same backend
+✅ **Self-observe**: Send collector metrics to the same backend with `service.instance.id`
 
 **Meta-monitoring is not optional—it's the safety net that prevents silent data loss in production observability systems.**
