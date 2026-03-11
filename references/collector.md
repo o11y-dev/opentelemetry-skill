@@ -11,17 +11,30 @@ The OpenTelemetry Collector is a vendor-agnostic telemetry pipeline that receive
 3. [Processor Ordering: The Critical Path](#processor-ordering-the-critical-path)
 4. [Memory Limiter: Preventing OOM Kills](#memory-limiter-preventing-oom-kills)
 5. [Persistent Queues: Preventing Data Loss](#persistent-queues-preventing-data-loss)
-6. [Batch Processor: Network Optimization](#batch-processor-network-optimization)
-7. [Extensions](#extensions)
-8. [Configuration Patterns](#configuration-patterns)
-9. [Component Docs & Example Configs](#component-docs--example-configs)
-9. [Component Docs & Example Configs](#component-docs--example-configs)
+6. [Resiliency: Message Queues (Kafka)](#resiliency-message-queues-kafka)
+7. [Batch Processor: Network Optimization](#batch-processor-network-optimization)
+8. [Extensions](#extensions)
+9. [Configuration Management](#configuration-management)
+10. [Configuration Patterns](#configuration-patterns)
+11. [Component Docs & Example Configs](#component-docs--example-configs)
 
 ---
 
 ## Pipeline Anatomy
 
-A collector **pipeline** consists of three stages:
+A collector **pipeline** consists of three stages, with an optional fourth component — **Connectors** — that bridge two pipelines:
+
+```
+Receivers → Processors → Exporters
+                              ↓
+                         [Connector]   ← acts as Exporter on source pipeline
+                              ↓
+                         [Connector]   ← acts as Receiver on destination pipeline
+                              ↓
+Receivers → Processors → Exporters
+```
+
+For simple single-pipeline flows:
 
 ```
 Receivers → Processors → Exporters
@@ -66,6 +79,20 @@ Common exporters:
   - **⚠️ Routing Key Requirement**: The `routing_key` must be a stable, deterministic string (e.g., `traceID`, `tenant_id`, `cluster`). Convert non-string routing attributes to normalized strings before hashing to avoid shard churn and ensure even load distribution.
 - `logging`: Outputs to stdout (debug only)
 - `file`: Writes to disk (debug only)
+
+### Connectors
+
+**Connectors** bridge two pipelines by acting simultaneously as an exporter on the source pipeline and a receiver on the destination pipeline. They enable cross-pipeline signal routing and aggregation (e.g., generating metrics from traces) without external tools.
+
+Key connectors:
+- `spanmetrics`: Generates R.E.D. metrics (Rate, Errors, Duration) from trace spans — **Beta**
+- `servicegraph`: Builds service dependency graph metrics from traces — **Beta**
+- `routing`: Routes signals to different pipelines based on attribute values — **Alpha**
+- `failover`: Automatic failover between pipelines on errors — **Alpha**
+- `count`: Counts signals as metrics — **Alpha**
+- `signaltometrics`: Converts any signal to metrics via OTTL expressions — **Alpha**
+
+See [connectors.md](connectors.md) for full configuration examples and patterns.
 
 ### Pipeline Definition
 
@@ -545,6 +572,150 @@ Linux kernel versions 5.10–5.15 with ext4 fast-commit enabled can corrupt bbol
 
 ---
 
+## Resiliency: Message Queues (Kafka)
+
+The OTel resiliency model has three tiers:
+
+1. **Sending Queue** — in-memory buffer (covered by `sending_queue`)
+2. **Persistent Storage/WAL** — disk-based durability (covered by `file_storage`)
+3. **Message Queue** — durable broker between collector tiers (Kafka)
+
+Kafka as a durability layer is the standard pattern for **cross-AZ, cross-region, or high-throughput** deployments where disk-based WAL is insufficient.
+
+### When to Use Kafka
+
+| Scenario | Recommended Tier | Reason |
+|----------|-----------------|--------|
+| Single-region, short outages (<1h) | file_storage (Tier 2) | Simpler, lower ops overhead |
+| Cross-AZ or cross-region hops | Kafka (Tier 3) | Survives collector crashes, node failures |
+| Multi-datacenter fan-in | Kafka (Tier 3) | Decouples producer and consumer tiers |
+| Throughput >50k spans/sec | Kafka (Tier 3) | Disk I/O limits on single-node WAL |
+| Compliance / long retention (>24h) | Kafka (Tier 3) | Configurable topic retention |
+
+### Architecture: Agent → Kafka → Gateway
+
+```
+[App] → [OTel Agent] → [Kafka Topic: otel.traces] → [OTel Gateway] → [Backend]
+```
+
+This decouples the ingest tier (agents) from the processing tier (gateways), enabling independent scaling and fault isolation.
+
+### Agent Configuration (Kafka Exporter)
+
+```yaml
+exporters:
+  kafka:
+    brokers:
+      - kafka-broker-1.example.com:9092
+      - kafka-broker-2.example.com:9092
+    topic: otel.traces          # dedicated topic per signal type
+    encoding: otlp_proto        # use OTLP binary encoding (recommended)
+    producer:
+      compression: snappy       # good balance of speed and ratio
+      required_acks: wait_for_all  # durability: all ISR replicas must ack
+      max_message_bytes: 1000000   # 1 MB max message size
+    auth:
+      sasl:
+        username: ${env:KAFKA_USERNAME}
+        password: ${env:KAFKA_PASSWORD}
+        mechanism: SCRAM-SHA-512
+      tls:
+        insecure: false
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_elapsed_time: 5m
+    sending_queue:
+      enabled: true
+      queue_size: 5000
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [kafka]
+```
+
+### Gateway Configuration (Kafka Receiver)
+
+```yaml
+receivers:
+  kafka:
+    brokers:
+      - kafka-broker-1.example.com:9092
+      - kafka-broker-2.example.com:9092
+    topic: otel.traces
+    group_id: otel-gateway-consumer-group  # enables consumer group parallelism
+    encoding: otlp_proto
+    auth:
+      sasl:
+        username: ${env:KAFKA_USERNAME}
+        password: ${env:KAFKA_PASSWORD}
+        mechanism: SCRAM-SHA-512
+      tls:
+        insecure: false
+    initial_offset: latest          # or "earliest" for replay
+
+exporters:
+  otlp:
+    endpoint: backend.example.com:4317
+    sending_queue:
+      enabled: true
+      storage: file_storage         # Tier 2 as backup within the gateway
+      queue_size: 10000
+
+service:
+  extensions: [file_storage]
+  pipelines:
+    traces:
+      receivers: [kafka]
+      processors: [memory_limiter, k8sattributes, tail_sampling, batch]
+      exporters: [otlp]
+```
+
+### Kafka Topic Configuration (Recommended)
+
+```bash
+# Create topics with appropriate retention and replication
+kafka-topics.sh --create \
+  --bootstrap-server kafka:9092 \
+  --topic otel.traces \
+  --partitions 12 \               # scale with gateway replicas
+  --replication-factor 3 \        # 3 replicas for HA
+  --config retention.ms=86400000 \ # 24-hour retention
+  --config compression.type=snappy
+
+kafka-topics.sh --create --bootstrap-server kafka:9092 \
+  --topic otel.metrics --partitions 6 --replication-factor 3
+
+kafka-topics.sh --create --bootstrap-server kafka:9092 \
+  --topic otel.logs --partitions 12 --replication-factor 3
+```
+
+### Scaling: Partitions ↔ Consumer Parallelism
+
+Each Kafka partition is consumed by **one gateway replica** at a time. Scale partitions to match your gateway replica count:
+
+```
+Partitions ≥ Max Gateway Replicas
+```
+
+**Example**: 3 gateway replicas → at least 3 partitions per topic.
+
+### ⚠️ Encoding Warning
+
+Always use `encoding: otlp_proto` (binary OTLP) rather than `otlp_json` for production. JSON encoding is 3-5× larger and significantly slower to parse.
+
+### Stability
+
+| Component | Stability |
+|-----------|-----------|
+| `kafkaexporter` | Beta |
+| `kafkareceiver` | Beta |
+
+---
+
 ## Batch Processor: Network Optimization
 
 The `batch` processor is critical for reducing network overhead.
@@ -645,6 +816,126 @@ service:
 
 ---
 
+## Configuration Management
+
+Modern collector deployments use several configuration features that simplify operations and improve security.
+
+### Multi-File Configuration Merging
+
+Split large configurations across multiple files and merge them at startup:
+
+```bash
+# Merge base config with environment-specific overrides
+otelcol --config=file:base.yaml --config=file:env-prod.yaml
+
+# Or use glob patterns
+otelcol --config=file:/etc/otelcol/base.yaml --config=file:/etc/otelcol/conf.d/*.yaml
+```
+
+**Merge rules**: Later files override earlier ones for scalar values; maps are deep-merged.
+
+**Use case**: Separate base pipeline config from per-environment exporter endpoints, credentials, or sampling rates.
+
+```yaml
+# base.yaml — pipeline structure (shared across all environments)
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: "0.0.0.0:4317"
+processors:
+  memory_limiter:
+    limit_percentage: 80
+    spike_limit_percentage: 20
+    check_interval: 1s
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+
+# env-prod.yaml — production-specific overrides
+exporters:
+  otlp:
+    endpoint: prod-backend.example.com:4317
+    tls:
+      insecure: false
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp]
+```
+
+### Environment Variable Syntax with Defaults
+
+Use the `${env:VAR:-default}` syntax to provide fallback values when environment variables are not set:
+
+```yaml
+exporters:
+  otlp:
+    endpoint: ${env:OTLP_ENDPOINT:-localhost:4317}   # fallback to localhost
+    headers:
+      authorization: "Bearer ${env:OTLP_TOKEN:-}"    # empty string if unset
+
+processors:
+  memory_limiter:
+    limit_mib: ${env:MEMORY_LIMIT_MIB:-1800}
+    spike_limit_mib: ${env:MEMORY_SPIKE_MIB:-360}
+    check_interval: 1s
+```
+
+⚠️ **Use `${env:VAR}` (not `$VAR` or `${VAR}`)** — the `env:` prefix is required in all collector versions v0.84.0+. The legacy `$VAR` syntax is deprecated. The `:-default` fallback syntax (e.g., `${env:VAR:-default}`) is supported since v0.84.0.
+
+### Inline Exporter Batching (`sending_queue: batch:`)
+
+In v0.147.0+, the exporter's `sending_queue` supports an inline `batch` sub-configuration that controls how items are batched before being placed in the queue — separate from the `batch` processor:
+
+```yaml
+exporters:
+  otlp:
+    endpoint: backend.example.com:4317
+    sending_queue:
+      enabled: true
+      storage: file_storage
+      queue_size: 5000
+      batch:
+        flush_timeout: 200ms        # max wait before sending
+        min_size_items: 100         # target batch size (items)
+        max_size_items: 500         # hard limit per send
+```
+
+This is useful when you want per-exporter batching behavior without adding a shared `batch` processor (e.g., different backends have different optimal batch sizes).
+
+### Diagnostic Commands
+
+The `otelcol` binary provides built-in commands for debugging and validation:
+
+```bash
+# List all available components in the current binary
+otelcol components
+
+# Validate a configuration file (catch syntax/semantic errors before deploy)
+otelcol validate --config=file:config.yaml
+
+# Print the effective merged configuration (useful for debugging multi-file merges)
+otelcol print-config --config=file:base.yaml --config=file:env-prod.yaml
+```
+
+**Best Practice**: Always run `otelcol validate` in CI before deploying configuration changes to production.
+
+```yaml
+# In Kubernetes init container or pre-deploy step
+initContainers:
+- name: validate-config
+  image: otel/opentelemetry-collector-contrib:0.147.0
+  command: ["otelcol-contrib", "validate", "--config=/etc/otelcol/config.yaml"]
+  volumeMounts:
+  - name: config
+    mountPath: /etc/otelcol
+```
+
+---
+
 ## Configuration Patterns
 
 ### Minimal Production Config
@@ -729,9 +1020,12 @@ exporters:
 
 - **Collector Documentation**: https://opentelemetry.io/docs/collector/
 - **Configuration Reference**: https://opentelemetry.io/docs/collector/configuration/
+- **Connectors Documentation**: https://opentelemetry.io/docs/collector/configuration/#connectors
 - **Component Reference**: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver
 - **Processor Documentation**: https://opentelemetry.io/docs/collector/transforming-telemetry/
 - **OTTL Language**: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/pkg/ottl/README.md
+- **Kafka Receiver**: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/kafkareceiver
+- **Kafka Exporter**: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/kafkaexporter
 
 ---
 
@@ -740,6 +1034,11 @@ exporters:
 ✅ Always use `memory_limiter` as the **first processor**
 ✅ Always use `batch` processor near the **end** of the chain
 ✅ Enable `file_storage` for production to prevent data loss
+✅ Use **Kafka** (Tier 3) for cross-AZ/cross-region durability at scale
+✅ Use **Connectors** for span-to-metrics and cross-pipeline routing (see [connectors.md](connectors.md))
+✅ Use **multi-file config merging** to separate base config from environment overrides
+✅ Use `${env:VAR:-default}` syntax for environment variable defaults
+✅ Run `otelcol validate` in CI before deploying configuration changes
 ✅ Check component **stability levels** before production use
 ✅ Use **OCB** to build custom, lean collector binaries
 ✅ Monitor `otelcol_exporter_send_failed_spans` for data loss

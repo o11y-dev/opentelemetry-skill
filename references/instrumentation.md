@@ -205,6 +205,8 @@ public class PaymentService {
 | **Messaging** | `messaging.system`, `messaging.destination`, `messaging.operation` | `messaging.system = "kafka"` |
 | **Network** | `network.protocol.name`, `network.protocol.version` | `network.protocol.name = "http"` |
 | **Cloud** | `cloud.provider`, `cloud.platform`, `cloud.region` | `cloud.provider = "aws"` |
+| **GenAI** | `gen_ai.system`, `gen_ai.operation.name`, `gen_ai.request.model` | `gen_ai.system = "openai"` |
+| **Events** | `event.name`, structured log body | `event.name = "user.login"` |
 
 ### HTTP Semantic Conventions
 
@@ -231,6 +233,128 @@ span.set_attribute(SpanAttributes.DB_OPERATION, "SELECT")
 span.set_attribute(SpanAttributes.SERVER_ADDRESS, "db.example.com")
 span.set_attribute(SpanAttributes.SERVER_PORT, 5432)
 ```
+
+### GenAI Semantic Conventions (v1.27.0+)
+
+The `gen_ai/` namespace covers Generative AI operations (LLM calls, embeddings, etc.):
+
+```python
+# Instrumenting an LLM API call (e.g., OpenAI Chat Completions)
+with tracer.start_as_current_span("chat.completion") as span:
+    span.set_attribute("gen_ai.system", "openai")           # ai system identifier
+    span.set_attribute("gen_ai.operation.name", "chat")     # "chat", "text_completion", "embeddings"
+    span.set_attribute("gen_ai.request.model", "gpt-4o")    # requested model
+    span.set_attribute("gen_ai.request.max_tokens", 1024)
+    span.set_attribute("gen_ai.request.temperature", 0.7)
+
+    response = client.chat.completions.create(...)
+
+    span.set_attribute("gen_ai.response.model", response.model)     # actual model used
+    span.set_attribute("gen_ai.usage.input_tokens", response.usage.prompt_tokens)
+    span.set_attribute("gen_ai.usage.output_tokens", response.usage.completion_tokens)
+    span.set_attribute("gen_ai.response.finish_reasons", [response.choices[0].finish_reason])
+```
+
+**Key GenAI attributes**:
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `gen_ai.system` | string | AI provider (`openai`, `anthropic`, `vertex_ai`, `aws_bedrock`) |
+| `gen_ai.operation.name` | string | Operation type (`chat`, `text_completion`, `embeddings`) |
+| `gen_ai.request.model` | string | Requested model name |
+| `gen_ai.response.model` | string | Actual model used (may differ from request) |
+| `gen_ai.usage.input_tokens` | int | Tokens consumed in the prompt |
+| `gen_ai.usage.output_tokens` | int | Tokens generated in the response |
+| `gen_ai.request.max_tokens` | int | Token limit for the response |
+| `gen_ai.request.temperature` | double | Sampling temperature |
+| `gen_ai.response.finish_reasons` | string[] | Reason generation stopped |
+
+⚠️ **Cardinality warning**: `gen_ai.request.model` has bounded cardinality (~10-50 models) and is safe as a metric dimension. Do NOT use `gen_ai.request.messages` or response content as metric dimensions.
+
+**Token cost metrics**:
+```python
+# Use metrics to track token usage for cost attribution
+token_counter = meter.create_counter(
+    "gen_ai.client.token.usage",
+    unit="{token}",
+    description="Number of tokens used in GenAI operations",
+)
+token_counter.add(
+    response.usage.total_tokens,
+    {
+        "gen_ai.system": "openai",
+        "gen_ai.operation.name": "chat",
+        "gen_ai.token.type": "total",  # "input" or "output"
+    }
+)
+```
+
+### Events Semantic Conventions (v1.32.0+)
+
+**Events** are a specialized log sub-type with a required `event.name` attribute, used for structured domain events (as distinct from free-text log messages).
+
+```python
+# Using the Python logging bridge (recommended pattern for events)
+import logging
+from opentelemetry.sdk.logs import LoggerProvider
+from opentelemetry.sdk.logs.export import BatchLogRecordProcessor
+from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
+
+# Configure logger provider
+logger_provider = LoggerProvider()
+logger_provider.add_log_record_processor(
+    BatchLogRecordProcessor(OTLPLogExporter())
+)
+
+# Get an OTel-aware logger
+otel_logger = logger_provider.get_logger("my-service", version="1.0.0")
+
+# Emit a structured event: set event.name as a structured attribute
+# The standard way to emit events varies by SDK version.
+# Use the OTTL transform processor in the collector to normalize
+# custom log records to events by adding event.name:
+```
+
+```yaml
+# Collector: promote structured log records to events via transform
+processors:
+  transform:
+    log_statements:
+      - context: log
+        statements:
+          # Any log record with a "type" attribute becomes an event
+          - set(attributes["event.name"], attributes["type"]) where attributes["type"] != nil
+          - delete_key(attributes, "type") where attributes["event.name"] != nil
+```
+
+**Alternative: Java SDK Event API (SDK 1.40.0+)**
+
+```java
+// Java SDK has a first-class Events API via the event bridge
+import io.opentelemetry.api.events.EventEmitter;
+import io.opentelemetry.api.events.EventEmitterProvider;
+
+EventEmitter emitter = EventEmitterProvider.noop()
+    .eventEmitterBuilder("my-service")
+    .setInstrumentationVersion("1.0.0")
+    .build();
+
+// Emit a structured event
+emitter.emit("user.login",                // event.name
+    Attributes.builder()
+        .put("auth.method", "oauth2")
+        .put("session.id", "sess-abc")
+        .build()
+);
+```
+
+**Key Event rules**:
+- `event.name` is **required** and must be a low-cardinality, dot-separated namespace string (e.g., `user.login`, `order.placed`, `payment.failed`)
+- Event names follow the `<domain>.<action>` pattern
+- Events are **not** free-text log messages — use structured attributes for all data
+- Events are correlated to traces via the active span context (trace_id, span_id)
+
+⚠️ **Do NOT use `event.name` as a metric dimension** if it has more than ~100 unique values.
 
 ### Common Mistakes
 
@@ -550,6 +674,8 @@ See the [OTel blog post on complex attribute types](https://opentelemetry.io/blo
 
 - **Instrumentation Documentation**: https://opentelemetry.io/docs/instrumentation/
 - **Semantic Conventions**: https://opentelemetry.io/docs/specs/semconv/
+- **GenAI Semantic Conventions**: https://opentelemetry.io/docs/specs/semconv/gen-ai/
+- **Events Semantic Conventions**: https://opentelemetry.io/docs/specs/semconv/general/events/
 - **Language SDKs**: https://opentelemetry.io/docs/languages/
   - Python: https://opentelemetry.io/docs/languages/python/
   - Go: https://opentelemetry.io/docs/languages/go/
@@ -563,7 +689,9 @@ See the [OTel blog post on complex attribute types](https://opentelemetry.io/blo
 ## Summary
 
 ✅ Start with **auto-instrumentation**, then add **manual instrumentation** for business logic
-✅ Always use **Semantic Conventions** for attribute names
+✅ Always use **Semantic Conventions** for attribute names (target v1.30.0+)
+✅ Use **GenAI conventions** (`gen_ai.*`) for LLM/AI workloads — track token usage as metrics
+✅ Use **Events** (`event.name`) for structured domain events in logs
 ✅ Apply the **Rule of 100**: No high-cardinality attributes in metrics
 ✅ Use **SDK Views** to drop high-cardinality attributes before export
 ✅ **Propagate context** using W3C Trace Context headers
