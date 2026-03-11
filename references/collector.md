@@ -421,6 +421,7 @@ extensions:
     timeout: 1s
     compaction:
       on_start: true                    # Clean up on startup
+      on_rebound: false                 # ⚠️ Keep false — bbolt v1.4.3 nil pointer crash risk (otelcol-contrib#46489)
       directory: /tmp/otel_compaction
       max_transaction_size: 65_536      # 64KB chunks
 
@@ -554,6 +555,7 @@ The `file_storage` extension uses [bbolt](https://github.com/etcd-io/bbolt) (`go
 - [bbolt#71](https://github.com/etcd-io/bbolt/issues/71) — SIGBUS/SIGSEGV on mmap errors
 - [bbolt#562](https://github.com/etcd-io/bbolt/issues/562) — ext4 fast-commit corruption on Linux 5.10–5.15
 - [otelcol-contrib#35899](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/35899) — file_storage does not recover gracefully from corruption
+- [otelcol-contrib#46489](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/46489) — Nil pointer crash when bbolt reopen fails during `on_rebound` compaction (bbolt v1.4.3, affects `file_storage` users with `compaction.on_rebound: true`)
 - The bbolt README explicitly warns: "Bolt uses an exclusive write lock on the database file so it cannot be shared by multiple processes"
 
 #### Kubernetes Volume Guidance
@@ -573,6 +575,25 @@ spec:
 #### ext4 Fast-Commit Warning
 
 Linux kernel versions 5.10–5.15 with ext4 fast-commit enabled can corrupt bbolt databases. Fixes were backported to 5.10.94+, 5.15.17+, 5.15.27+, and are included in 5.17+. If you are running a kernel in this range, verify your kernel patch level or disable fast-commit (`tune2fs -O ^fast_commit /dev/...`). See the [bbolt README Known Issues](https://github.com/etcd-io/bbolt#known-issues) section.
+
+#### bbolt v1.4.3 — on_rebound Compaction Crash Risk
+
+bbolt **v1.4.3** has a known nil pointer panic when a database reopen fails during `on_rebound` compaction. This manifests as a collector crash (not a graceful shutdown) when the storage file becomes transiently unavailable at compaction time.
+
+**Mitigation**: Do **not** set `compaction.on_rebound: true` in `file_storage` until this is resolved upstream. Use `on_start: true` only:
+
+```yaml
+extensions:
+  file_storage:
+    directory: /var/lib/otelcol/file_storage
+    timeout: 1s
+    compaction:
+      on_start: true     # ✅ Safe
+      on_rebound: false  # ⚠️ Avoid with bbolt v1.4.3 — risk of nil pointer crash
+      directory: /tmp/otel_compaction
+```
+
+Track upstream fix: [otelcol-contrib#46489](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/46489)
 
 ---
 
