@@ -356,6 +356,40 @@ emitter.emit("user.login",                // event.name
 
 ⚠️ **Do NOT use `event.name` as a metric dimension** if it has more than ~100 unique values.
 
+### Kubernetes Semantic Conventions (`release_candidate` in v1.30+)
+
+The `k8s.*` attribute namespace has been promoted to **`release_candidate`** stability ([semantic-conventions#3380](https://github.com/open-telemetry/semantic-conventions/issues/3380)), meaning attribute names are stable and backend support is expected. This makes it safe to rely on these names in production instrumentation and collector enrichment (via `k8sattributes` processor).
+
+**Cardinality guidance for k8s attributes as metric dimensions**:
+
+| Attribute | Cardinality | Safe as metric dimension? |
+|-----------|-------------|---------------------------|
+| `k8s.namespace.name` | ~10–100 | ✅ Yes — bounded |
+| `k8s.deployment.name` | ~10–500 | ✅ Yes — bounded |
+| `k8s.daemonset.name` | ~10–100 | ✅ Yes — bounded |
+| `k8s.statefulset.name` | ~10–100 | ✅ Yes — bounded |
+| `k8s.node.name` | ~10–1000 | ⚠️ Use with caution — large clusters may exceed Rule of 100 |
+| `k8s.pod.name` | Potentially thousands | ❌ **NO** — use in traces/logs only |
+| `k8s.pod.uid` | Unbounded | ❌ **NO** — never use in metrics |
+| `k8s.container.name` | ~5–20 per pod | ✅ Yes — bounded |
+
+> ⚠️ **Node-level cardinality**: In clusters with >100 nodes, `k8s.node.name` exceeds the Rule of 100. Avoid using it as a metric dimension in large clusters; use it in traces/logs for per-node debugging instead.
+
+**Recommended attributes for k8s-enriched metrics** (via `k8sattributes` processor):
+```yaml
+processors:
+  k8sattributes:
+    auth_type: "serviceAccount"
+    extract:
+      metadata:
+        - k8s.namespace.name      # ✅ safe metric dimension
+        - k8s.deployment.name     # ✅ safe metric dimension
+        - k8s.node.name           # ⚠️ only for small clusters
+        - k8s.pod.name            # ❌ traces/logs only
+        - k8s.pod.uid             # ❌ never in metrics
+        - k8s.container.name      # ✅ safe metric dimension
+```
+
 ### Common Mistakes
 
 ❌ `span.set_attribute("db.type", "postgres")` → ✅ `db.system = "postgresql"`
