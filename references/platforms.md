@@ -512,6 +512,25 @@ OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=https://your-backend:4317/v1/traces
 ✅ Configure minimum instances to avoid cold starts
 ✅ Use `--timeout=60s` and `--max-instances=100` flags appropriately
 
+### ⚠️ GCP FaaS ID Resource Detection: Feature Gate Removed
+
+The `processor.resourcedetection.removeGCPFaasID` feature gate has been **permanently removed** in collector-contrib ([#45808](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/45808)). This gate was introduced to let users opt back into the legacy `faas.id` attribute; its removal makes the change permanent:
+
+- **`faas.id` is no longer populated** by the `resourcedetectionprocessor` GCP detector.
+- Use `faas.instance` (the Cloud Run revision/instance ID) as the canonical FaaS instance identifier.
+- If you set `processor.resourcedetection.removeGCPFaasID=false` as a feature gate override in your collector deployment flags, **remove that flag** — it is no longer recognized and may cause collector startup errors.
+
+**Migration**: Replace any references to `faas.id` in dashboards, alerts, and OTTL transforms with `faas.instance`:
+
+```yaml
+# OTTL migration example — rename legacy faas.id to faas.instance
+processors:
+  transform:
+    resource_statements:
+      - set(attributes["faas.instance"], attributes["faas.id"]) where attributes["faas.id"] != nil
+      - delete_key(attributes, "faas.id") where attributes["faas.id"] != nil
+```
+
 ---
 
 ## Client-Side Applications

@@ -284,6 +284,10 @@ Each component directory contains a README with configuration examples, stabilit
 | **tailsamplingprocessor** | Intelligent sampling decisions | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/tailsamplingprocessor) |
 | **filelogreceiver** | Read logs from disk | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver) |
 | **loadbalancingexporter** | Route to multiple backends with consistent hashing | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/loadbalancingexporter) |
+| **resourcedetectionprocessor** | Detect and attach resource attributes (cloud, host, K8s) | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/resourcedetectionprocessor) |
+| **prometheusremotewriteexporter** | Export metrics via Prometheus Remote Write | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/prometheusremotewriteexporter) |
+
+> ⚠️ **Prometheus Remote Write — InstrumentationScope attributes not exported**: The `prometheusremotewriteexporter` does **not** include `otel.scope.name` / `otel.scope.version` as Prometheus labels by default ([#45266](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/45266)). If downstream consumers need to distinguish metrics by instrumentation scope, use the native `otlpexporter` instead, or enrich the metric resource/data-point attributes before export using a `transform` processor.
 
 ### Example Configurations
 
@@ -760,6 +764,8 @@ processors:
 ✅ Start with defaults: `timeout: 10s`, `send_batch_size: 1024`
 ✅ Monitor backend response times and adjust
 ✅ Always place `batch` near the end of the processor chain
+
+> 📋 **Emerging specification — max batch size for push metrics exporters**: The OpenTelemetry specification has an active proposal ([#4852](https://github.com/open-telemetry/opentelemetry-specification/issues/4852)) to introduce a standardized `max_batch_size` configuration at the **metrics exporter** level (OTLP push exporters), independently of the `batch` processor. When stabilized, this will allow backends to enforce per-export request size limits without requiring a shared pipeline-level batch processor. Until then, use `send_batch_max_size` in the `batch` processor or `max_size_items` in the exporter's `sending_queue.batch` (v0.147.0+) to cap request sizes.
 
 ---
 

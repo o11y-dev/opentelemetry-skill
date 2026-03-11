@@ -645,6 +645,34 @@ app.use((req, res, next) => {
 
 ---
 
+## Cumulative Metrics: StartTimeUnixNano Requirements
+
+The OpenTelemetry specification ([#4184](https://github.com/open-telemetry/opentelemetry-specification/issues/4184)) clarifies that **cumulative data points must set `StartTimeUnixNano` to the start of the measurement period for each timeseries** — not zero, and not the current collection timestamp.
+
+### Why It Matters
+
+Backends use `StartTimeUnixNano` to:
+- **Detect resets**: If the start time advances unexpectedly, the backend knows the counter was reset (e.g., process restart).
+- **Calculate rates correctly**: Rate calculations over a window require knowing when the accumulation began.
+
+### What to Check
+
+| Signal Type | Temporality | `StartTimeUnixNano` Expected Value |
+|------------|-------------|-------------------------------------|
+| Counter (Sum) | Cumulative | Timestamp of first observation for this timeseries |
+| Histogram | Cumulative | Timestamp of first observation for this timeseries |
+| Gauge | N/A (stateless) | Typically 0 or omitted |
+
+### SDK Behavior
+
+Most SDKs (Java, Python, Go) set `StartTimeUnixNano` correctly for SDK-created instruments. However, custom metric producers (e.g., custom exporters, OTLP bridge from Prometheus) must explicitly set this field.
+
+⚠️ **Common mistake**: Setting `StartTimeUnixNano = 0` or `StartTimeUnixNano = collection_time` on cumulative metrics causes backends to misidentify resets and produce incorrect rate graphs.
+
+**If using Prometheus → OTLP bridge**: Ensure the Prometheus scraper preserves the `process_start_time_seconds` metric so the collector's [prometheusreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/prometheusreceiver) can map it to `StartTimeUnixNano` for cumulative counters. The fix tracking `StartTimeUnixNano` per-timeseries correctness in the Prometheus receiver is tracked in the spec under [#4184](https://github.com/open-telemetry/opentelemetry-specification/issues/4184); verify your collector version is v0.146.0+ and that `use_start_time_metric: true` is set in the `prometheusreceiver` config if scraping Prometheus exporters that emit `process_start_time_seconds`.
+
+---
+
 ## Complex Attribute Types
 
 OpenTelemetry is expanding support for complex attribute types — EMPTY, BYTES, SLICE, and MAP — tracked in the Go SDK under issues [#7932](https://github.com/open-telemetry/opentelemetry-go/issues/7932), [#7933](https://github.com/open-telemetry/opentelemetry-go/issues/7933), [#7934](https://github.com/open-telemetry/opentelemetry-go/issues/7934), and [#7935](https://github.com/open-telemetry/opentelemetry-go/issues/7935) (targeting Go SDK v1.42.0). This extends complex types — which were previously only available in logs — to **all signals (traces, metrics, logs)**.
