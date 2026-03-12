@@ -183,6 +183,8 @@ The `tail_sampling` processor supports multiple policies:
 
 ### Configuration
 
+⚠️ **Intentional client-side HTTP cancellations may not set span status to `ERROR`.** Per current semantic convention guidance, client spans for user-driven aborts can remain `UNSET`, so an error-only `status_code` policy will not retain them. If canceled requests matter operationally, pair `status_code` with latency or attribute-based policies.
+
 ```yaml
 processors:
   tail_sampling:
