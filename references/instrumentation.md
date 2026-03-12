@@ -223,6 +223,12 @@ span.set_attribute(SpanAttributes.URL_SCHEME, "https")
 span.set_attribute(SpanAttributes.URL_PATH, "/api/users/123")
 ```
 
+#### Intentional Client Cancellations
+
+If an HTTP client instrumentation can determine that a request was **intentionally canceled by the caller** (for example, a browser abort, a user navigation, or an application-level timeout that the caller explicitly triggered), keep the span status as **`UNSET`** rather than `ERROR`. Record the HTTP attributes that are still known (`http.request.method`, `server.address`, `url.path`, etc.), but only set `http.response.status_code` if a response was actually received.
+
+This follows the current semantic convention clarification tracked in [semantic-conventions#3495](https://github.com/open-telemetry/semantic-conventions/issues/3495) and avoids polluting error-rate dashboards with user-driven aborts that did not represent backend failures.
+
 ### Database Semantic Conventions
 
 ```python
@@ -641,7 +647,7 @@ app.use((req, res, next) => {
 3. **Enrich Business Context**: Add business-meaningful attributes (`order.value`, `fraud.score`)
 4. **Propagate Context**: Use W3C Trace Context headers for distributed tracing
 5. **Record Exceptions**: Use `span.record_exception(e)` for error tracking
-6. **Set Status**: Use `span.set_status(StatusCode.ERROR)` on failures
+6. **Set Status Thoughtfully**: Use `span.set_status(StatusCode.ERROR)` for real failures, but leave spans `UNSET` for intentional client-side cancellations
 7. **Use Views**: Filter high-cardinality attributes at the SDK level
 8. **Use Baggage Intentionally**: Leverage baggage for low-cardinality cross-cutting attributes (e.g., tenant, release) and avoid storing PII or unbounded values
 9. **Keep Instrumentation Vendor-Neutral**: Default to OTLP and semantic conventions; avoid backend-specific attributes unless gated
