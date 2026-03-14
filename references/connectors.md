@@ -86,9 +86,9 @@ connectors:
       explicit:
         buckets: [5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000]  # milliseconds
     dimensions:
-      - name: http.method
+      - name: http.request.method
         default: GET
-      - name: http.status_code
+      - name: http.response.status_code
       - name: service.name
     exemplars:
       enabled: true              # Link metrics to traces via exemplars
@@ -127,7 +127,7 @@ exporters:
 
 ### Cardinality Warning
 
-⚠️ **Avoid high-cardinality dimensions** in `spanmetricsconnector`. Adding `user.id`, `request.id`, or `http.target` as dimensions creates millions of time series. Apply the **Rule of 100**: only include dimensions with fewer than 100 unique values.
+⚠️ **Avoid high-cardinality dimensions** in `spanmetricsconnector`. Adding `user.id`, `request.id`, or raw `url.path` as dimensions creates millions of time series. Apply the **Rule of 100**: only include dimensions with fewer than 100 unique values.
 
 ---
 
@@ -149,7 +149,7 @@ connectors:
   servicegraph:
     latency_histogram_buckets: [1, 2, 6, 10, 100, 250]  # milliseconds
     dimensions:
-      - http.method
+      - http.request.method
     store:
       ttl: 2s          # Time to wait for matching spans
       max_items: 10000  # Max in-flight span pairs
@@ -279,8 +279,8 @@ connectors:
         conditions:
           - 'attributes["http.route"] != nil'  # only count HTTP spans
         attributes:
-          - key: http.method
-          - key: http.status_code
+          - key: http.request.method
+          - key: http.response.status_code
           - key: service.name
     logs:
       - name: log.record.count
@@ -320,7 +320,7 @@ connectors:
           value: Milliseconds(end_time - start_time)
           bucket_boundaries: [0, 5, 10, 25, 50, 100, 250, 500, 1000]
           attributes:
-            - key: http.method
+            - key: http.request.method
             - key: http.route
             - key: http.response.status_code
     logs:

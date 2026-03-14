@@ -236,10 +236,10 @@ Actively prevent these common mistakes:
 ## Version and Compatibility
 
 - **Target Version**: OpenTelemetry Collector v0.147.0+ (2026+)
-- **Semantic Conventions**: v1.30.0+
+- **Semantic Conventions**: v1.40.0+
 - **Kubernetes**: v1.24+ (for native sidecar support)
 - **Go SDK**: v1.24.0+
-- **Python SDK**: v1.39.0+
+- **Python SDK**: v1.40.0+
 
 ## Skill Metadata
 

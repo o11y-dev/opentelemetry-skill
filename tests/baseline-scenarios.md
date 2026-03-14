@@ -82,7 +82,7 @@ I want to track request latency as a metric. Add dimensions for:
 - Explains Rule of 100 and cardinality explosion risk
 - Recommends:
   - Use traces for user_id and request_id
-  - Keep only http.method and http.status_code in metrics
+  - Keep only `http.request.method` and `http.response.status_code` in metrics
   - Or suggest aggregated user count metric
 - References instrumentation.md cardinality section
 
@@ -281,11 +281,11 @@ Show me how to add custom attributes to my spans:
 
 ### Target Behavior (WITH skill)
 - **Corrects** attribute names to semantic conventions:
-  - `http.method` (not request_method)
-  - `http.status_code` (not status)
-  - `http.url` (not endpoint_url)
+  - `http.request.method` (not request_method)
+  - `http.response.status_code` (not status)
+  - `http.route` for server-side route templates, or sanitized `url.full`/`url.path` instead of a custom `endpoint_url`
 - Explains importance of semantic conventions (cross-tool compatibility)
-- References latest semantic conventions version (1.24.0+)
+- References latest semantic conventions version (1.40.0+)
 - Loads instrumentation.md
 - May provide link to semantic conventions documentation
 

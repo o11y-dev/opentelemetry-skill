@@ -516,7 +516,7 @@ processors:
       - name: beta_features
         type: string_attribute
         string_attribute:
-          key: feature.flag
+          key: feature_flag.key
           values: ["beta_checkout", "new_ui"]
           enabled_regex_matching: false
 ```

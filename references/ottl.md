@@ -73,7 +73,7 @@ Access telemetry data using **paths**:
 resource.attributes["service.name"]
 
 # Span attributes
-attributes["http.method"]
+attributes["http.request.method"]
 
 # Span properties
 name
@@ -98,7 +98,7 @@ where: status.code == STATUS_CODE_ERROR
 where: attributes["user.id"] != nil
 
 # Complex conditions
-where: attributes["http.status_code"] >= 500 and attributes["http.method"] == "POST"
+where: attributes["http.response.status_code"] >= 500 and attributes["http.request.method"] == "POST"
 ```
 
 ### Operators
@@ -107,7 +107,7 @@ where: attributes["http.status_code"] >= 500 and attributes["http.method"] == "P
 |----------|-------------|---------|
 | `==` | Equality | `attributes["env"] == "prod"` |
 | `!=` | Inequality | `status.code != STATUS_CODE_OK` |
-| `>`, `<`, `>=`, `<=` | Comparison | `attributes["http.status_code"] >= 400` |
+| `>`, `<`, `>=`, `<=` | Comparison | `attributes["http.response.status_code"] >= 400` |
 | `and`, `or`, `not` | Logical | `attributes["a"] > 0 and attributes["b"] < 100` |
 | `+`, `-`, `*`, `/` | Arithmetic | `attributes["duration"] * 1000` |
 
@@ -123,7 +123,7 @@ Set an attribute or property to a value.
 - set(attributes["region"], "us-east-1")
 
 # Rename attribute (copy then delete)
-- set(attributes["http.status_code"], attributes["status"])
+- set(attributes["http.response.status_code"], attributes["status"])
 - delete_key(attributes, "status")
 
 # Set from environment variable
@@ -147,7 +147,7 @@ Keep only specified keys, delete all others.
 
 ```yaml
 # Keep only essential attributes
-- keep_keys(attributes, "service.name", "http.method", "http.status_code")
+- keep_keys(attributes, "service.name", "http.request.method", "http.response.status_code")
 ```
 
 ### String Functions
@@ -174,7 +174,7 @@ Replace strings matching a regex pattern.
 - replace_pattern(body, "\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b", "[REDACTED_IP]")
 
 # Normalize HTTP methods to uppercase
-- replace_pattern(attributes["http.method"], "^(.*)$", Concat([UpperCase("$1")]))
+- replace_pattern(attributes["http.request.method"], "^(.*)$", Concat([UpperCase("$1")]))
 ```
 
 #### `replace_all_patterns(target, map)`
@@ -205,7 +205,7 @@ Extract values using regex capture groups.
 
 ```yaml
 # Extract HTTP status from log message
-- set(attributes["http.status_code"], ExtractPatterns(body, "status=(\\d+)"))
+- set(attributes["http.response.status_code"], ExtractPatterns(body, "status=(\\d+)"))
 
 # Parse structured log format
 - merge_maps(attributes, ExtractPatterns(body, "level=(?P<level>\\w+).*msg=\"(?P<message>[^\"]+)\""))
@@ -218,9 +218,9 @@ For now, use separate statements with `where` clauses.
 
 ```yaml
 # Set priority based on status code
-- set(attributes["priority"], "high") where attributes["http.status_code"] >= 500
-- set(attributes["priority"], "medium") where attributes["http.status_code"] >= 400 and attributes["http.status_code"] < 500
-- set(attributes["priority"], "low") where attributes["http.status_code"] < 400
+- set(attributes["priority"], "high") where attributes["http.response.status_code"] >= 500
+- set(attributes["priority"], "medium") where attributes["http.response.status_code"] >= 400 and attributes["http.response.status_code"] < 500
+- set(attributes["priority"], "low") where attributes["http.response.status_code"] < 400
 ```
 
 ### Type Conversion
@@ -233,7 +233,7 @@ For now, use separate statements with `where` clauses.
 - set(attributes["port_string"], String(attributes["port"]))
 
 # Boolean conversions
-- set(attributes["is_error"], attributes["http.status_code"] >= 400)
+- set(attributes["is_error"], attributes["http.response.status_code"] >= 400)
 ```
 
 ### Utility Functions
@@ -246,7 +246,7 @@ Check if string matches regex.
 where: IsMatch(body, "ERROR|FATAL")
 
 # Skip health check requests
-where: not IsMatch(attributes["http.target"], "/health")
+where: not IsMatch(attributes["url.path"], "/health")
 ```
 
 #### `Concat(list)`
@@ -254,7 +254,7 @@ Concatenate strings.
 
 ```yaml
 # Build composite attribute
-- set(attributes["full_path"], Concat([attributes["http.scheme"], "://", attributes["http.host"], attributes["http.target"]]))
+- set(attributes["full_path"], Concat([attributes["http.scheme"], "://", attributes["http.host"], attributes["url.path"]]))
 ```
 
 #### `Len(target)`
@@ -311,9 +311,9 @@ processors:
     traces:
       span:
         # Drop health check spans
-        - IsMatch(attributes["http.target"], "^/(health|ready|live)$")
+        - IsMatch(attributes["url.path"], "^/(health|ready|live)$")
         # Drop successful OPTIONS requests
-        - attributes["http.method"] == "OPTIONS" and status.code == STATUS_CODE_UNSET
+        - attributes["http.request.method"] == "OPTIONS" and status.code == STATUS_CODE_UNSET
         # Drop internal monitoring
         - attributes["service.name"] == "otel-collector"
 ```
@@ -330,12 +330,12 @@ processors:
           - delete_key(attributes, "user.id")
           - delete_key(attributes, "session.id")
           # Truncate URLs to remove query params
-          - replace_pattern(attributes["http.url"], "\\?.*$", "")
+          - replace_pattern(attributes["url.full"], "\\?.*$", "")
           # Bucket HTTP status codes
-          - set(attributes["http.status_class"], "2xx") where attributes["http.status_code"] >= 200 and attributes["http.status_code"] < 300
-          - set(attributes["http.status_class"], "4xx") where attributes["http.status_code"] >= 400 and attributes["http.status_code"] < 500
-          - set(attributes["http.status_class"], "5xx") where attributes["http.status_code"] >= 500
-          - delete_key(attributes, "http.status_code")
+          - set(attributes["http.status_class"], "2xx") where attributes["http.response.status_code"] >= 200 and attributes["http.response.status_code"] < 300
+          - set(attributes["http.status_class"], "4xx") where attributes["http.response.status_code"] >= 400 and attributes["http.response.status_code"] < 500
+          - set(attributes["http.status_class"], "5xx") where attributes["http.response.status_code"] >= 500
+          - delete_key(attributes, "http.response.status_code")
 ```
 
 ### Pattern 5: Log Parsing
@@ -363,7 +363,7 @@ processors:
       - context: span
         statements:
           # Normalize HTTP span names to include method + route
-          - set(name, Concat([attributes["http.method"], " ", attributes["http.route"]])) where attributes["http.route"] != nil
+          - set(name, Concat([attributes["http.request.method"], " ", attributes["http.route"]])) where attributes["http.route"] != nil
           # Remove query parameters from span names
           - replace_pattern(name, "\\?.*$", "")
 ```
@@ -394,7 +394,7 @@ processors:
   filter:
     traces:
       span:
-        - IsMatch(attributes["http.target"], "/health")
+        - IsMatch(attributes["url.path"], "/health")
   
   transform:
     trace_statements:
@@ -413,7 +413,7 @@ processors:
   filter:
     traces:
       span:
-        - IsMatch(attributes["http.target"], "/health")
+        - IsMatch(attributes["url.path"], "/health")
 ```
 
 **Use `where` clauses** to avoid unnecessary processing:
@@ -449,14 +449,14 @@ processors:
 metric_statements:
   - context: datapoint
     statements:
-      - set(attributes["full_url"], attributes["http.url"])  # Includes query params
+      - set(attributes["full_url"], attributes["url.full"])  # Includes query params
 
 # ✅ GOOD: Bucket or remove high-cardinality data
 metric_statements:
   - context: datapoint
     statements:
-      - replace_pattern(attributes["http.url"], "\\?.*$", "")  # Remove query params
-      - replace_pattern(attributes["http.url"], "/users/\\d+", "/users/{id}")  # Parameterize IDs
+      - replace_pattern(attributes["url.full"], "\\?.*$", "")  # Remove query params
+      - replace_pattern(attributes["url.full"], "/users/\\d+", "/users/{id}")  # Parameterize IDs
 ```
 
 ### 5. Security - PII Redaction
@@ -476,7 +476,7 @@ processors:
     trace_statements:
       - context: span
         statements:
-          - replace_pattern(attributes["http.url"], "apikey=([^&]+)", "apikey=[REDACTED]")
+          - replace_pattern(attributes["url.full"], "apikey=([^&]+)", "apikey=[REDACTED]")
           - delete_key(attributes, "user.email")
     log_statements:
       - context: log
@@ -549,10 +549,10 @@ otelcol_processor_dropped_spans{processor="transform"} > 0
 
 ```yaml
 # ❌ WRONG: Setting string to int field
-- set(attributes["http.status_code"], "200")  # Should be Int(200)
+- set(attributes["http.response.status_code"], "200")  # Should be Int(200)
 
 # ✅ CORRECT: Use proper type
-- set(attributes["http.status_code"], 200)
+- set(attributes["http.response.status_code"], 200)
 ```
 
 ### ❌ Anti-Pattern 3: Over-Processing
@@ -619,8 +619,8 @@ processors:
     error_mode: ignore
     traces:
       span:
-        - IsMatch(attributes["http.target"], "^/(health|ready|metrics)$")
-        - attributes["http.method"] == "OPTIONS" and status.code == STATUS_CODE_UNSET
+        - IsMatch(attributes["url.path"], "^/(health|ready|metrics)$")
+        - attributes["http.request.method"] == "OPTIONS" and status.code == STATUS_CODE_UNSET
   
   # Security: PII redaction
   transform/redact_pii:
@@ -629,8 +629,8 @@ processors:
       - context: span
         statements:
           # Redact sensitive data
-          - replace_pattern(attributes["http.url"], "apikey=([^&]+)", "apikey=[REDACTED]")
-          - replace_pattern(attributes["http.url"], "token=([^&]+)", "token=[REDACTED]")
+          - replace_pattern(attributes["url.full"], "apikey=([^&]+)", "apikey=[REDACTED]")
+          - replace_pattern(attributes["url.full"], "token=([^&]+)", "token=[REDACTED]")
           - delete_key(attributes, "user.email")
           - delete_key(attributes, "user.ssn")
     log_statements:
@@ -659,8 +659,8 @@ processors:
           - delete_key(attributes, "user.id")
           - delete_key(attributes, "session.id")
           # Parameterize URLs
-          - replace_pattern(attributes["http.url"], "/users/\\d+", "/users/{id}")
-          - replace_pattern(attributes["http.url"], "/orders/[a-f0-9-]+", "/orders/{id}")
+          - replace_pattern(attributes["url.full"], "/users/\\d+", "/users/{id}")
+          - replace_pattern(attributes["url.full"], "/orders/[a-f0-9-]+", "/orders/{id}")
   
   # Batching: Always include
   batch:
