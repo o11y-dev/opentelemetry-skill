@@ -233,7 +233,7 @@ processors:
   filter:
     traces:
       span:
-        - 'attributes["http.target"] == "/health"'  # Drop health checks
+        - 'attributes["url.path"] == "/health"'  # Drop health checks
   
   attributes:
     actions:
@@ -594,6 +594,8 @@ extensions:
 ```
 
 Track upstream fix: [otelcol-contrib#46489](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/46489)
+
+Upgrading to **bbolt v1.4.3** does **not** relax the mmap/flock filesystem requirements above. Keep using local block-backed volumes (ext4/xfs, EBS, PD, Managed Disk) and avoid NFS/EFS/SMB/CephFS for `file_storage`, even on the latest bbolt release.
 
 ---
 
@@ -1025,8 +1027,8 @@ processors:
   filter:
     traces:
       span:
-        - 'attributes["http.target"] == "/health"'
-        - 'attributes["http.target"] == "/metrics"'
+        - 'attributes["url.path"] == "/health"'
+        - 'attributes["url.path"] == "/metrics"'
 
 exporters:
   otlp:

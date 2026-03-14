@@ -188,8 +188,8 @@ public class PaymentService {
 ### Why They Matter
 
 ❌ **Without conventions**:
-- Service A uses `http.method`, Service B uses `http_verb`, Service C uses `request.method`
-- Queries become impossible: `WHERE http.method = 'POST' OR http_verb = 'POST' OR request.method = 'POST'`
+- Service A uses legacy `http.method`, Service B uses `http_verb`, Service C uses `request.method`
+- Queries become impossible: `WHERE http.request.method = 'POST' OR http.method = 'POST' OR request.method = 'POST'`
 
 ✅ **With conventions**:
 - All services use `http.request.method`
@@ -399,7 +399,7 @@ processors:
 ### Common Mistakes
 
 ❌ `span.set_attribute("db.type", "postgres")` → ✅ `db.system = "postgresql"`
-❌ `span.set_attribute("http.url", "https://api.example.com/users/123?token=secret")` → ✅ Use `http.route` without PII
+❌ `span.set_attribute("url.full", "https://api.example.com/users/123?token=secret")` → ✅ Prefer `http.route` and `url.path` for server spans; only emit sanitized `url.full`
 ❌ `span.set_attribute("service", "frontend")` → ✅ Use Resource attribute `service.name`
 ❌ `span.set_attribute("http_method", "GET")` → ✅ `http.request.method = "GET"`
 
@@ -445,8 +445,8 @@ http_requests_total{method="GET", status="200", user_id="user_1000000"} 1
 
 | Attribute | Cardinality | Metric? | Alternative |
 |-----------|-------------|---------|-------------|
-| `http.method` | ~10 (GET, POST, PUT...) | ✅ Yes | N/A |
-| `http.status_code` | ~60 (200, 404, 500...) | ✅ Yes | N/A |
+| `http.request.method` | ~10 (GET, POST, PUT...) | ✅ Yes | N/A |
+| `http.response.status_code` | ~60 (200, 404, 500...) | ✅ Yes | N/A |
 | `region` | ~30 (us-east-1, eu-west-1...) | ✅ Yes | N/A |
 | `user_id` | 1,000,000+ | ❌ **NO** | Use in traces/logs |
 | `trace_id` | Infinite | ❌ **NO** | Use in traces only |
@@ -464,12 +464,12 @@ counter.add(1, {"user_id": user_id})  # Creates 1M+ time series
 
 ❌ **Metric with URL path** (unbounded):
 ```python
-counter.add(1, {"http.target": "/users/123/orders/456"})  # Infinite cardinality
+counter.add(1, {"url.path": "/users/123/orders/456"})  # Infinite cardinality
 ```
 
 ### Low-Cardinality Alternatives (GOOD)
 
-✅ **Use http.route instead of http.target**:
+✅ **Use `http.route` instead of raw `url.path`**:
 ```python
 counter.add(1, {"http.route": "/users/{id}/orders/{order_id}"})  # Bounded
 ```
@@ -683,6 +683,12 @@ app.use((req, res, next) => {
 
 **Recommendation**: Pin dependencies to a specific minor version or upgrade all services together to 1.40.x+.
 
+### Python SDK 1.40.0+
+
+- **Logging bridge change**: `opentelemetry-sdk` now deprecates `LoggingHandler` in favor of `opentelemetry-instrumentation-logging`. Prefer the instrumentation package for stdlib logging bridge setups on new deployments.
+- **Pin GenAI packages together**: `opentelemetry-instrumentation-langchain` and `opentelemetry-semantic-conventions-ai` must be tested and pinned together. [semantic-conventions#3520](https://github.com/open-telemetry/semantic-conventions/issues/3520) reports import errors for mismatched versions (`0.53.0` + `0.4.15`).
+- **Semconv alignment**: Python SDK 1.40.0 bumps bundled semantic conventions to v1.40.0, so review any older examples that still reference legacy HTTP attribute names.
+
 ---
 
 ## Cumulative Metrics: StartTimeUnixNano Requirements
@@ -757,7 +763,7 @@ See the [OTel blog post on complex attribute types](https://opentelemetry.io/blo
 ## Summary
 
 ✅ Start with **auto-instrumentation**, then add **manual instrumentation** for business logic
-✅ Always use **Semantic Conventions** for attribute names (target v1.30.0+)
+✅ Always use **Semantic Conventions** for attribute names (target v1.40.0+)
 ✅ Use **GenAI conventions** (`gen_ai.*`) for LLM/AI workloads — track token usage as metrics
 ✅ Use **Events** (`event.name`) for structured domain events in logs
 ✅ Apply the **Rule of 100**: No high-cardinality attributes in metrics
