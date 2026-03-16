@@ -4,6 +4,11 @@
 
 This reference turns real-world OpenTelemetry blog posts and deployment interviews into **playbooks**: reusable production patterns that can be applied beyond a single company story. Each playbook captures the deployment shape, the operational trade-offs, the failure modes, and the platform decisions that proved useful in production.
 
+The 2025 [Developer Experience SIG survey](https://opentelemetry.io/blog/2025/devex-survey/)
+explicitly called out the need for better production examples, debugging
+guidance, and more concrete deployment guidance. This reference exists to turn
+those upstream stories into reusable operating models.
+
 Use this document when a user asks for:
 
 - a **real-world deployment pattern**
@@ -15,9 +20,10 @@ Use this document when a user asks for:
 
 1. [How to Use This Reference](#how-to-use-this-reference)
 2. [Playbook Format](#playbook-format)
-3. [Playbook: Adobe - Simplicity at Scale](#playbook-adobe---simplicity-at-scale)
-4. [Reusable Production Patterns](#reusable-production-patterns)
-5. [Common Failure Modes](#common-failure-modes)
+3. [2025 Upstream Playbook Scan](#2025-upstream-playbook-scan)
+4. [Playbook: Adobe - Simplicity at Scale](#playbook-adobe---simplicity-at-scale)
+5. [Reusable Production Patterns](#reusable-production-patterns)
+6. [Common Failure Modes](#common-failure-modes)
 
 ---
 
@@ -51,6 +57,105 @@ As more OpenTelemetry.io blog posts are integrated, keep each playbook in this s
 6. **Deep-Dive Links**: which other references to load for implementation detail
 
 This structure scales better than a flat list of case studies because future blog posts can be added as discrete operational playbooks.
+
+---
+
+## 2025 Upstream Playbook Scan
+
+Adobe is the first deep-dive playbook in this reference, but it should not be
+treated as the only model. A scan of 2025 `opentelemetry.io` blog content shows
+multiple additional playbook archetypes that belong here as this reference
+grows.
+
+### Playbook candidate: self-service workload discovery on Kubernetes
+
+> **Source**: [Kubernetes annotation-based discovery for the OpenTelemetry Collector](https://opentelemetry.io/blog/2025/otel-collector-k8s-discovery/)
+
+**Reusable pattern**:
+
+- platform teams enable `receiver_creator.discovery.enabled`
+- workload owners opt in with pod annotations instead of waiting for a central
+  collector config change
+- the Collector enforces safety boundaries so annotations cannot redirect
+  scraping to arbitrary pods
+
+**Why this matters**:
+
+- it is a concrete **self-service platform** playbook, not just a component
+  feature
+- it reduces platform-team bottlenecks for scrape onboarding
+- it complements Adobe's "platform-owned defaults with limited user control"
+  model with a more annotation-driven operating style
+
+**See also**: [collector.md](collector.md) and [platforms.md](platforms.md)
+
+### Playbook candidate: secure external collector ingress
+
+> **Source**: [Exposing OTel Collector in Kubernetes with Gateway API & mTLS](https://opentelemetry.io/blog/2025/expose-otel-collector-gateway-api/)
+
+**Reusable pattern**:
+
+- expose centralized collectors with Gateway API instead of ad hoc ingress
+  patterns
+- require mTLS for external OTLP clients
+- use a hub-and-spoke topology when external clusters, on-prem systems, or edge
+  workloads must export to a central collector
+
+**Why this matters**:
+
+- it is a practical **cross-cluster and hybrid ingestion** playbook
+- it turns "make the collector reachable" into an explicit security pattern
+- it pairs naturally with central tail sampling, multi-cluster aggregation, and
+  external client onboarding
+
+**See also**: [architecture.md](architecture.md) and [security.md](security.md)
+
+### Playbook candidate: decoupled export for Lambda runtimes
+
+> **Source**: [Observing Lambdas using the OpenTelemetry Collector Extension Layer](https://opentelemetry.io/blog/2025/observing-lambdas/)
+
+**Reusable pattern**:
+
+- run a stripped-down Collector as a Lambda extension layer
+- keep a local endpoint near the function runtime
+- use the `decouple` processor so function completion is not blocked on export
+  completion
+
+**Why this matters**:
+
+- it is a production **serverless export latency** playbook
+- it shows how collector topology must adapt when the compute runtime is
+  ephemeral and billed per execution
+- it broadens the reference beyond Kubernetes-centric examples
+
+**See also**: [platforms.md](platforms.md) and [collector.md](collector.md)
+
+### Playbook candidate: choose the right auto-instrumentation mechanism
+
+> **Source**: [Demystifying Automatic Instrumentation: How the Magic Actually Works](https://opentelemetry.io/blog/2025/demystifying-auto-instrumentation/)
+
+**Reusable pattern**:
+
+- choose instrumentation style based on runtime constraints: monkey patching,
+  bytecode instrumentation, compile-time instrumentation, eBPF, or runtime APIs
+- treat "automatic" as a family of implementation strategies, not a single
+  product capability
+- combine broad automatic coverage with targeted manual instrumentation
+
+**Why this matters**:
+
+- it is a useful **instrumentation strategy** playbook for platform teams
+- it helps answer "which zero-code path fits this language/runtime?" without
+  collapsing all auto-instrumentation into one recommendation
+- it complements Adobe's operator-driven onboarding pattern with the underlying
+  implementation trade-offs
+
+**See also**: [instrumentation.md](instrumentation.md)
+
+These upstream examples justify keeping this reference broad: deep-dive one
+playbook thoroughly, but maintain a backlog of additional upstream patterns so
+the skill can answer production questions across Kubernetes, serverless,
+security, and instrumentation strategy.
 
 ---
 
@@ -332,7 +437,12 @@ Monolithic gateway tiers make it easier for one backend issue to cascade into un
 ## Reference Links
 
 - **OTel blog**: https://opentelemetry.io/blog/
+- **Developer Experience survey**: https://opentelemetry.io/blog/2025/devex-survey/
 - **Adobe playbook source**: https://opentelemetry.io/blog/2026/adobe-otel-pipeline/
+- **K8s discovery playbook source**: https://opentelemetry.io/blog/2025/otel-collector-k8s-discovery/
+- **Gateway API + mTLS playbook source**: https://opentelemetry.io/blog/2025/expose-otel-collector-gateway-api/
+- **Lambda extension playbook source**: https://opentelemetry.io/blog/2025/observing-lambdas/
+- **Auto-instrumentation strategy source**: https://opentelemetry.io/blog/2025/demystifying-auto-instrumentation/
 - **OpenTelemetry Operator**: https://opentelemetry.io/docs/platforms/kubernetes/operator/
 - **routingconnector**: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/connector/routingconnector
 - **OpenTelemetry Collector Builder (ocb)**: https://github.com/open-telemetry/opentelemetry-collector/tree/main/cmd/builder
@@ -347,6 +457,7 @@ Monolithic gateway tiers make it easier for one backend issue to cascade into un
 ✅ Use **signal-level isolation** so one backend problem does not cascade across all telemetry
 ✅ Use an **immutable sidecar + configurable middle tier** to protect application availability
 ✅ Normalize routing intent into **documented routing attributes** before using the routing connector
+✅ Keep a **multi-source playbook backlog** spanning Kubernetes, serverless, ingress security, and instrumentation strategy
 ⚠️ Never assume **OTLP `200 OK` = end-to-end delivery** in chained collectors
 ⚠️ Keep **operator and collector versions** within a bounded support window
 ⚠️ Expect **deprecations and migrations** as part of regular OpenTelemetry platform maintenance

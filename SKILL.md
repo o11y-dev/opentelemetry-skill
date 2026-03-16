@@ -184,12 +184,13 @@ Use these triggers to load detailed reference documentation only when needed. Th
 - Stability levels and cardinality warnings
 
 ### Trigger: Playbooks & Production Patterns
-**Keywords**: "playbook", "production playbook", "blog", "production deployment", "real world", "at scale", "how does X use", "example deployment", "platform team", "self-service observability", "Adobe", "enterprise", "multi-tenant", "multi-backend", "Helm chart", "custom distribution", "ocb", "OTel Operator", "auto-instrumentation operator", "chained collectors", "error visibility", "OTLP 200"
+**Keywords**: "playbook", "production playbook", "blog", "production deployment", "real world", "at scale", "how does X use", "example deployment", "platform team", "self-service observability", "Adobe", "enterprise", "multi-tenant", "multi-backend", "Helm chart", "custom distribution", "ocb", "OTel Operator", "auto-instrumentation operator", "chained collectors", "error visibility", "OTLP 200", "Gateway API", "mTLS", "Lambda extension", "decouple processor", "receiver creator", "annotation-based discovery"
 
 **Action**: Load `references/playbooks.md`
 
 **Contains**:
 - Playbook structure for turning upstream blog posts into reusable operational guidance
+- 2025 upstream playbook scan covering Kubernetes discovery, Gateway API + mTLS, Lambda extension-layer collection, and auto-instrumentation strategy
 - Adobe's three-tier collector pipeline (sidecar → deployment → managed namespace → backends)
 - Signal-level pipeline isolation and stable-edge/configurable-middle-tier patterns
 - Routing metadata normalization into documented routing attributes before connector-based routing
