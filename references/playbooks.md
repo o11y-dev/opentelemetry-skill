@@ -25,7 +25,7 @@ Use this document when a user asks for:
 
 1. [How to Use This Reference](#how-to-use-this-reference)
 2. [Playbook Routing Format](#playbook-routing-format)
-3. [Top 10 Most Relevant 2025 Blogs for This Skill](#top-10-most-relevant-2025-blogs-for-this-skill)
+3. [Relevant 2025 Blogs for This Skill](#relevant-2025-blogs-for-this-skill)
 4. [Generic Playbook Patterns](#generic-playbook-patterns)
 5. [Common Failure Modes](#common-failure-modes)
 
@@ -78,11 +78,11 @@ problem space, not by a specific company name.
 
 ---
 
-## Top 10 Most Relevant 2025 Blogs for This Skill
+## Relevant 2025 Blogs for This Skill
 
 These are the most relevant 2025 `opentelemetry.io` blog posts to route through
-this skill today. The list is intentionally **topic-driven** so future entries
-can be added without restructuring the document.
+this skill today. The list is intentionally **topic-driven** and **open-ended**
+so future entries can be added without restructuring the document.
 
 | Blog | Primary routing signals | Why it matters for the skill | Load next |
 | :--- | :--- | :--- | :--- |
@@ -96,6 +96,12 @@ can be added without restructuring the document.
 | [How to Name Your Metrics](https://opentelemetry.io/blog/2025/how-to-name-your-metrics/) | metric naming, units, metric cardinality, `service.name`, semantic conventions | Important for metric schema hygiene and cross-service aggregation advice | [instrumentation][instrumentation-ref], [monitoring][monitoring-ref] |
 | [OpenTelemetry Sampling update](https://opentelemetry.io/blog/2025/sampling-milestones/) | consistent sampling, TraceState, probability sampling, W3C TraceContext | Strong route for advanced sampling questions beyond basic head vs tail framing | [sampling][sampling-ref] |
 | [The Declarative configuration journey: Why it took 5 years to ignore health check endpoints in tracing](https://opentelemetry.io/blog/2025/declarative-config/) | declarative config, config file, health check exclusion, Java agent config | Good route for questions about portable config, rule-based routing, and YAML-first OTel setup | [instrumentation][instrumentation-ref], [sampling][sampling-ref] |
+| [OTTL contexts just got easier with context inference](https://opentelemetry.io/blog/2025/ottl-contexts-just-got-easier/) | OTTL, transform processor, context inference, Collector transforms | Useful when users need simpler transform-processor guidance and want to avoid manual context selection mistakes | [collector][collector-ref], [connectors][connectors-ref] |
+| [Announcing Support for Complex Attribute Types in OTel](https://opentelemetry.io/blog/2025/complex-attribute-types/) | complex attributes, maps, heterogeneous arrays, structured telemetry | Helps the skill answer when complex payloads belong in attributes and when flat attributes remain the better design | [instrumentation][instrumentation-ref] |
+| [Announcing the Beta Release of OpenTelemetry Go Auto-Instrumentation using eBPF](https://opentelemetry.io/blog/2025/go-auto-instrumentation-beta/) | Go auto-instrumentation, eBPF, runtime hooks, zero-code Go | Adds a concrete runtime-specific route for Go users beyond generic auto-instrumentation explanations | [instrumentation][instrumentation-ref], [platforms][platforms-ref] |
+| [Alibaba, Datadog, and Quesma Join Forces on Go Compile-Time Instrumentation](https://opentelemetry.io/blog/2025/go-compile-time-instrumentation/) | Go compile-time instrumentation, `toolexec`, zero-code Go, build-time instrumentation | Good route when users compare compile-time instrumentation with eBPF or manual Go instrumentation | [instrumentation][instrumentation-ref] |
+| [Announcing the RPC Semantic Conventions stabilization project](https://opentelemetry.io/blog/2025/stabilizing-rpc-conventions/) | RPC semantic conventions, gRPC telemetry, convention migration, stabilization | Useful for questions about RPC naming, migration windows, and convention stability expectations | [instrumentation][instrumentation-ref] |
+| [Contributing the Unroll Processor to the OpenTelemetry Collector Contrib](https://opentelemetry.io/blog/2025/contrib-unroll-processor/) | unroll processor, bundled logs, record expansion, transform vs purpose-built processor | Adds a routing path for log-pipeline questions where bundled payload expansion should not be forced into OTTL transforms | [collector][collector-ref], [monitoring][monitoring-ref] |
 
 ### Routing notes for future maintenance
 
@@ -208,11 +214,18 @@ explanations.
 - **Metric naming source**: https://opentelemetry.io/blog/2025/how-to-name-your-metrics/
 - **Sampling update source**: https://opentelemetry.io/blog/2025/sampling-milestones/
 - **Declarative config source**: https://opentelemetry.io/blog/2025/declarative-config/
+- **OTTL context inference source**: https://opentelemetry.io/blog/2025/ottl-contexts-just-got-easier/
+- **Complex attribute types source**: https://opentelemetry.io/blog/2025/complex-attribute-types/
+- **Go auto-instrumentation beta source**: https://opentelemetry.io/blog/2025/go-auto-instrumentation-beta/
+- **Go compile-time instrumentation source**: https://opentelemetry.io/blog/2025/go-compile-time-instrumentation/
+- **RPC semantic conventions source**: https://opentelemetry.io/blog/2025/stabilizing-rpc-conventions/
+- **Unroll processor source**: https://opentelemetry.io/blog/2025/contrib-unroll-processor/
 
 ---
 
 [architecture-ref]: architecture.md
 [collector-ref]: collector.md
+[connectors-ref]: connectors.md
 [instrumentation-ref]: instrumentation.md
 [monitoring-ref]: monitoring.md
 [platforms-ref]: platforms.md
@@ -224,9 +237,10 @@ explanations.
 ## Summary
 
 ✅ Keep production playbooks **generic, reusable, and routing-friendly**
-✅ Use a **top-10 2025 blog index** instead of centering the document on one org
+✅ Use an **expandable 2025 blog routing scan** instead of centering the
+document on one org
 ✅ Route by **technical problem space** such as serverless, ingress, logs,
-metrics, naming, and sampling
+metrics, naming, transforms, and sampling
 ✅ Treat blog posts as **entry points** and local references as the detailed
 implementation guides
 ⚠️ Avoid coupling the skill to **company-specific narratives** when the same
