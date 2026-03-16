@@ -1,6 +1,6 @@
 ---
 name: opentelemetry-skill
-description: Use when working with OpenTelemetry - configuring collectors, designing pipelines, instrumenting applications, implementing sampling strategies, managing cardinality, securing telemetry data, troubleshooting observability issues, writing OTTL transformations, or making production observability architecture decisions
+description: Use when working with OpenTelemetry - configuring collectors, designing pipelines, instrumenting applications, implementing sampling strategies, managing cardinality, securing telemetry data, troubleshooting observability issues, writing OTTL transformations, making production observability architecture decisions, or reviewing real-world production case studies and platform team patterns
 license: Apache-2.0
 metadata:
   author: o11y.dev
@@ -182,6 +182,22 @@ Use these triggers to load detailed reference documentation only when needed. Th
 - countconnector and signaltometricsconnector
 - Stickiness requirements for stateful connectors (spanmetrics, servicegraph)
 - Stability levels and cardinality warnings
+
+### Trigger: Case Studies & Production Patterns
+**Keywords**: "case study", "production deployment", "real world", "at scale", "how does X use", "example deployment", "platform team", "self-service observability", "Adobe", "enterprise", "multi-tenant", "multi-backend", "Helm chart", "custom distribution", "ocb", "OTel Operator", "auto-instrumentation operator", "chained collectors", "error visibility", "OTLP 200"
+
+**Action**: Load `references/case-studies.md`
+
+**Contains**:
+- Adobe's three-tier collector pipeline (sidecar → deployment → managed namespace → backends)
+- Signal-level pipeline isolation pattern (separate deployments per signal type)
+- Immutable sidecar + configurable gateway pattern
+- Header-based multi-backend routing with routing connector
+- Custom collector distribution with OpenTelemetry Collector Builder (ocb)
+- ⚠️ Chained collector error visibility problem and circuit-breaker extension pattern
+- ⚠️ OTel Operator/collector version compatibility pitfall
+- Quarterly upgrade cadence and component deprecation management
+- Platform team abstraction layer best practices
 
 ## Response Framework
 
