@@ -184,20 +184,16 @@ Use these triggers to load detailed reference documentation only when needed. Th
 - Stability levels and cardinality warnings
 
 ### Trigger: Playbooks & Production Patterns
-**Keywords**: "playbook", "production playbook", "blog", "production deployment", "real world", "at scale", "how does X use", "example deployment", "platform team", "self-service observability", "Adobe", "enterprise", "multi-tenant", "multi-backend", "Helm chart", "custom distribution", "ocb", "OTel Operator", "auto-instrumentation operator", "chained collectors", "error visibility", "OTLP 200", "Gateway API", "mTLS", "Lambda extension", "decouple processor", "receiver creator", "annotation-based discovery"
+**Keywords**: "playbook", "production playbook", "blog", "2025 blog", "production deployment", "real world", "example deployment", "platform team", "Gateway API", "mTLS", "Lambda extension", "decouple processor", "receiver creator", "annotation-based discovery", "auto-instrumentation", "zero-code", "span naming", "attribute naming", "metric naming", "Logs API", "events", "sampling update", "TraceState", "declarative config", "health check exclusion"
 
 **Action**: Load `references/playbooks.md`
 
 **Contains**:
-- Playbook structure for turning upstream blog posts into reusable operational guidance
-- 2025 upstream playbook scan covering Kubernetes discovery, Gateway API + mTLS, Lambda extension-layer collection, and auto-instrumentation strategy
-- Adobe's three-tier collector pipeline (sidecar → deployment → managed namespace → backends)
-- Signal-level pipeline isolation and stable-edge/configurable-middle-tier patterns
-- Routing metadata normalization into documented routing attributes before connector-based routing
-- Custom collector distribution with OpenTelemetry Collector Builder (ocb)
-- ⚠️ Chained collector error visibility problem in multi-tier collector architectures
-- ⚠️ OTel Operator/collector version drift and upgrade-boundary pitfalls
-- Platform team abstraction layer and predictable upgrade cadence guidance
+- Generic playbook routing format for turning upstream blog posts into reusable skill guidance
+- Curated top 10 most relevant 2025 `opentelemetry.io` blogs for this skill
+- Routing coverage for Kubernetes discovery, secure collector ingress, Lambda extension-layer collection, auto-instrumentation strategy, logging, naming, sampling, and declarative configuration
+- Guidance to route by technical problem space instead of company-specific narratives
+- Links to the local deep-dive references that should be loaded after a playbook match
 
 ## Response Framework
 

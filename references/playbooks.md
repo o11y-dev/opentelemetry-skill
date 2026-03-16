@@ -2,435 +2,194 @@
 
 ## Overview
 
-This reference turns real-world OpenTelemetry blog posts and deployment interviews into **playbooks**: reusable production patterns that can be applied beyond a single company story. Each playbook captures the deployment shape, the operational trade-offs, the failure modes, and the platform decisions that proved useful in production.
+This reference is a **routing-friendly playbook index** for OpenTelemetry blog
+content that is relevant to this skill. The goal is not to retell one company
+story in detail. The goal is to help the skill map user questions to the most
+relevant upstream operating patterns, then load the right deep-dive references
+from this repository.
 
 The 2025 [Developer Experience SIG survey](https://opentelemetry.io/blog/2025/devex-survey/)
 explicitly called out the need for better production examples, debugging
-guidance, and more concrete deployment guidance. This reference exists to turn
-those upstream stories into reusable operating models.
+guidance, and more concrete deployment guidance. This document turns that need
+into a scalable maintenance model for future blog routing.
 
 Use this document when a user asks for:
 
 - a **real-world deployment pattern**
 - a **production rollout model** for a platform team
 - a **blog-derived example** instead of a purely theoretical recommendation
-- a **repeatable playbook** that can scale across many future upstream stories
+- a **2025 opentelemetry.io article** that is relevant to a practical OTel task
+- a **generic playbook** that should remain reusable as more blogs are added
 
 ## Table of Contents
 
 1. [How to Use This Reference](#how-to-use-this-reference)
-2. [Playbook Format](#playbook-format)
-3. [2025 Upstream Playbook Scan](#2025-upstream-playbook-scan)
-4. [Playbook: Adobe - Simplicity at Scale](#playbook-adobe---simplicity-at-scale)
-5. [Reusable Production Patterns](#reusable-production-patterns)
-6. [Common Failure Modes](#common-failure-modes)
+2. [Playbook Routing Format](#playbook-routing-format)
+3. [Top 10 Most Relevant 2025 Blogs for This Skill](#top-10-most-relevant-2025-blogs-for-this-skill)
+4. [Generic Playbook Patterns](#generic-playbook-patterns)
+5. [Common Failure Modes](#common-failure-modes)
 
 ---
 
 ## How to Use This Reference
 
-These playbooks are not meant to be copied verbatim. They should be used to answer questions like:
+These playbooks are not meant to be copied verbatim. They should be used to
+answer questions like:
 
-- "What does a real platform-team rollout look like?"
-- "How do large organizations keep OTel simple for application teams?"
-- "What architecture patterns keep one backend problem from taking out the whole pipeline?"
-- "What operational pitfalls show up only after chaining collectors in production?"
+- "Which upstream blog should I route to for this production question?"
+- "What real-world pattern covers self-service onboarding on Kubernetes?"
+- "What blog is most relevant for Lambda, logs, sampling, or naming?"
+- "Which reference docs should the skill load after matching a blog-derived
+  pattern?"
 
-For each playbook, extract the reusable decisions and then load deeper reference material as needed:
+For each routed playbook, load deeper reference material from this repository as
+needed:
 
-- [architecture.md](architecture.md) for deployment models and scaling
+- [architecture.md](architecture.md) for deployment models, multi-cluster, and
+  scaling
+- [collector.md](collector.md) for collector pipeline structure and operational
+  mechanics
 - [connectors.md](connectors.md) for routing and cross-pipeline patterns
-- [instrumentation.md](instrumentation.md) for auto-instrumentation trade-offs
-- [monitoring.md](monitoring.md) for collector health and failure visibility
-
----
-
-## Playbook Format
-
-As more OpenTelemetry.io blog posts are integrated, keep each playbook in this shape:
-
-1. **Source & Context**: where the playbook came from and what problem space it addresses
-2. **Deployment Model**: the actual collector/application topology used in production
-3. **Operational Goal**: what the design optimized for (simplicity, isolation, cost, control)
-4. **Reusable Patterns**: decisions other teams can copy safely
-5. **Failure Modes & Caveats**: what broke or required special handling
-6. **Deep-Dive Links**: which other references to load for implementation detail
-
-This structure scales better than a flat list of case studies because future blog posts can be added as discrete operational playbooks.
-
----
-
-## 2025 Upstream Playbook Scan
-
-Adobe is the first deep-dive playbook in this reference, but it should not be
-treated as the only model. A scan of 2025 `opentelemetry.io` blog content shows
-multiple additional playbook archetypes that belong here as this reference
-grows.
-
-### Playbook candidate: self-service workload discovery on Kubernetes
-
-> **Source**: [Kubernetes annotation-based discovery for the OpenTelemetry Collector](https://opentelemetry.io/blog/2025/otel-collector-k8s-discovery/)
-
-**Reusable pattern**:
-
-- platform teams enable `receiver_creator.discovery.enabled`
-- workload owners opt in with pod annotations instead of waiting for a central
-  collector config change
-- the Collector enforces safety boundaries so annotations cannot redirect
-  scraping to arbitrary pods
-
-**Why this matters**:
-
-- it is a concrete **self-service platform** playbook, not just a component
-  feature
-- it reduces platform-team bottlenecks for scrape onboarding
-- it complements Adobe's "platform-owned defaults with limited user control"
-  model with a more annotation-driven operating style
-
-**See also**: [collector.md](collector.md) and [platforms.md](platforms.md)
-
-### Playbook candidate: secure external collector ingress
-
-> **Source**: [Exposing OTel Collector in Kubernetes with Gateway API & mTLS](https://opentelemetry.io/blog/2025/expose-otel-collector-gateway-api/)
-
-**Reusable pattern**:
-
-- expose centralized collectors with Gateway API instead of ad hoc ingress
+- [instrumentation.md](instrumentation.md) for SDKs, auto-instrumentation,
+  naming, and signal semantics
+- [monitoring.md](monitoring.md) for health, failure visibility, and alerting
+- [platforms.md](platforms.md) for Kubernetes, FaaS, browser, and platform
   patterns
-- require mTLS for external OTLP clients
-- use a hub-and-spoke topology when external clusters, on-prem systems, or edge
-  workloads must export to a central collector
-
-**Why this matters**:
-
-- it is a practical **cross-cluster and hybrid ingestion** playbook
-- it turns "make the collector reachable" into an explicit security pattern
-- it pairs naturally with central tail sampling, multi-cluster aggregation, and
-  external client onboarding
-
-**See also**: [architecture.md](architecture.md) and [security.md](security.md)
-
-### Playbook candidate: decoupled export for Lambda runtimes
-
-> **Source**: [Observing Lambdas using the OpenTelemetry Collector Extension Layer](https://opentelemetry.io/blog/2025/observing-lambdas/)
-
-**Reusable pattern**:
-
-- run a stripped-down Collector as a Lambda extension layer
-- keep a local endpoint near the function runtime
-- use the `decouple` processor so function completion is not blocked on export
-  completion
-
-**Why this matters**:
-
-- it is a production **serverless export latency** playbook
-- it shows how collector topology must adapt when the compute runtime is
-  ephemeral and billed per execution
-- it broadens the reference beyond Kubernetes-centric examples
-
-**See also**: [platforms.md](platforms.md) and [collector.md](collector.md)
-
-### Playbook candidate: choose the right auto-instrumentation mechanism
-
-> **Source**: [Demystifying Automatic Instrumentation: How the Magic Actually Works](https://opentelemetry.io/blog/2025/demystifying-auto-instrumentation/)
-
-**Reusable pattern**:
-
-- choose instrumentation style based on runtime constraints: monkey patching,
-  bytecode instrumentation, compile-time instrumentation, eBPF, or runtime APIs
-- treat "automatic" as a family of implementation strategies, not a single
-  product capability
-- combine broad automatic coverage with targeted manual instrumentation
-
-**Why this matters**:
-
-- it is a useful **instrumentation strategy** playbook for platform teams
-- it helps answer "which zero-code path fits this language/runtime?" without
-  collapsing all auto-instrumentation into one recommendation
-- it complements Adobe's operator-driven onboarding pattern with the underlying
-  implementation trade-offs
-
-**See also**: [instrumentation.md](instrumentation.md)
-
-These upstream examples justify keeping this reference broad: deep-dive one
-playbook thoroughly, but maintain a backlog of additional upstream patterns so
-the skill can answer production questions across Kubernetes, serverless,
-security, and instrumentation strategy.
+- [sampling.md](sampling.md) for head, tail, and probability-based sampling
+- [security.md](security.md) for TLS, auth, and exposure boundaries
 
 ---
 
-## Playbook: Adobe - Simplicity at Scale
-
-> **Source**: [Inside Adobe's OpenTelemetry pipeline: simplicity at scale](https://opentelemetry.io/blog/2026/adobe-otel-pipeline/) — Developer Experience SIG interview with Bogdan Stancu, Senior Software Engineer at Adobe
-
-### Source & Context
-
-Adobe's central observability team supports a large internal platform with thousands of collectors running per signal type. Their OpenTelemetry rollout was offered as a supported path for new services rather than a forced migration for every existing workload.
-
-### Operational Goal
-
-Optimize for **self-service observability with strong platform defaults**:
-
-- application teams should get observability with minimal configuration
-- observability changes should not restart application pods unnecessarily
-- backend-specific issues should be isolated by signal type
-- the platform team should retain control of the shared infrastructure layer
-
-### Deployment Model
-
-Adobe's production topology follows a three-tier collector model:
-
-```text
-Tier 1: application namespace
-  - sidecar collector (immutable)
-  - deployment collector (team-configurable)
-
-Tier 2: managed observability namespace
-  - metrics collector deployment
-  - logs collector deployment
-  - traces collector deployment
-
-Tier 3: observability backends
-  - backend A
-  - backend B
-  - additional managed destinations
-```
-
-#### Tier 1: Immutable sidecar + configurable deployment collector
-
-The application-facing Helm chart creates two collectors:
-
-- **Sidecar collector** inside the application pod
-  - configuration is locked down by the platform team
-  - collects all signals regardless of downstream destination
-  - avoids application restarts caused by observability config edits
-- **Deployment collector** in the same namespace
-  - receives OTLP from the sidecar
-  - exposes limited configuration through Helm values
-  - restarts independently from the application pod when routing/export config changes
-
-**Why this playbook works**:
-
-- the collector nearest the app is stable and predictable
-- service teams still get a supported customization point
-- telemetry collection stays decoupled from backend-specific routing changes
-
-**See also**: [architecture.md](architecture.md)
-
-#### Tier 2: Signal-level isolation in the managed namespace
-
-Adobe runs separate centralized collector deployments for **metrics**, **logs**, and **traces** instead of a single monolithic pipeline tier.
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: otel-managed-traces
-  namespace: observability-managed
-spec:
-  replicas: 3
-  template:
-    spec:
-      containers:
-        - name: otel-collector
-          # Trace pipeline only
-```
-
-Repeat the same pattern for logs and metrics as separate deployments.
-
-**Why this playbook works**:
-
-- a metrics backend outage does not interrupt log or trace delivery
-- traces can scale independently from metrics/logs
-- troubleshooting is simpler because each deployment has a narrower responsibility
-
-#### Backend selection: normalize transport metadata into routing attributes
-
-Adobe's blog describes the backend choice being carried between collector tiers via OTLP HTTP metadata/header values selected from Helm values. A reusable collector playbook is to **normalize that choice into a routing attribute before using the routing connector** so the routing rule is explicit inside the config.
-
-One practical pattern is to have the namespace-local deployment collector stamp a resource attribute that represents the selected backend profile before forwarding upstream:
-
-```yaml
-processors:
-  resource/backend_destination:
-    attributes:
-      - key: tenant.backend.destination
-        value: backend-a
-        action: upsert
-```
-
-That makes `tenant.backend.destination` part of the telemetry contract rather than leaving the decision hidden in transport-only metadata.
-
-```yaml
-connectors:
-  routing:
-    default_pipelines: [traces/backend-default]
-    error_mode: ignore
-    table:
-      - statement: route() where resource.attributes["tenant.backend.destination"] == "backend-a"
-        pipelines: [traces/backend-a]
-      - statement: route() where resource.attributes["tenant.backend.destination"] == "backend-b"
-        pipelines: [traces/backend-b]
-
-service:
-  pipelines:
-    traces/in:
-      receivers: [otlp]
-      exporters: [routing]
-
-    traces/backend-default:
-      receivers: [routing]
-      processors: [memory_limiter, batch]
-      exporters: [otlp/default]
-
-    traces/backend-a:
-      receivers: [routing]
-      processors: [memory_limiter, batch]
-      exporters: [otlp/backend-a]
-
-    traces/backend-b:
-      receivers: [routing]
-      processors: [memory_limiter, batch]
-      exporters: [otlp/backend-b]
-```
-
-**Playbook guidance**:
-
-- transport headers/metadata are not the same as telemetry attributes
-- if a routing decision originates in transport metadata, document where it becomes a resource attribute
-- use a default pipeline for traffic where the routing attribute is missing, malformed, or mapped to an unsupported backend profile
-- keep the routing contract low-cardinality and stable across tiers
-
-**See also**: [connectors.md](connectors.md) and [ottl.md](ottl.md)
-
-### Auto-Instrumentation Rollout Pattern
-
-Adobe uses the OpenTelemetry Operator so teams can enable observability with two annotations:
-
-```yaml
-metadata:
-  annotations:
-    instrumentation.opentelemetry.io/inject-java: 'true'
-    sidecar.opentelemetry.io/inject: 'true'
-```
-
-This is a strong **platform playbook**:
-
-- make the default path easy
-- keep the supported path narrow
-- allow manual instrumentation for advanced use cases without making it the primary onboarding story
-
-**See also**: [instrumentation.md](instrumentation.md) and [platforms.md](platforms.md)
-
-### Custom Distribution Playbook
-
-Adobe builds a custom collector distribution with [ocb](https://github.com/open-telemetry/opentelemetry-collector/tree/main/cmd/builder) so the default binary includes only the components the platform actually supports.
-
-```yaml
-dist:
-  name: adobe-otelcol
-  description: Adobe custom OTel Collector distribution
-  output_path: ./adobe-otelcol
-
-connectors:
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/connector/routingconnector v0.147.0
-```
-
-**Why this playbook works**:
-
-- reduces dependency sprawl
-- narrows the supported component surface area
-- gives the platform team a curated default while still allowing exceptions when needed
-
-### Failure Modes & Caveats
-
-#### ⚠️ Chained collectors hide downstream export failures
-
-A `200 OK` from the next-hop collector only confirms that collector accepted the OTLP request. It does **not** guarantee the final backend accepted the data.
-
-```text
-deployment collector -> 200 OK from managed collector -> backend rejects export
-```
-
-Adobe addressed this with a custom extension that proactively checks backend authentication and returns an upstream failure before the OTLP exchange completes.
-
-**Playbook guidance**:
-
-- never treat next-hop success as end-to-end delivery
-- monitor exporter failure metrics at every tier
-- design explicit error visibility for chained collector architectures
-
-**See also**: [monitoring.md](monitoring.md)
-
-#### ⚠️ Operator/collector version drift breaks older custom resources
-
-Adobe also encountered compatibility issues when the OpenTelemetry Operator advanced its expectations for `OpenTelemetryCollector` custom resources while some teams still ran much older collector versions.
-
-**Playbook guidance**:
-
-- enforce a supported version window
-- avoid letting service teams fall multiple release trains behind the platform default
-- document upgrade cadence so failures are not perceived as random breakage
-
-#### ⚠️ Deprecations are part of the operating model
-
-Adobe migrated from the deprecated `routing` processor to the `routing` connector.
-
-**Playbook guidance**:
-
-- design for component churn in rapidly evolving parts of the OTel ecosystem
-- review stability and deprecation notices during each upgrade cycle
-- treat migration work as routine platform maintenance, not as a one-off surprise
+## Playbook Routing Format
+
+As more OpenTelemetry.io blog posts are integrated, keep each playbook entry in
+this shape:
+
+1. **Source**: the blog post URL and title
+2. **Routing signals**: the kinds of user questions or keywords that should load
+   it
+3. **Playbook theme**: the reusable operational or instrumentation pattern
+4. **Why it matters**: what skill behavior or production decision it informs
+5. **Load next**: which local references should be loaded after routing
+6. **Caveats**: limitations, maturity notes, or operational trade-offs
+
+This structure keeps the skill generic. It routes by user intent and technical
+problem space, not by a specific company name.
 
 ---
 
-## Reusable Production Patterns
+## Top 10 Most Relevant 2025 Blogs for This Skill
 
-These are the reusable patterns that emerged both from the Adobe playbook and from scanning other production-focused OpenTelemetry material:
+These are the most relevant 2025 `opentelemetry.io` blog posts to route through
+this skill today. The list is intentionally **topic-driven** so future entries
+can be added without restructuring the document.
 
-### Platform abstraction layer
+| Blog | Primary routing signals | Why it matters for the skill | Load next |
+| :--- | :--- | :--- | :--- |
+| [Kubernetes annotation-based discovery for the OpenTelemetry Collector](https://opentelemetry.io/blog/2025/otel-collector-k8s-discovery/) | `receiver_creator`, annotation-based discovery, Kubernetes self-service scraping, pod annotations | Strong playbook for self-service Collector onboarding with platform safety rails | [collector][collector-ref], [platforms][platforms-ref] |
+| [Observing Lambdas using the OpenTelemetry Collector Extension Layer](https://opentelemetry.io/blog/2025/observing-lambdas/) | Lambda, serverless, extension layer, `decouple` processor, delayed export | Covers ephemeral runtime constraints and decoupled export patterns | [platforms][platforms-ref], [collector][collector-ref], [monitoring][monitoring-ref] |
+| [Exposing OTel Collector in Kubernetes with Gateway API & mTLS](https://opentelemetry.io/blog/2025/expose-otel-collector-gateway-api/) | Gateway API, mTLS, external OTLP ingress, multi-cluster collector, hybrid cloud | Practical security and ingress pattern for centralized collector deployments | [security][security-ref], [architecture][architecture-ref], [collector][collector-ref] |
+| [Demystifying Automatic Instrumentation: How the Magic Actually Works](https://opentelemetry.io/blog/2025/demystifying-auto-instrumentation/) | auto-instrumentation, zero-code, bytecode instrumentation, eBPF, runtime hooks | Helps the skill explain *which* automatic instrumentation mechanism fits a runtime | [instrumentation][instrumentation-ref], [platforms][platforms-ref] |
+| [OpenTelemetry Logging and You](https://opentelemetry.io/blog/2025/opentelemetry-logging-and-you/) | logs, events, Logs API, log bridges, signal correlation | Useful when users ask how logs relate to traces and metrics in OTel's model | [instrumentation][instrumentation-ref], [collector][collector-ref] |
+| [How to Name Your Spans](https://opentelemetry.io/blog/2025/how-to-name-your-spans/) | span naming, low cardinality, semantic conventions, business spans | Good routing target for custom instrumentation and naming guidance | [instrumentation][instrumentation-ref] |
+| [How to Name Your Span Attributes](https://opentelemetry.io/blog/2025/how-to-name-your-span-attributes/) | attribute naming, semantic conventions, custom attributes, reserved namespaces | Helps the skill answer detailed questions about attribute design and stability | [instrumentation][instrumentation-ref] |
+| [How to Name Your Metrics](https://opentelemetry.io/blog/2025/how-to-name-your-metrics/) | metric naming, units, metric cardinality, `service.name`, semantic conventions | Important for metric schema hygiene and cross-service aggregation advice | [instrumentation][instrumentation-ref], [monitoring][monitoring-ref] |
+| [OpenTelemetry Sampling update](https://opentelemetry.io/blog/2025/sampling-milestones/) | consistent sampling, TraceState, probability sampling, W3C TraceContext | Strong route for advanced sampling questions beyond basic head vs tail framing | [sampling][sampling-ref] |
+| [The Declarative configuration journey: Why it took 5 years to ignore health check endpoints in tracing](https://opentelemetry.io/blog/2025/declarative-config/) | declarative config, config file, health check exclusion, Java agent config | Good route for questions about portable config, rule-based routing, and YAML-first OTel setup | [instrumentation][instrumentation-ref], [sampling][sampling-ref] |
 
-Provide an opinionated Helm chart or operator-driven onboarding path so application teams interact with a supported platform interface rather than raw collector complexity.
+### Routing notes for future maintenance
 
-### Signal-level isolation
+- Prefer adding new entries to this list rather than creating one-off narrative
+  sections.
+- Route by **technical intent** such as sampling, logs, serverless, ingress,
+  naming, or self-service onboarding.
+- Keep source links stable and place company-specific stories in
+  [Reference Links](#reference-links) unless their patterns become broadly
+  generic and reusable.
 
-Use separate centralized collector deployments per signal type when backend risk, scaling profile, or troubleshooting complexity differs across traces, metrics, and logs.
+---
 
-### Stable edge, configurable middle tier
+## Generic Playbook Patterns
 
-Keep the collector closest to the application locked down. Put customization in a separate deployment layer that can restart independently.
+These patterns are intentionally generic so the skill can scale as more blogs
+are added.
 
-### Normalize routing intent early
+### Route by problem, not by company
 
-If routing starts from Helm values, ingress metadata, or tenant context, normalize it into a stable routing attribute before cross-pipeline routing decisions are made.
+The skill should match on the user's technical goal—such as Lambda export,
+secure collector ingress, or naming guidance—not on a company name from a blog
+post.
 
-### Bounded upgrade lag
+### Prefer self-service with safety rails
 
-Run upgrades on a predictable cadence and keep a maximum supported lag between operator, collector, and platform defaults.
+Good playbooks let application teams opt in through narrow, well-defined
+interfaces while the platform retains the right guardrails.
+
+### Keep semantic context out of names
+
+For spans, attributes, and metrics, prefer low-cardinality names and put varying
+context in attributes or resource metadata.
+
+### Treat external collector ingress as a security boundary
+
+If telemetry crosses clusters, networks, or trust domains, route to patterns
+that include explicit authentication, encryption, and ownership boundaries.
+
+### Adapt the topology to the runtime
+
+Ephemeral runtimes like Lambda need different collector and export patterns than
+long-running Kubernetes workloads.
+
+### Choose auto-instrumentation mechanisms deliberately
+
+"Auto-instrumentation" is not a single implementation strategy. The right
+mechanism depends on runtime behavior, deployment model, and operational
+constraints.
+
+### Prefer declarative and portable configuration where possible
+
+As OTel setups grow, YAML-first or schema-driven configuration becomes easier to
+review, reuse, and scale than scattered ad hoc flags.
+
+### Always connect a playbook to deeper docs
+
+A blog route should be the front door. The implementation details should still
+come from the local references in this repository.
 
 ---
 
 ## Common Failure Modes
 
-### ❌ Assuming OTLP `200` means end-to-end delivery
+### ❌ Routing on company names instead of technical intent
 
-A successful upstream OTLP exchange does not prove the downstream exporter succeeded.
+This makes the skill brittle and limits reuse as more upstream blogs are added.
 
-### ❌ Letting operator and collector versions drift indefinitely
+### ❌ Treating all auto-instrumentation as the same thing
 
-Version skew is manageable only when the platform sets an explicit support boundary.
+Different runtimes use different mechanisms with different trade-offs.
 
-### ❌ Routing on undocumented transport-only state
+### ❌ Putting dynamic context into span or metric names
 
-If a routing rule depends on metadata that never becomes a documented routing attribute, the config becomes difficult to reason about and harder to port.
+That breaks aggregation, increases cardinality, and makes dashboards harder to
+reuse.
 
-### ❌ Treating deprecations as exceptional events
+### ❌ Exposing collectors without a clear trust model
 
-With OpenTelemetry, component migrations are normal platform work. Budget for them.
+External OTLP ingress should be treated as a security-sensitive boundary.
 
-### ❌ One centralized pipeline for every signal and every backend problem
+### ❌ Blocking ephemeral runtimes on exporter completion
 
-Monolithic gateway tiers make it easier for one backend issue to cascade into unrelated signals.
+Serverless systems need export paths that respect execution and billing limits.
+
+### ❌ Letting configuration sprawl across ad hoc flags and one-off tweaks
+
+As environments scale, declarative and shared configuration becomes more
+maintainable.
+
+### ❌ Answering advanced sampling questions with only basic head-vs-tail advice
+
+Some user questions require consistent probability sampling and TraceState-aware
+explanations.
 
 ---
 
@@ -438,28 +197,39 @@ Monolithic gateway tiers make it easier for one backend issue to cascade into un
 
 - **OTel blog**: https://opentelemetry.io/blog/
 - **Developer Experience survey**: https://opentelemetry.io/blog/2025/devex-survey/
-- **Adobe playbook source**: https://opentelemetry.io/blog/2026/adobe-otel-pipeline/
+- **Adobe source link**: https://opentelemetry.io/blog/2026/adobe-otel-pipeline/
 - **K8s discovery playbook source**: https://opentelemetry.io/blog/2025/otel-collector-k8s-discovery/
 - **Gateway API + mTLS playbook source**: https://opentelemetry.io/blog/2025/expose-otel-collector-gateway-api/
 - **Lambda extension playbook source**: https://opentelemetry.io/blog/2025/observing-lambdas/
 - **Auto-instrumentation strategy source**: https://opentelemetry.io/blog/2025/demystifying-auto-instrumentation/
-- **OpenTelemetry Operator**: https://opentelemetry.io/docs/platforms/kubernetes/operator/
-- **routingconnector**: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/connector/routingconnector
-- **OpenTelemetry Collector Builder (ocb)**: https://github.com/open-telemetry/opentelemetry-collector/tree/main/cmd/builder
-- **Collector stability levels**: https://opentelemetry.io/docs/collector/configuration/#stability-levels
+- **Logging source**: https://opentelemetry.io/blog/2025/opentelemetry-logging-and-you/
+- **Span naming source**: https://opentelemetry.io/blog/2025/how-to-name-your-spans/
+- **Span attributes naming source**: https://opentelemetry.io/blog/2025/how-to-name-your-span-attributes/
+- **Metric naming source**: https://opentelemetry.io/blog/2025/how-to-name-your-metrics/
+- **Sampling update source**: https://opentelemetry.io/blog/2025/sampling-milestones/
+- **Declarative config source**: https://opentelemetry.io/blog/2025/declarative-config/
+
+---
+
+[architecture-ref]: architecture.md
+[collector-ref]: collector.md
+[instrumentation-ref]: instrumentation.md
+[monitoring-ref]: monitoring.md
+[platforms-ref]: platforms.md
+[sampling-ref]: sampling.md
+[security-ref]: security.md
 
 ---
 
 ## Summary
 
-✅ Treat upstream production stories as **playbooks**, not just case studies
-✅ Prefer a **platform abstraction layer** for service-team onboarding
-✅ Use **signal-level isolation** so one backend problem does not cascade across all telemetry
-✅ Use an **immutable sidecar + configurable middle tier** to protect application availability
-✅ Normalize routing intent into **documented routing attributes** before using the routing connector
-✅ Keep a **multi-source playbook backlog** spanning Kubernetes, serverless, ingress security, and instrumentation strategy
-⚠️ Never assume **OTLP `200 OK` = end-to-end delivery** in chained collectors
-⚠️ Keep **operator and collector versions** within a bounded support window
-⚠️ Expect **deprecations and migrations** as part of regular OpenTelemetry platform maintenance
-
-**Production playbooks make the skill more scalable: each new upstream blog can become another reusable operational pattern set instead of a one-off narrative.**
+✅ Keep production playbooks **generic, reusable, and routing-friendly**
+✅ Use a **top-10 2025 blog index** instead of centering the document on one org
+✅ Route by **technical problem space** such as serverless, ingress, logs,
+metrics, naming, and sampling
+✅ Treat blog posts as **entry points** and local references as the detailed
+implementation guides
+⚠️ Avoid coupling the skill to **company-specific narratives** when the same
+pattern can be expressed generically
+⚠️ Keep expanding this index as new upstream blog posts become relevant to the
+skill
