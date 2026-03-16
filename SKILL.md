@@ -1,6 +1,6 @@
 ---
 name: opentelemetry-skill
-description: Use when working with OpenTelemetry - configuring collectors, designing pipelines, instrumenting applications, implementing sampling strategies, managing cardinality, securing telemetry data, troubleshooting observability issues, writing OTTL transformations, making production observability architecture decisions, or reviewing real-world production case studies and platform team patterns
+description: Use when working with OpenTelemetry - configuring collectors, designing pipelines, instrumenting applications, implementing sampling strategies, managing cardinality, securing telemetry data, troubleshooting observability issues, writing OTTL transformations, making production observability architecture decisions, or applying production playbooks and platform team patterns from real-world OpenTelemetry deployments
 license: Apache-2.0
 metadata:
   author: o11y.dev
@@ -183,21 +183,20 @@ Use these triggers to load detailed reference documentation only when needed. Th
 - Stickiness requirements for stateful connectors (spanmetrics, servicegraph)
 - Stability levels and cardinality warnings
 
-### Trigger: Case Studies & Production Patterns
-**Keywords**: "case study", "production deployment", "real world", "at scale", "how does X use", "example deployment", "platform team", "self-service observability", "Adobe", "enterprise", "multi-tenant", "multi-backend", "Helm chart", "custom distribution", "ocb", "OTel Operator", "auto-instrumentation operator", "chained collectors", "error visibility", "OTLP 200"
+### Trigger: Playbooks & Production Patterns
+**Keywords**: "playbook", "production playbook", "blog", "production deployment", "real world", "at scale", "how does X use", "example deployment", "platform team", "self-service observability", "Adobe", "enterprise", "multi-tenant", "multi-backend", "Helm chart", "custom distribution", "ocb", "OTel Operator", "auto-instrumentation operator", "chained collectors", "error visibility", "OTLP 200"
 
-**Action**: Load `references/case-studies.md`
+**Action**: Load `references/playbooks.md`
 
 **Contains**:
+- Playbook structure for turning upstream blog posts into reusable operational guidance
 - Adobe's three-tier collector pipeline (sidecar → deployment → managed namespace → backends)
-- Signal-level pipeline isolation pattern (separate deployments per signal type)
-- Immutable sidecar + configurable gateway pattern
-- Header-based multi-backend routing with routing connector
+- Signal-level pipeline isolation and stable-edge/configurable-middle-tier patterns
+- Routing metadata normalization into documented routing attributes before connector-based routing
 - Custom collector distribution with OpenTelemetry Collector Builder (ocb)
-- ⚠️ Chained collector error visibility problem and circuit-breaker extension pattern
-- ⚠️ OTel Operator/collector version compatibility pitfall
-- Quarterly upgrade cadence and component deprecation management
-- Platform team abstraction layer best practices
+- ⚠️ Chained collector error visibility problem in multi-tier collector architectures
+- ⚠️ OTel Operator/collector version drift and upgrade-boundary pitfalls
+- Platform team abstraction layer and predictable upgrade cadence guidance
 
 ## Response Framework
 
