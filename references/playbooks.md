@@ -143,6 +143,19 @@ Repeat the same pattern for logs and metrics as separate deployments.
 
 Adobe's blog describes the backend choice being carried between collector tiers via OTLP HTTP metadata/header values selected from Helm values. A reusable collector playbook is to **normalize that choice into a routing attribute before using the routing connector** so the routing rule is explicit inside the config.
 
+One practical pattern is to have the namespace-local deployment collector stamp a resource attribute that represents the selected backend profile before forwarding upstream:
+
+```yaml
+processors:
+  resource/backend_destination:
+    attributes:
+      - key: tenant.backend.destination
+        value: backend-a
+        action: upsert
+```
+
+That makes `tenant.backend.destination` part of the telemetry contract rather than leaving the decision hidden in transport-only metadata.
+
 ```yaml
 connectors:
   routing:
@@ -180,6 +193,7 @@ service:
 
 - transport headers/metadata are not the same as telemetry attributes
 - if a routing decision originates in transport metadata, document where it becomes a resource attribute
+- use a default pipeline for traffic where the routing attribute is missing, malformed, or mapped to an unsupported backend profile
 - keep the routing contract low-cardinality and stable across tiers
 
 **See also**: [connectors.md](connectors.md) and [ottl.md](ottl.md)
