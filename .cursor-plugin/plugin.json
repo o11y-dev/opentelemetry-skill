@@ -16,5 +16,10 @@
     "metrics",
     "logs"
   ],
+  "homepage": "https://skills.o11y.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/o11y-dev/opentelemetry-skill"
+  },
   "skills": "SKILL.md"
 }
