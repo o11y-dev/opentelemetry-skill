@@ -7,6 +7,11 @@
     "description": "OpenTelemetry observability engineering skill for Cursor",
     "version": "1.1.0"
   },
+  "homepage": "https://skills.o11y.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/o11y-dev/opentelemetry-skill"
+  },
   "plugins": [
     {
       "name": "opentelemetry-skill",
