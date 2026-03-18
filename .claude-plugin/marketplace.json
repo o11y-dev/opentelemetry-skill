@@ -8,7 +8,11 @@
     {
       "name": "opentelemetry-skill",
       "description": "Expert OpenTelemetry observability engineering assistant with progressive disclosure of best practices, deployment architectures, and production-ready configurations",
-      "source": "SKILL.md"
+      "source": ".",
+      "files": [
+        "SKILL.md",
+        "references/**/*.md"
+      ]
     }
   ],
   "author": "o11y.dev",
