@@ -120,6 +120,7 @@ Deep-dive guides are available in the `references/` directory:
 - **[sampling.md](references/sampling.md)**: Head vs tail, probabilistic strategies, sticky sessions
 - **[security.md](references/security.md)**: PII redaction, TLS, extension security
 - **[monitoring.md](references/monitoring.md)**: Collector metrics, dashboards, alerts
+- **[playbooks.md](references/playbooks.md)**: Reusable production playbooks distilled from OpenTelemetry blog posts and real-world deployment stories
 
 ## Contrib Components & Example Configs
 

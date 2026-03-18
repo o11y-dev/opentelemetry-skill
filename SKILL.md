@@ -1,6 +1,6 @@
 ---
 name: opentelemetry-skill
-description: Use when working with OpenTelemetry - configuring collectors, designing pipelines, instrumenting applications, implementing sampling strategies, managing cardinality, securing telemetry data, troubleshooting observability issues, writing OTTL transformations, or making production observability architecture decisions
+description: Use when working with OpenTelemetry - configuring collectors, designing pipelines, instrumenting applications, implementing sampling strategies, managing cardinality, securing telemetry data, troubleshooting observability issues, writing OTTL transformations, making production observability architecture decisions, or applying production playbooks and platform team patterns from real-world OpenTelemetry deployments
 license: Apache-2.0
 metadata:
   author: o11y.dev
@@ -182,6 +182,18 @@ Use these triggers to load detailed reference documentation only when needed. Th
 - countconnector and signaltometricsconnector
 - Stickiness requirements for stateful connectors (spanmetrics, servicegraph)
 - Stability levels and cardinality warnings
+
+### Trigger: Playbooks & Production Patterns
+**Keywords**: "playbook", "production playbook", "blog", "2025 blog", "production deployment", "real world", "example deployment", "platform team", "Gateway API", "mTLS", "Lambda extension", "decouple processor", "receiver creator", "annotation-based discovery", "auto-instrumentation", "zero-code", "eBPF", "compile-time instrumentation", "span naming", "attribute naming", "metric naming", "complex attributes", "Logs API", "events", "sampling update", "TraceState", "declarative config", "health check exclusion", "OTTL", "transform processor", "RPC conventions", "unroll processor"
+
+**Action**: Load `references/playbooks.md`
+
+**Contains**:
+- Generic playbook routing format for turning upstream blog posts into reusable skill guidance
+- Expanded scan of relevant 2025 `opentelemetry.io` blogs for this skill
+- Routing coverage for Kubernetes discovery, secure collector ingress, Lambda extension-layer collection, auto-instrumentation strategy, logging, naming, sampling, declarative configuration, OTTL transforms, Go zero-code instrumentation, RPC convention stability, and log unrolling
+- Guidance to route by technical problem space instead of company-specific narratives
+- Links to the local deep-dive references that should be loaded after a playbook match
 
 ## Response Framework
 
