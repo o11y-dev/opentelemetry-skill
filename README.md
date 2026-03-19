@@ -26,6 +26,7 @@ Unlike loading the entire OpenTelemetry documentation into an AI's context (whic
 - 📈 **Scaling Strategies**: Load balancing with sticky sessions for tail sampling
 - 🎯 **Sampling Intelligence**: Head vs tail sampling with statistical trade-off analysis
 - 🔍 **Meta-Monitoring**: Self-observability patterns for collector health
+- 🤖 **AI Agent Observability**: Configuration guides for monitoring Claude Code, Gemini CLI, GitHub Copilot, Codex CLI, and other AI coding agents via OpenTelemetry
 - ✅ **Test & Validation Framework**: TDD-based testing methodology to ensure skill effectiveness
 
 ## Skill Structure
@@ -70,6 +71,16 @@ opentelemetry-skill/
 │   └── monitoring.md         # Self-monitoring patterns
 └── opentelemetry-skill-LICENSE  # Apache 2.0
 ```
+
+## Architecture Patterns
+
+| Category | Pattern | Description |
+|----------|---------|-------------|
+| **Kubernetes** | **DaemonSet / Gateway / Sidecar** | Choose based on workload type and data volume |
+| **Serverless** | **FaaS Extension Layer** | Lambda, Azure Functions, GCP with non-blocking export |
+| **Sampling** | **Head / Tail Sampling** | Trade-off between cost and completeness |
+| **Security** | **mTLS + RBAC** | Secure cross-network telemetry pipelines |
+| **AI Agents** | **Agent Telemetry** | Monitor coding agents as first-class services in your observability stack |
 
 ## Usage Examples
 
