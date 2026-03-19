@@ -1,10 +1,10 @@
 ---
 name: opentelemetry-skill
-description: Use when working with OpenTelemetry - configuring collectors, designing pipelines, instrumenting applications, implementing sampling strategies, managing cardinality, securing telemetry data, troubleshooting observability issues, writing OTTL transformations, making production observability architecture decisions, or applying production playbooks and platform team patterns from real-world OpenTelemetry deployments
+description: Use when working with OpenTelemetry - configuring collectors, designing pipelines, instrumenting applications, implementing sampling strategies, managing cardinality, securing telemetry data, troubleshooting observability issues, writing OTTL transformations, making production observability architecture decisions, or setting up observability for AI coding agents (Claude Code, Codex, Gemini CLI, GitHub Copilot, and others)
 license: Apache-2.0
 metadata:
   author: o11y.dev
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # OpenTelemetry Skill: Expert Observability Engineering Assistant
@@ -183,6 +183,19 @@ Use these triggers to load detailed reference documentation only when needed. Th
 - Stickiness requirements for stateful connectors (spanmetrics, servicegraph)
 - Stability levels and cardinality warnings
 
+### Trigger: AI Coding Agent Observability
+**Keywords**: "Claude Code", "Codex", "Codex CLI", "Gemini CLI", "Copilot", "GitHub Copilot", "Qwen Code", "OpenCode", "Cursor", "Windsurf", "Aider", "AI agent", "coding agent", "vibe coding", "AI coding", "coding assistant", "AI IDE", "agent telemetry", "agent observability", "agent monitoring"
+
+**Action**: Load `references/ai-agents.md`
+
+**Contains**:
+- AI coding agent OTel support matrix (traces, metrics, logs per agent)
+- Per-agent quick-start configuration (env vars, settings files)
+- Unified OTel Collector config for multi-agent ingestion
+- Event/metric taxonomy and GenAI semantic convention mapping
+- Dashboard patterns and community resources
+- Privacy controls and cardinality management for agent telemetry
+
 ### Trigger: Playbooks & Production Patterns
 **Keywords**: "playbook", "production playbook", "blog", "2025 blog", "production deployment", "real world", "example deployment", "platform team", "Gateway API", "mTLS", "Lambda extension", "decouple processor", "receiver creator", "annotation-based discovery", "auto-instrumentation", "zero-code", "eBPF", "compile-time instrumentation", "span naming", "attribute naming", "metric naming", "complex attributes", "Logs API", "events", "sampling update", "TraceState", "declarative config", "health check exclusion", "OTTL", "transform processor", "RPC conventions", "unroll processor"
 
@@ -244,6 +257,10 @@ Actively prevent these common mistakes:
 ❌ Using deprecated protocols (Zipkin, Jaeger) for new deployments
 ❌ Creating custom attribute names instead of using semantic conventions
 ❌ Ignoring component stability levels in production
+❌ Including prompt.id or session.id as metric dimensions (unbounded cardinality)
+❌ Enabling captureContent/OTEL_LOG_USER_PROMPTS in shared/production environments without PII controls
+❌ Assuming all AI coding agents emit traces (Claude Code and Codex exec do not)
+❌ Using delta temporality with backends that expect cumulative (e.g., VictoriaMetrics silently drops)
 
 ## Version and Compatibility
 
@@ -252,11 +269,15 @@ Actively prevent these common mistakes:
 - **Kubernetes**: v1.24+ (for native sidecar support)
 - **Go SDK**: v1.24.0+
 - **Python SDK**: v1.40.0+
+- **Claude Code Telemetry**: Compatible with current release (metrics + logs/events)
+- **Gemini CLI Telemetry**: v0.34.0+ (traces + metrics + logs, GenAI SemConv)
+- **GitHub Copilot OTel**: VS Code Insiders / latest stable (traces + metrics + events, GenAI SemConv)
+- **Codex CLI Telemetry**: v0.105.0+ (traces + logs in interactive mode; exec/mcp-server gaps)
 
 ## Skill Metadata
 
 - **Skill Name**: opentelemetry-skill
-- **Version**: 1.0.0
+- **Version**: 1.2.0
 - **Author**: o11y.dev
 - **License**: Apache 2.0
 - **Last Updated**: 2026-03-10
