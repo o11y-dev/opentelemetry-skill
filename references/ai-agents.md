@@ -189,13 +189,41 @@ Docs describe a telemetry system with `.qwen/settings.json`, but the correspondi
 
 ### 2.7 Agents Without Native OTel
 
-| Agent | Workaround |
-|-------|-----------|
-| **OpenCode** | Community plugin: [opencode-plugin-otel](https://github.com/DEVtheOPS/opencode-plugin-otel). Feature request: [#14697](https://github.com/anomalyco/opencode/issues/14697) |
-| **Cursor** | Use MCP servers (Traceloop, Observe) to instrument the user's code, not Cursor itself |
-| **Windsurf** | Agent skills can add OTel to user code; Windsurf itself emits nothing |
-| **Amazon Q Developer** | Use CloudWatch and CloudTrail for activity logging; no OTLP export |
-| **Aider** | Wrap with a shell script that records start/stop times and token usage from stdout |
+For agents that emit no OpenTelemetry data, use **[opentelemetry-hooks](https://github.com/o11y-dev/opentelemetry-hooks)** — a hook-based instrumentation layer that wraps a process invocation (typically a CLI entrypoint) and emits OTLP spans, metrics, and logs without modifying the agent binary.
+
+> **Scope:** opentelemetry-hooks instruments the *wrapped process invocation*. For fully CLI-based agents (OpenCode, Aider, Amazon Q Developer CLI) this captures each agent run end-to-end. For GUI-first editors (Cursor, Windsurf) wrapping the launch command provides limited value because the main agent activity occurs inside the desktop process after startup; only the launch duration and exit code are reliably captured. Use the hooks approach for Cursor/Windsurf only if you have a headless/CLI agent invocation (for example `cursor --headless` or a Windsurf CLI subcommand).
+
+**Quick start with opentelemetry-hooks:**
+
+```bash
+# Install
+pip install opentelemetry-hooks
+
+# Wrap CLI-based agents (full coverage)
+otel-hooks --service-name aider  --otlp-endpoint http://localhost:4317 -- aider <args>
+otel-hooks --service-name opencode --otlp-endpoint http://localhost:4317 -- opencode <args>
+
+# Wrap GUI-based agents (launch/exit coverage only)
+otel-hooks --service-name cursor --otlp-endpoint http://localhost:4317 -- cursor <args>
+```
+
+**What opentelemetry-hooks captures:**
+
+| Signal | Details |
+|--------|---------|
+| Spans | Start/end per invocation, child spans for subprocesses |
+| Metrics | Wall-clock duration, exit code, process CPU/memory |
+| Logs | stdout/stderr lines as log records with `severity` |
+
+> **Privacy warning:** Capturing stdout/stderr as logs can include prompts, source code, configuration, secrets (for example, API keys or tokens), and other sensitive data. Before enabling this, review your data-handling requirements and configure your OpenTelemetry pipeline or `opentelemetry-hooks` to disable or redact stdout/stderr capture where needed (for example, via log filtering/redaction or by turning off log export). See [§6. Privacy & Cardinality Considerations](#6-privacy--cardinality-considerations) for guidance.
+
+| Agent | Hooks Support | Recommended Approach |
+|-------|--------------|---------------------|
+| **OpenCode** | CLI-based ✅ | [opentelemetry-hooks](https://github.com/o11y-dev/opentelemetry-hooks) (primary); community plugin: [opencode-plugin-otel](https://github.com/DEVtheOPS/opencode-plugin-otel) as fallback. Feature request: [#14697](https://github.com/anomalyco/opencode/issues/14697) |
+| **Cursor** | GUI-first ⚠️ | [opentelemetry-hooks](https://github.com/o11y-dev/opentelemetry-hooks) wraps the launch process (launch/exit coverage only); MCP servers (Traceloop, Observe) instrument only user code, not Cursor itself. Wrapping provides limited value unless a CLI/headless mode is used. |
+| **Windsurf** | GUI-first ⚠️ | [opentelemetry-hooks](https://github.com/o11y-dev/opentelemetry-hooks) wraps the launch process (launch/exit coverage only); Windsurf agent skills can add OTel to user code but Windsurf itself emits nothing. Wrapping provides limited value unless a CLI subcommand is used. |
+| **Amazon Q Developer** | CLI-based ✅ | Native: CloudWatch/CloudTrail for activity logging, no built-in OTLP export. For process-level OTLP signals from the Q Developer CLI process, wrap it with [opentelemetry-hooks](https://github.com/o11y-dev/opentelemetry-hooks). |
+| **Aider** | CLI-based ✅ | [opentelemetry-hooks](https://github.com/o11y-dev/opentelemetry-hooks); replaces the manual shell-script wrapper approach |
 
 ---
 
@@ -489,13 +517,21 @@ Query in Loki/OpenSearch: `{job="claude_code"} | json | prompt_id="prompt_abc123
 
 **Action**: Watch the [Qwen Code changelog](https://qwenlm.github.io/qwen-code-docs/en/developers/development/telemetry/) and the repo for the enabling commit. Do not build infrastructure dependencies on Qwen Code telemetry until code ships.
 
-### 7.4 Cross-Agent Trace Correlation
+### 7.4 Agents With No OTel Support (OpenCode, Cursor, Windsurf, Amazon Q Developer, Aider)
+
+**Gap**: These agents emit no OTLP data. Native instrumentation is absent and no roadmap items are public.
+
+**Workaround**: Use **[opentelemetry-hooks](https://github.com/o11y-dev/opentelemetry-hooks)** to wrap the agent process. This emits process-level spans and metrics without requiring changes to the agent binary. See [§2.7](#27-agents-without-native-otel) for setup.
+
+> ⚠️ opentelemetry-hooks captures process-level signals only (invocation duration, exit code, stdout/stderr). It cannot observe LLM token usage, model names, or tool calls made inside the agent. For full GenAI observability, advocate for native instrumentation via the agents' issue trackers.
+
+### 7.5 Cross-Agent Trace Correlation
 
 **Gap**: No W3C `traceparent` propagation exists between AI coding agents. If Claude Code calls a tool that triggers Gemini CLI (or vice versa via MCP), there is no automatic trace linkage.
 
 **Workaround**: Use a shared `session.id` or custom correlation attribute passed as metadata to link events across agents in log queries. True distributed tracing across agents is not possible today.
 
-### 7.5 GenAI SemConv Coverage
+### 7.6 GenAI SemConv Coverage
 
 | Agent | Uses `gen_ai.*` | Custom Prefix | Notes |
 |-------|----------------|---------------|-------|
