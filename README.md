@@ -35,6 +35,14 @@ Unlike loading the entire OpenTelemetry documentation into an AI's context (whic
 
 ## Installation
 
+### skills.sh
+
+Install this skill with the skills.sh CLI:
+
+```bash
+npx skills add o11y-dev/opentelemetry-skill
+```
+
 ### GitHub Copilot
 
 Attach `SKILL.md` as a custom instructions file, or reference the repository as a Copilot Skill in your Copilot settings: [`https://github.com/o11y-dev/opentelemetry-skill`](https://github.com/o11y-dev/opentelemetry-skill)
