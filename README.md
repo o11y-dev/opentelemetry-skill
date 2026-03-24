@@ -35,6 +35,14 @@ Unlike loading the entire OpenTelemetry documentation into an AI's context (whic
 
 ## Installation
 
+### skills.sh
+
+Install this skill with the skills.sh CLI:
+
+```bash
+npx skills add o11y-dev/opentelemetry-skill
+```
+
 ### GitHub Copilot
 
 Attach `SKILL.md` as a custom instructions file, or reference the repository as a Copilot Skill in your Copilot settings: [`https://github.com/o11y-dev/opentelemetry-skill`](https://github.com/o11y-dev/opentelemetry-skill)
@@ -63,6 +71,7 @@ opentelemetry-skill/
 ├── SKILL.md                  # Cognitive router (the "brain")
 ├── README.md                 # This file
 ├── references/
+│   ├── ai-agents.md          # AI agent observability patterns & configurations
 │   ├── architecture.md       # Deployment patterns & scaling
 │   ├── collector.md          # Pipeline configuration & components
 │   ├── instrumentation.md    # SDKs & semantic conventions
@@ -123,6 +132,7 @@ See [`SKILL.md`](SKILL.md) for the full list of progressive disclosure triggers,
 
 Deep-dive guides are available in the `references/` directory:
 
+- **[ai-agents.md](references/ai-agents.md)**: AI agent observability patterns, per-agent setup guidance, dashboards, and operational caveats
 - **[architecture.md](references/architecture.md)**: Deployment patterns, load balancing, Target Allocator
 - **[collector.md](references/collector.md)**: Pipeline anatomy, processor ordering, memory management
 - **[instrumentation.md](references/instrumentation.md)**: SDKs, semantic conventions, cardinality management
