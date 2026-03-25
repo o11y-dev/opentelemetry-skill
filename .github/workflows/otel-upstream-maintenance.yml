@@ -130,7 +130,7 @@ jobs:
               return data.get("name") or data.get("tag_name", "latest"), data.get("html_url")
 
           def fetch_blog_posts(limit=5):
-              url = "https://opentelemetry.io/feed.xml"
+              url = "https://opentelemetry.io/blog/index.xml"
               xml_data = fetch_url_bytes(url, max_bytes=MAX_FEED_BYTES)
               if xml_data is None:
                   return [("Unable to fetch feed (transient network/API error)", "https://opentelemetry.io/blog/")]
