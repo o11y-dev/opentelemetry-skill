@@ -362,6 +362,75 @@ emitter.emit("user.login",                // event.name
 
 ⚠️ **Do NOT use `event.name` as a metric dimension** if it has more than ~100 unique values.
 
+### ⚠️ Span Events API Deprecation: Migrate to Logs
+
+OpenTelemetry announced the deprecation of the **Span Event API** in the
+official March 17, 2026 blog post
+[Deprecating Span Events API](https://opentelemetry.io/blog/2026/deprecating-span-events/).
+The corresponding migration plan is captured in
+[OTEP 4430](https://github.com/open-telemetry/opentelemetry-specification/blob/fd43145dde7e5192ebc59a20992d98a3e6af5553/oteps/4430-span-event-api-deprecation-plan.md).
+
+The important distinction is that OpenTelemetry is deprecating the **API used to
+record new span events** — methods such as `Span.AddEvent` and
+`Span.RecordException` — not the ability for backends to keep showing events in
+trace-oriented views. New code should prefer **log-based events** correlated with
+the active span context.
+
+### What to Change
+
+| Current pattern | Recommended direction |
+|----------------|-----------------------|
+| `span.add_event("user.login", attrs)` | Emit a log/event with `event.name="user.login"` while the span is current |
+| `span.record_exception(err)` | Emit a structured exception log/event and still set span status for the operation outcome |
+| New semantic convention examples based on span events | Define the event as a log record with `event.name` plus structured attributes |
+
+### Migration Checklist
+
+1. **Inventory existing usage** of `AddEvent`, `RecordException`, and any custom instrumentation that models domain events as span events.
+2. **Do not force a flag day**: keep existing stable instrumentation behavior until your SDK, instrumentation library, and backend support log-based events cleanly.
+3. **Write new events through the Logs API** (or a logging bridge) using `event.name` and structured attributes, while ensuring the active span context is present so `trace_id` and `span_id` are attached.
+4. **Keep span status semantics separate** from event emission. Exceptions and failures still need proper span status (`ERROR` for real failures, `UNSET` for intentional cancellations); the event payload should move to logs.
+5. **Verify the backend experience** after upgrades: confirm correlated log-based events still appear in the span timeline, exception view, or investigation workflow your teams rely on.
+6. **Keep collector log pipelines ready**. If you previously treated traces as the only source of exception/event data, ensure logs are received, filtered, routed, and exported with the same retention and access controls.
+
+### Practical Migration Pattern
+
+Use this pattern when replacing new span events with log-based events:
+
+```python
+import logging
+from opentelemetry import trace
+
+tracer = trace.get_tracer(__name__)
+logger = logging.getLogger("payment-events")
+
+with tracer.start_as_current_span("process_payment") as span:
+    try:
+        charge_credit_card(amount)
+    except Exception as exc:
+        span.set_status(Status(StatusCode.ERROR, str(exc)))
+        logger.exception(
+            "payment.failed",
+            extra={
+                "event.name": "payment.failed",
+                "payment.amount": amount,
+                "error.type": type(exc).__name__,
+            },
+        )
+        raise
+```
+
+This keeps the **operation state** on the span while moving the **event payload**
+to logs. If your language SDK offers a compatibility bridge that projects
+log-based events back into span views, prefer that over adding new span events.
+
+### How to Monitor Future Deprecations
+
+- **Official announcement stream**: watch the OpenTelemetry blog feed at `https://opentelemetry.io/blog/index.xml` for blog posts like the March 2026 deprecation announcement.
+- **Specification change stream**: watch the `open-telemetry/opentelemetry-specification` repository for OTEPs, release notes, and deprecation PRs affecting tracing, logs, and semantic conventions.
+- **Community migration feedback**: watch `open-telemetry/community` for follow-up discussions such as [community#3312](https://github.com/open-telemetry/community/issues/3312).
+- **Repository automation**: this repository's weekly maintenance workflow (`.github/workflows/otel-upstream-maintenance.yml`) already fetches the OpenTelemetry blog RSS feed and upstream risk signals; use its digest issue as the first place to review deprecations that may require doc updates.
+
 ### Kubernetes Semantic Conventions (`release_candidate` in v1.30+)
 
 The `k8s.*` attribute namespace has been promoted to **`release_candidate`** stability ([semantic-conventions#3380](https://github.com/open-telemetry/semantic-conventions/issues/3380)), meaning attribute names are stable and backend support is expected. This makes it safe to rely on these names in production instrumentation and collector enrichment (via `k8sattributes` processor).
@@ -646,7 +715,7 @@ app.use((req, res, next) => {
 2. **Control Cardinality**: Never use unbounded attributes (user_id, trace_id) in metrics
 3. **Enrich Business Context**: Add business-meaningful attributes (`order.value`, `fraud.score`)
 4. **Propagate Context**: Use W3C Trace Context headers for distributed tracing
-5. **Record Exceptions**: Use `span.record_exception(e)` for error tracking
+5. **Record Exceptions Carefully**: Prefer log-based exception events for new code, and use `span.record_exception(e)` only where your current SDK/instrumentation still relies on the legacy span event API
 6. **Set Status Thoughtfully**: Use `span.set_status(StatusCode.ERROR)` for real failures, but leave spans `UNSET` for intentional client-side cancellations
 7. **Use Views**: Filter high-cardinality attributes at the SDK level
 8. **Use Baggage Intentionally**: Leverage baggage for low-cardinality cross-cutting attributes (e.g., tenant, release) and avoid storing PII or unbounded values
@@ -750,6 +819,8 @@ See the [OTel blog post on complex attribute types](https://opentelemetry.io/blo
 - **Semantic Conventions**: https://opentelemetry.io/docs/specs/semconv/
 - **GenAI Semantic Conventions**: https://opentelemetry.io/docs/specs/semconv/gen-ai/
 - **Events Semantic Conventions**: https://opentelemetry.io/docs/specs/semconv/general/events/
+- **Deprecating Span Events API**: https://opentelemetry.io/blog/2026/deprecating-span-events/
+- **OTEP 4430: Span Event API deprecation plan**: https://github.com/open-telemetry/opentelemetry-specification/blob/fd43145dde7e5192ebc59a20992d98a3e6af5553/oteps/4430-span-event-api-deprecation-plan.md
 - **Language SDKs**: https://opentelemetry.io/docs/languages/
   - Python: https://opentelemetry.io/docs/languages/python/
   - Go: https://opentelemetry.io/docs/languages/go/
@@ -765,7 +836,7 @@ See the [OTel blog post on complex attribute types](https://opentelemetry.io/blo
 ✅ Start with **auto-instrumentation**, then add **manual instrumentation** for business logic
 ✅ Always use **Semantic Conventions** for attribute names (target v1.40.0+)
 ✅ Use **GenAI conventions** (`gen_ai.*`) for LLM/AI workloads — track token usage as metrics
-✅ Use **Events** (`event.name`) for structured domain events in logs
+✅ Use **Events** (`event.name`) for structured domain events in logs, and plan migrations away from new span-event API usage
 ✅ Apply the **Rule of 100**: No high-cardinality attributes in metrics
 ✅ Use **SDK Views** to drop high-cardinality attributes before export
 ✅ **Propagate context** using W3C Trace Context headers

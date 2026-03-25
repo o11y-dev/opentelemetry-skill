@@ -170,6 +170,15 @@ jobs:
                   ],
               },
               {
+                  "title": "Event-to-Logs Migration Signals",
+                  "queries": [
+                      {
+                          "repos": ["open-telemetry/opentelemetry-specification", "open-telemetry/community"],
+                          "keywords": '"span event" OR AddEvent OR RecordException OR "log-based events" OR "Logs API"',
+                      }
+                  ],
+              },
+              {
                   "title": "OTTL Language Changes",
                   "queries": [
                       {
@@ -302,6 +311,7 @@ jobs:
               "- [ ] Capture useful committee/community/blog updates and add practical guidance updates to this repository.",
               "- [ ] Open or update follow-up issue(s) for concrete docs/skill improvements.",
               "- [ ] Check keyword-filtered risk signals for items requiring immediate skill updates.",
+              "- [ ] Review event-to-logs migration signals for span-event deprecations or compatibility changes.",
               "- [ ] Verify filesystem compatibility warnings in references/collector.md remain accurate against latest bbolt release.",
               "- [ ] Review semantic convention changes for attribute renames that affect skill examples.",
           ])
