@@ -183,6 +183,23 @@ This skill is designed to evolve with the OpenTelemetry ecosystem. Contributions
 3. **Expand Examples**: Language-specific SDK patterns
 4. **Improve Triggers**: Refine the progressive disclosure logic
 
+## Known Limitations
+
+- **AI agent trace coverage varies**: Claude Code does not emit traces natively; observability relies on [opentelemetry-hooks](https://github.com/o11y-dev/opentelemetry-hooks) or native logs/metrics. Each agent has different signal coverage.
+- **Tail sampling memory**: Scales with in-flight trace count. Beyond 10k RPS, consider tiered architecture (Agent -> Gateway -> Analysis) rather than single-collector tail sampling.
+- **OTTL regex transforms**: Can impact p99 latency at high span volume. Profile with production traffic before deploying regex-heavy transformations.
+- **Semantic conventions are evolving**: The `gen_ai.*` namespace is experimental. Attribute names may change in future OpenTelemetry releases.
+- **Kubernetes version requirements**: Native sidecar container support requires v1.24+. Earlier versions need traditional sidecar patterns.
+
+## Roadmap
+
+- Expand AI agent observability coverage as new agents ship native telemetry (Qwen Code, Windsurf, Zed)
+- Track OpenTelemetry semantic convention releases for `gen_ai` namespace stabilization
+- Add cost optimization patterns for high-volume agent deployments
+- Expand production playbook coverage with new upstream blog posts
+- Add eBPF-based collection patterns for auto-instrumentation
+- Collector processor stability matrix tracking across releases
+
 ## Compatibility
 
 - **OpenTelemetry Collector**: v0.147.0+
