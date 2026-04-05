@@ -11,7 +11,7 @@ SKILL.md (cognitive router, ~compact)
     |-- trigger: "collector"  --> references/collector.md
     |-- trigger: "sampling"   --> references/sampling.md
     |-- trigger: "OTTL"       --> references/ottl.md
-    |-- ... (12 triggers total)
+    |-- ... (11 triggers total)
     |
 references/ (loaded only when triggered)
 tests/ (TDD validation scenarios)
@@ -64,12 +64,12 @@ To add a test:
 
 ## CI validation
 
-`.github/workflows/validate.yml` checks on every push and PR:
+`.github/workflows/validate.yml` runs on a subset of paths for pushes and PRs (it may not run on every push/PR):
 
 - `SKILL.md` has required frontmatter (`name`, `description`)
-- `marketplace.json` structure is valid
-- No broken internal links between `SKILL.md` and `references/`
-- Markdown linting passes
+- `.claude-plugin/marketplace.json` structure is valid
+- Referenced files between `SKILL.md` and `references/` exist (basic internal link check; anchors are not validated)
+- Markdown linting runs in non-blocking mode (`continue-on-error: true`; failures do not fail CI)
 
 ## Commit conventions
 

@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - Clarify hook support and governance in AI agent observability reference
+- Document limitations, roadmap, and contribution guidelines in README, CONTRIBUTING, and this changelog
 
 ## [1.2.0] - 2026-03-20
 
@@ -41,7 +42,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - Initial cognitive router (`SKILL.md`) with System 2 Thinking framework
-- 12 progressive disclosure triggers mapping to reference documents
+- 11 progressive disclosure triggers mapping to reference documents
 - Reference documents: architecture, collector, instrumentation, sampling, security, monitoring, OTTL, platforms
 - Anti-pattern prevention with explicit language (MUST/NEVER/ALWAYS)
 - TDD testing framework with rationalization table
