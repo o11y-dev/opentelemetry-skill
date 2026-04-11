@@ -749,6 +749,7 @@ app.use((req, res, next) => {
 - **Re-test instrumentation examples**: Verify that `ParentBased` and `TraceIDRatio` samplers work as expected in your environment
 - **Verify custom propagators/samplers**: If you have custom implementations, test thoroughly on 1.40.x
 - **Pin or upgrade together**: Avoid mixing SDK minor versions (e.g., 1.39.x and 1.40.x) in the same service graph to prevent inconsistent sampling/propagation behavior
+- **Choose the OTLP protocol explicitly in Go unless you use `autoexport`**: In Go, this is generally determined by the exporter package you configure, not automatically by `OTEL_EXPORTER_OTLP_PROTOCOL` alone ([opentelemetry-go#8091](https://github.com/open-telemetry/opentelemetry-go/issues/8091)). Use the `*grpc` or `*http` exporter packages explicitly—for example, `otlptracegrpc` / `otlpmetricgrpc` for gRPC or `otlptracehttp` / `otlpmetrichttp` for HTTP—or adopt `go.opentelemetry.io/contrib/exporters/autoexport` if you need environment-driven protocol selection.
 
 **Recommendation**: Pin dependencies to a specific minor version or upgrade all services together to 1.40.x+.
 

@@ -143,6 +143,8 @@ OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production,service.version=1.0.0
 AWS_LAMBDA_EXEC_WRAPPER=/opt/otel-handler  # For Node.js/Python
 ```
 
+> ⚠️ **Go SDK caveat**: `OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf` is not enough by itself to switch the Go SDK from OTLP/gRPC to OTLP/HTTP. For Go Lambda functions, instantiate `otlptracehttp`/`otlpmetrichttp` in code or use `go.opentelemetry.io/contrib/exporters/autoexport` if you need env-driven protocol selection.
+
 **Performance Optimization Variables**:
 
 ```bash
@@ -313,6 +315,8 @@ OTEL_EXPORTER_OTLP_PROTOCOL=grpc  # ❌ Slow connection establishment
 ```bash
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf  # ✅ Faster, more reliable
 ```
+
+For Go functions, treat that env var as a **configuration hint**, not an exporter selector. The exporter package still determines the protocol unless you adopt the Go `autoexport` helper.
 
 ❌ **Over-instrumenting** (increases cold start):
 ```bash
