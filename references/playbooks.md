@@ -18,8 +18,8 @@ Use this document when a user asks for:
 - a **real-world deployment pattern**
 - a **production rollout model** for a platform team
 - a **blog-derived example** instead of a purely theoretical recommendation
-- a **2025 or 2026 opentelemetry.io article** that is relevant to a practical
-  OTel task
+- a recent **opentelemetry.io article** that is relevant to a practical OTel
+  task
 - a **generic playbook** that should remain reusable as more blogs are added
 
 ## Table of Contents
@@ -81,9 +81,10 @@ problem space, not by a specific company name.
 
 ## Relevant 2025-2026 Blogs for This Skill
 
-These are the most relevant 2025 and early-2026 `opentelemetry.io` blog posts
-to route through this skill today. The list is intentionally **topic-driven**
-and **open-ended** so future entries can be added without restructuring the
+These are the most relevant recent 2025 and early-2026 `opentelemetry.io` blog
+posts to route through this skill today. The list is intentionally
+**topic-driven** and **open-ended** so future entries can be added without
+restructuring the
 document.
 
 | Blog | Primary routing signals | Why it matters for the skill | Load next |
@@ -106,6 +107,8 @@ document.
 | [Alibaba, Datadog, and Quesma Join Forces on Go Compile-Time Instrumentation](https://opentelemetry.io/blog/2025/go-compile-time-instrumentation/) | Go compile-time instrumentation, `toolexec`, zero-code Go, build-time instrumentation | Good route when users compare compile-time instrumentation with eBPF or manual Go instrumentation | [instrumentation][instrumentation-ref] |
 | [Announcing the RPC Semantic Conventions stabilization project](https://opentelemetry.io/blog/2025/stabilizing-rpc-conventions/) | RPC semantic conventions, gRPC telemetry, convention migration, stabilization | Useful for questions about RPC naming, migration windows, and convention stability expectations | [instrumentation][instrumentation-ref] |
 | [Contributing the Unroll Processor to the OpenTelemetry Collector Contrib](https://opentelemetry.io/blog/2025/contrib-unroll-processor/) | unroll processor, bundled logs, record expansion, transform vs purpose-built processor | Adds a routing path for log-pipeline questions where bundled payload expansion should not be forced into OTTL transforms | [collector][collector-ref], [monitoring][monitoring-ref] |
+| [How Mastodon Runs OpenTelemetry Collectors in Production](https://opentelemetry.io/blog/2026/devex-mastodon/) | small team, Operator-managed collectors, one collector per namespace, Datadog connector, tail sampling in production | Strong production routing example for keeping collector architecture simple, using the OpenTelemetry Operator for lifecycle, and controlling volume with aggressive error-first sampling | [architecture][architecture-ref], [collector][collector-ref], [sampling][sampling-ref] |
+| [OpenTelemetry Profiles Enters Public Alpha](https://opentelemetry.io/blog/2026/profiles-alpha/) | profiles, continuous profiling, eBPF profiler, pprof receiver, profile signal | Useful when users ask about bringing profiling into an OTel pipeline; it sets the right expectation that Profiles are practical to evaluate but still Alpha for critical production workloads | [collector][collector-ref], [platforms][platforms-ref] |
 
 ### Routing notes for future maintenance
 
@@ -226,6 +229,8 @@ explanations.
 - **Go compile-time instrumentation source**: https://opentelemetry.io/blog/2025/go-compile-time-instrumentation/
 - **RPC semantic conventions source**: https://opentelemetry.io/blog/2025/stabilizing-rpc-conventions/
 - **Unroll processor source**: https://opentelemetry.io/blog/2025/contrib-unroll-processor/
+- **Mastodon production story source**: https://opentelemetry.io/blog/2026/devex-mastodon/
+- **Profiles alpha source**: https://opentelemetry.io/blog/2026/profiles-alpha/
 
 ---
 

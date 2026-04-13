@@ -308,15 +308,16 @@ processors:
 processors:
   filter:
     error_mode: ignore
-    traces:
-      span:
-        # Drop health check spans
-        - IsMatch(attributes["url.path"], "^/(health|ready|live)$")
-        # Drop successful OPTIONS requests
-        - attributes["http.request.method"] == "OPTIONS" and status.code == STATUS_CODE_UNSET
-        # Drop internal monitoring
-        - attributes["service.name"] == "otel-collector"
+    trace_conditions:
+      # Drop health check spans
+      - span.attributes["url.path"] != nil and IsMatch(span.attributes["url.path"], "^/(health|ready|live)$")
+      # Drop successful OPTIONS requests
+      - span.attributes["http.request.method"] == "OPTIONS" and span.status.code == STATUS_CODE_UNSET
+      # Drop internal monitoring
+      - resource.attributes["service.name"] == "otel-collector"
 ```
+
+> ⚠️ The filter processor's older per-signal layout (`traces:`, `metrics:`, `logs:`) is being deprecated upstream. Prefer `<signal>_conditions` (`trace_conditions`, `metric_conditions`, `log_conditions`) in new configs and examples.
 
 ### Pattern 4: Cardinality Reduction
 
@@ -392,9 +393,8 @@ processors:
 # ✅ GOOD: Filter first, then transform
 processors:
   filter:
-    traces:
-      span:
-        - IsMatch(attributes["url.path"], "/health")
+    trace_conditions:
+      - span.attributes["url.path"] != nil and IsMatch(span.attributes["url.path"], "/health")
   
   transform:
     trace_statements:
@@ -411,9 +411,8 @@ processors:
           - replace_pattern(attributes["message"], "complex_regex", "replacement")
   
   filter:
-    traces:
-      span:
-        - IsMatch(attributes["url.path"], "/health")
+    trace_conditions:
+      - span.attributes["url.path"] != nil and IsMatch(span.attributes["url.path"], "/health")
 ```
 
 **Use `where` clauses** to avoid unnecessary processing:
@@ -617,10 +616,9 @@ processors:
   # Early filtering: Drop noise
   filter:
     error_mode: ignore
-    traces:
-      span:
-        - IsMatch(attributes["url.path"], "^/(health|ready|metrics)$")
-        - attributes["http.request.method"] == "OPTIONS" and status.code == STATUS_CODE_UNSET
+    trace_conditions:
+      - span.attributes["url.path"] != nil and IsMatch(span.attributes["url.path"], "^/(health|ready|metrics)$")
+      - span.attributes["http.request.method"] == "OPTIONS" and span.status.code == STATUS_CODE_UNSET
   
   # Security: PII redaction
   transform/redact_pii:

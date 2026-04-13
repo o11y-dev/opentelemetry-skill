@@ -279,9 +279,9 @@ with tracer.start_as_current_span("chat.completion") as span:
 > add `gen_ai.skill` spans and `gen_ai.skill.*` attributes is still open in
 > [semantic-conventions#3540](https://github.com/open-telemetry/semantic-conventions/issues/3540).
 > Do **not** assume those names are stable yet. If you need to observe an
-> internal skill lifecycle today, keep the data in your own experimental
-> namespace or resource attributes so you can remap it later without breaking
-> dashboards or stored queries.
+> internal skill lifecycle today, use an internal or experimental span name and
+> your own span-attribute namespace so the data can be remapped later without
+> breaking dashboards or stored queries.
 
 ⚠️ **Cardinality warning**: `gen_ai.request.model` has bounded cardinality (~10-50 models) and is safe as a metric dimension. Do NOT use `gen_ai.request.messages` or response content as metric dimensions.
 

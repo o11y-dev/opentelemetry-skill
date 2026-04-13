@@ -184,7 +184,7 @@ Use these triggers to load detailed reference documentation only when needed. Th
 - Stability levels and cardinality warnings
 
 ### Trigger: AI Coding Agent Observability
-**Keywords**: "Claude Code", "Codex", "Codex CLI", "Gemini CLI", "Copilot", "GitHub Copilot", "Qwen Code", "OpenCode", "Cursor", "Windsurf", "Aider", "AI agent", "coding agent", "vibe coding", "AI coding", "coding assistant", "AI IDE", "agent telemetry", "agent observability", "agent monitoring"
+**Keywords**: "Claude Code", "Codex", "Codex CLI", "Gemini CLI", "Copilot", "GitHub Copilot", "Qwen Code", "OpenCode", "Cursor", "Windsurf", "Aider", "AI agent", "coding agent", "vibe coding", "AI coding", "coding assistant", "AI IDE", "agent telemetry", "agent observability", "agent monitoring", "agent identity", "agent trust", "sandbox", "code interpreter", "MCP"
 
 **Action**: Load `references/ai-agents.md`
 
@@ -197,13 +197,13 @@ Use these triggers to load detailed reference documentation only when needed. Th
 - Privacy controls and cardinality management for agent telemetry
 
 ### Trigger: Playbooks & Production Patterns
-**Keywords**: "playbook", "production playbook", "blog", "2025 blog", "2026 blog", "production deployment", "real world", "example deployment", "platform team", "Gateway API", "mTLS", "Lambda extension", "decouple processor", "receiver creator", "annotation-based discovery", "auto-instrumentation", "zero-code", "eBPF", "compile-time instrumentation", "span naming", "attribute naming", "metric naming", "complex attributes", "Logs API", "events", "sampling update", "TraceState", "declarative config", "health check exclusion", "OTTL", "transform processor", "RPC conventions", "unroll processor", "profiles", "profiling", "OTLP Profiles", "pprof receiver", "one collector per namespace", "OpenTelemetry Operator", "Argo CD", "tail sampling"
+**Keywords**: "playbook", "production playbook", "blog", "2025 blog", "2026 blog", "production deployment", "real world", "example deployment", "platform team", "Gateway API", "mTLS", "Lambda extension", "decouple processor", "receiver creator", "annotation-based discovery", "auto-instrumentation", "zero-code", "eBPF", "compile-time instrumentation", "span naming", "attribute naming", "metric naming", "complex attributes", "Logs API", "events", "sampling update", "TraceState", "declarative config", "health check exclusion", "OTTL", "transform processor", "RPC conventions", "unroll processor", "profiles", "profiling", "continuous profiling", "OTLP Profiles", "pprof receiver", "Mastodon", "one collector per namespace", "OpenTelemetry Operator", "Argo CD", "tail sampling"
 
 **Action**: Load `references/playbooks.md`
 
 **Contains**:
 - Generic playbook routing format for turning upstream blog posts into reusable skill guidance
-- Expanded scan of relevant 2025 `opentelemetry.io` blogs for this skill
+- Expanded scan of relevant 2025-2026 `opentelemetry.io` blogs for this skill
 - Routing coverage for Kubernetes discovery, secure collector ingress, Lambda extension-layer collection, auto-instrumentation strategy, logging, naming, sampling, declarative configuration, OTTL transforms, Go zero-code instrumentation, RPC convention stability, and log unrolling
 - Guidance to route by technical problem space instead of company-specific narratives
 - Links to the local deep-dive references that should be loaded after a playbook match
