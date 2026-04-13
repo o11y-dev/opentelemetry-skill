@@ -290,7 +290,7 @@ token_counter.add(
     {
         "gen_ai.system": "openai",
         "gen_ai.operation.name": "chat",
-        "gen_ai.token.type": "total",  # Common values include total/input/output; cache/reasoning buckets may appear as semconv evolves
+        "gen_ai.token.type": "total",  # Common values include total/input/output; cache/reasoning buckets may appear as semantic conventions evolve
     }
 )
 ```
