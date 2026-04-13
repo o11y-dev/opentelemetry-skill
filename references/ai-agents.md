@@ -556,3 +556,16 @@ Query in Loki/OpenSearch: `{job="claude_code"} | json | prompt_id="prompt_abc123
 | Qwen Code | 🔜 planned | `.qwen.*` | Not yet verifiable |
 
 Use the `transform/normalize_agent_metrics` processor from [§3](#3-unified-collector-config-for-multi-agent-ingestion) to add `gen_ai.system` attributes to Claude Code and Codex telemetry for unified dashboard queries.
+
+### 7.7 Watchlist: Agent Identity and Sandbox SemConv Proposals
+
+OpenTelemetry upstream is discussing new semantic conventions for **AI agent identity/trust** and **AI sandbox execution** ([semantic-conventions#3582](https://github.com/open-telemetry/semantic-conventions/issues/3582), [semantic-conventions#3583](https://github.com/open-telemetry/semantic-conventions/issues/3583)). These are proposals only; this skill should not present `agent.*` or `sandbox.*` as stable OpenTelemetry fields yet.
+
+**Current guidance until conventions stabilize:**
+
+- Keep using stable `gen_ai.*`, core resource attributes, and vendor-specific fields that already exist.
+- If you must model agent identity, trust, or sandbox metadata today, place it under an **organization-controlled custom namespace** (for example, `company.agent.id`, `company.agent.trust_level`, `company.sandbox.runtime`) rather than betting on proposed upstream names.
+- Treat sandbox telemetry as a **deployment/runtime concern** first: make graceful flush, short-lived process export, and network-isolated delivery work before standardizing attribute names.
+- Do **not** use proposed agent or sandbox IDs as metric dimensions unless you have verified bounded cardinality; keep high-cardinality identifiers in traces/logs only.
+
+When these proposals become an OTEP or merge into the semantic conventions repository, update collector transforms and dashboard examples deliberately rather than bulk-renaming attributes prematurely.

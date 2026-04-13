@@ -184,7 +184,7 @@ Use these triggers to load detailed reference documentation only when needed. Th
 - Stability levels and cardinality warnings
 
 ### Trigger: AI Coding Agent Observability
-**Keywords**: "Claude Code", "Codex", "Codex CLI", "Gemini CLI", "Copilot", "GitHub Copilot", "Qwen Code", "OpenCode", "Cursor", "Windsurf", "Aider", "AI agent", "coding agent", "vibe coding", "AI coding", "coding assistant", "AI IDE", "agent telemetry", "agent observability", "agent monitoring"
+**Keywords**: "Claude Code", "Codex", "Codex CLI", "Gemini CLI", "Copilot", "GitHub Copilot", "Qwen Code", "OpenCode", "Cursor", "Windsurf", "Aider", "AI agent", "coding agent", "vibe coding", "AI coding", "coding assistant", "AI IDE", "agent telemetry", "agent observability", "agent monitoring", "agent identity", "agent trust", "sandbox", "code interpreter", "MCP"
 
 **Action**: Load `references/ai-agents.md`
 
