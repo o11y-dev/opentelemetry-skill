@@ -378,6 +378,8 @@ service:
 | Codex CLI | `codex.tokens.used` | Counter | `{token}` | `model`, `direction` |
 | Codex CLI | `codex.request.latency` | Histogram | `ms` | `model`, `status` |
 
+> ⚠️ **Dashboard for evolving `gen_ai.token.type` values.** Do not assume GenAI token metrics are permanently limited to `input` and `output`. Newer semantic-convention work is adding finer-grained categories such as cache and reasoning tokens. Build charts and cost rollups so unknown token types are grouped, not discarded.
+
 ### 4.2 Events / Logs
 
 | Agent | Event Name | Key Attributes | Correlation ID Field |
@@ -556,3 +558,5 @@ Query in Loki/OpenSearch: `{job="claude_code"} | json | prompt_id="prompt_abc123
 | Qwen Code | 🔜 planned | `.qwen.*` | Not yet verifiable |
 
 Use the `transform/normalize_agent_metrics` processor from [§3](#3-unified-collector-config-for-multi-agent-ingestion) to add `gen_ai.system` attributes to Claude Code and Codex telemetry for unified dashboard queries.
+
+For dashboards and alerting, treat `gen_ai.token.type` as an **open set**. Keep normalizations additive (for example, mapping vendor-specific cache counters into a shared label) instead of rewriting unfamiliar values away.

@@ -1053,6 +1053,16 @@ OpenTelemetry and Prometheus are actively working to stabilize the **Prometheus 
 
 **Track progress**: https://github.com/open-telemetry/opentelemetry-specification/issues/4748
 
+### Resource Attributes in OTLP → Prometheus Are Still Stabilizing
+
+The Prometheus exporter specification is now **mixed stability**, and the mapping of OTLP `Resource` attributes into Prometheus `target_info` remains under active upstream work ([spec#4927](https://github.com/open-telemetry/opentelemetry-specification/issues/4927), [spec#4926](https://github.com/open-telemetry/opentelemetry-specification/issues/4926)).
+
+**What this means in practice**:
+- Do **not** assume every resource attribute you emit will appear as a stable Prometheus label.
+- Do **not** build critical alerts or recording rules that depend on `target_info` carrying all routing metadata.
+- If a dimension is operationally required in Prometheus, copy only the necessary **low-cardinality** attributes onto the metric stream explicitly (for example with a Collector `transform` processor) instead of depending on implicit exporter conversion.
+- Prefer an OTLP-native backend whenever you need lossless resource semantics, richer attribute filtering, or predictable long-term schema behavior.
+
 ---
 
 ## Summary
