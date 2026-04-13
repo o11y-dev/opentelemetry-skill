@@ -275,6 +275,14 @@ with tracer.start_as_current_span("chat.completion") as span:
 | `gen_ai.request.temperature` | double | Sampling temperature |
 | `gen_ai.response.finish_reasons` | string[] | Reason generation stopped |
 
+> ⚠️ **Stability note for skill orchestration spans**: the upstream proposal to
+> add `gen_ai.skill` spans and `gen_ai.skill.*` attributes is still open in
+> [semantic-conventions#3540](https://github.com/open-telemetry/semantic-conventions/issues/3540).
+> Do **not** assume those names are stable yet. If you need to observe an
+> internal skill lifecycle today, keep the data in your own experimental
+> namespace or resource attributes so you can remap it later without breaking
+> dashboards or stored queries.
+
 ⚠️ **Cardinality warning**: `gen_ai.request.model` has bounded cardinality (~10-50 models) and is safe as a metric dimension. Do NOT use `gen_ai.request.messages` or response content as metric dimensions.
 
 **Token cost metrics**:

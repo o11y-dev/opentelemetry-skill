@@ -588,6 +588,12 @@ OpenTelemetry.registerTracerProvider(tracerProvider: tracerProvider)
 
 **Android (Kotlin)**:
 
+For **Android-only JVM apps**, the Java SDK remains the most established
+production path. OpenTelemetry announced a native **Kotlin Multiplatform SDK**
+in March 2026; prefer that track when you explicitly need shared
+Android/iOS/JS instrumentation, but treat it as an emerging option until you
+have validated target-platform support and API maturity for your deployment.
+
 ```kotlin
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.sdk.OpenTelemetrySdk

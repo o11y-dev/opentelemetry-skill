@@ -25,7 +25,7 @@ Use this document when a user asks for:
 
 1. [How to Use This Reference](#how-to-use-this-reference)
 2. [Playbook Routing Format](#playbook-routing-format)
-3. [Relevant 2025 Blogs for This Skill](#relevant-2025-blogs-for-this-skill)
+3. [Relevant 2025-2026 Blogs for This Skill](#relevant-2025-2026-blogs-for-this-skill)
 4. [Generic Playbook Patterns](#generic-playbook-patterns)
 5. [Common Failure Modes](#common-failure-modes)
 
@@ -78,17 +78,19 @@ problem space, not by a specific company name.
 
 ---
 
-## Relevant 2025 Blogs for This Skill
+## Relevant 2025-2026 Blogs for This Skill
 
-These are the most relevant 2025 `opentelemetry.io` blog posts to route through
-this skill today. The list is intentionally **topic-driven** and **open-ended**
-so future entries can be added without restructuring the document.
+These are the most relevant 2025 and early-2026 `opentelemetry.io` blog posts
+to route through this skill today. The list is intentionally **topic-driven**
+and **open-ended** so future entries can be added without restructuring the
+document.
 
 | Blog | Primary routing signals | Why it matters for the skill | Load next |
 | :--- | :--- | :--- | :--- |
 | [Kubernetes annotation-based discovery for the OpenTelemetry Collector](https://opentelemetry.io/blog/2025/otel-collector-k8s-discovery/) | `receiver_creator`, annotation-based discovery, Kubernetes self-service scraping, pod annotations | Strong playbook for self-service Collector onboarding with platform safety rails | [collector][collector-ref], [platforms][platforms-ref] |
 | [Observing Lambdas using the OpenTelemetry Collector Extension Layer](https://opentelemetry.io/blog/2025/observing-lambdas/) | Lambda, serverless, extension layer, `decouple` processor, delayed export | Covers ephemeral runtime constraints and decoupled export patterns | [platforms][platforms-ref], [collector][collector-ref], [monitoring][monitoring-ref] |
 | [Exposing OTel Collector in Kubernetes with Gateway API & mTLS](https://opentelemetry.io/blog/2025/expose-otel-collector-gateway-api/) | Gateway API, mTLS, external OTLP ingress, multi-cluster collector, hybrid cloud | Practical security and ingress pattern for centralized collector deployments | [security][security-ref], [architecture][architecture-ref], [collector][collector-ref] |
+| [How Mastodon Runs OpenTelemetry Collectors in Production](https://opentelemetry.io/blog/2026/devex-mastodon/) | small team, Kubernetes collectors, autoscaling, vendor-neutral observability, declarative collector config | Strong operating model for keeping collector deployments simple, repeatable, and backend-agnostic under real production load | [architecture][architecture-ref], [collector][collector-ref], [monitoring][monitoring-ref] |
 | [Demystifying Automatic Instrumentation: How the Magic Actually Works](https://opentelemetry.io/blog/2025/demystifying-auto-instrumentation/) | auto-instrumentation, zero-code, bytecode instrumentation, eBPF, runtime hooks | Helps the skill explain *which* automatic instrumentation mechanism fits a runtime | [instrumentation][instrumentation-ref], [platforms][platforms-ref] |
 | [OpenTelemetry Logging and You](https://opentelemetry.io/blog/2025/opentelemetry-logging-and-you/) | logs, events, Logs API, log bridges, signal correlation | Useful when users ask how logs relate to traces and metrics in OTel's model | [instrumentation][instrumentation-ref], [collector][collector-ref] |
 | [How to Name Your Spans](https://opentelemetry.io/blog/2025/how-to-name-your-spans/) | span naming, low cardinality, semantic conventions, business spans | Good routing target for custom instrumentation and naming guidance | [instrumentation][instrumentation-ref] |
@@ -206,6 +208,7 @@ explanations.
 - **Adobe source link**: https://opentelemetry.io/blog/2026/adobe-otel-pipeline/
 - **K8s discovery playbook source**: https://opentelemetry.io/blog/2025/otel-collector-k8s-discovery/
 - **Gateway API + mTLS playbook source**: https://opentelemetry.io/blog/2025/expose-otel-collector-gateway-api/
+- **Mastodon production collectors source**: https://opentelemetry.io/blog/2026/devex-mastodon/
 - **Lambda extension playbook source**: https://opentelemetry.io/blog/2025/observing-lambdas/
 - **Auto-instrumentation strategy source**: https://opentelemetry.io/blog/2025/demystifying-auto-instrumentation/
 - **Logging source**: https://opentelemetry.io/blog/2025/opentelemetry-logging-and-you/
