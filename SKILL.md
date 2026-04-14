@@ -197,7 +197,7 @@ Use these triggers to load detailed reference documentation only when needed. Th
 - Privacy controls and cardinality management for agent telemetry
 
 ### Trigger: Playbooks & Production Patterns
-**Keywords**: "playbook", "production playbook", "blog", "2025 blog", "2026 blog", "production deployment", "real world", "example deployment", "platform team", "Gateway API", "mTLS", "Lambda extension", "decouple processor", "receiver creator", "annotation-based discovery", "auto-instrumentation", "zero-code", "eBPF", "compile-time instrumentation", "span naming", "attribute naming", "metric naming", "complex attributes", "Logs API", "events", "sampling update", "TraceState", "declarative config", "health check exclusion", "OTTL", "transform processor", "RPC conventions", "unroll processor", "profiles", "continuous profiling", "pprof receiver", "Mastodon", "OpenTelemetry Operator"
+**Keywords**: "playbook", "production playbook", "blog", "2025 blog", "2026 blog", "production deployment", "real world", "example deployment", "platform team", "Gateway API", "mTLS", "Lambda extension", "decouple processor", "receiver creator", "annotation-based discovery", "auto-instrumentation", "zero-code", "eBPF", "compile-time instrumentation", "span naming", "attribute naming", "metric naming", "complex attributes", "Logs API", "events", "sampling update", "TraceState", "declarative config", "health check exclusion", "OTTL", "transform processor", "RPC conventions", "unroll processor", "profiles", "profiling", "continuous profiling", "OTLP Profiles", "pprof receiver", "Mastodon", "one collector per namespace", "OpenTelemetry Operator", "Argo CD", "tail sampling"
 
 **Action**: Load `references/playbooks.md`
 
