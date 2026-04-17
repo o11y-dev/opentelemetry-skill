@@ -283,11 +283,14 @@ Each component directory contains a README with configuration examples, stabilit
 | **k8sattributesprocessor** | Enrich with Kubernetes metadata | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/k8sattributesprocessor) |
 | **tailsamplingprocessor** | Intelligent sampling decisions | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/tailsamplingprocessor) |
 | **filelogreceiver** | Read logs from disk | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver) |
+| **pprofreceiver** | Receive pprof-formatted profiles | Alpha | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/pprofreceiver) |
 | **loadbalancingexporter** | Route to multiple backends with consistent hashing | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/loadbalancingexporter) |
 | **resourcedetectionprocessor** | Detect and attach resource attributes (cloud, host, K8s) | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/resourcedetectionprocessor) |
 | **prometheusremotewriteexporter** | Export metrics via Prometheus Remote Write | Beta | [Docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/prometheusremotewriteexporter) |
 
 > ⚠️ **Prometheus Remote Write — InstrumentationScope attributes not exported**: The `prometheusremotewriteexporter` does **not** include `otel.scope.name` / `otel.scope.version` as Prometheus labels by default ([#45266](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/45266)). If downstream consumers need to distinguish metrics by instrumentation scope, use the native `otlpexporter` instead, or enrich the metric resource/data-point attributes before export using a `transform` processor.
+>
+> ⚠️ **Profiles signal is public Alpha**: OpenTelemetry Profiles entered public Alpha in Collector `v0.148.0+`. Use it for evaluation and early integration work, not critical production commitments yet. The current practical path is the `pprofreceiver` plus normal collector enrichment/transform processors (for example, `k8sattributes` and OTTL), and you should verify that your backend can ingest OTLP Profiles before standardizing on it.
 
 ### Example Configurations
 

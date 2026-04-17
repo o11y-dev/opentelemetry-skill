@@ -18,14 +18,15 @@ Use this document when a user asks for:
 - a **real-world deployment pattern**
 - a **production rollout model** for a platform team
 - a **blog-derived example** instead of a purely theoretical recommendation
-- a **2025 opentelemetry.io article** that is relevant to a practical OTel task
+- a recent **opentelemetry.io article** that is relevant to a practical OTel
+  task
 - a **generic playbook** that should remain reusable as more blogs are added
 
 ## Table of Contents
 
 1. [How to Use This Reference](#how-to-use-this-reference)
 2. [Playbook Routing Format](#playbook-routing-format)
-3. [Relevant 2025 Blogs for This Skill](#relevant-2025-blogs-for-this-skill)
+3. [Relevant 2025-2026 Blogs for This Skill](#relevant-2025-2026-blogs-for-this-skill)
 4. [Generic Playbook Patterns](#generic-playbook-patterns)
 5. [Common Failure Modes](#common-failure-modes)
 
@@ -78,17 +79,21 @@ problem space, not by a specific company name.
 
 ---
 
-## Relevant 2025 Blogs for This Skill
+## Relevant 2025-2026 Blogs for This Skill
 
-These are the most relevant 2025 `opentelemetry.io` blog posts to route through
-this skill today. The list is intentionally **topic-driven** and **open-ended**
-so future entries can be added without restructuring the document.
+These are the most relevant recent 2025 and early-2026 `opentelemetry.io` blog
+posts to route through this skill today. The list is intentionally
+**topic-driven** and **open-ended** so future entries can be added without
+restructuring the
+document.
 
 | Blog | Primary routing signals | Why it matters for the skill | Load next |
 | :--- | :--- | :--- | :--- |
 | [Kubernetes annotation-based discovery for the OpenTelemetry Collector](https://opentelemetry.io/blog/2025/otel-collector-k8s-discovery/) | `receiver_creator`, annotation-based discovery, Kubernetes self-service scraping, pod annotations | Strong playbook for self-service Collector onboarding with platform safety rails | [collector][collector-ref], [platforms][platforms-ref] |
 | [Observing Lambdas using the OpenTelemetry Collector Extension Layer](https://opentelemetry.io/blog/2025/observing-lambdas/) | Lambda, serverless, extension layer, `decouple` processor, delayed export | Covers ephemeral runtime constraints and decoupled export patterns | [platforms][platforms-ref], [collector][collector-ref], [monitoring][monitoring-ref] |
 | [Exposing OTel Collector in Kubernetes with Gateway API & mTLS](https://opentelemetry.io/blog/2025/expose-otel-collector-gateway-api/) | Gateway API, mTLS, external OTLP ingress, multi-cluster collector, hybrid cloud | Practical security and ingress pattern for centralized collector deployments | [security][security-ref], [architecture][architecture-ref], [collector][collector-ref] |
+| [How Mastodon Runs OpenTelemetry Collectors in Production](https://opentelemetry.io/blog/2026/devex-mastodon/) | small team, one collector per namespace, OpenTelemetry Operator, Argo CD, tail sampling, vendor-neutral observability | Strong operating model for keeping collector deployments simple, declarative, and reliable while preserving backend choice at production scale | [architecture][architecture-ref], [collector][collector-ref], [monitoring][monitoring-ref] |
+| [OpenTelemetry Profiles Enters Public Alpha](https://opentelemetry.io/blog/2026/profiles-alpha/) | profiles, profiling, OTLP Profiles, eBPF profiler, `pprof` receiver, profile correlation | Good routing target when users ask how continuous profiling fits into OpenTelemetry, especially around collector support and cross-signal correlation | [collector][collector-ref], [platforms][platforms-ref], [monitoring][monitoring-ref] |
 | [Demystifying Automatic Instrumentation: How the Magic Actually Works](https://opentelemetry.io/blog/2025/demystifying-auto-instrumentation/) | auto-instrumentation, zero-code, bytecode instrumentation, eBPF, runtime hooks | Helps the skill explain *which* automatic instrumentation mechanism fits a runtime | [instrumentation][instrumentation-ref], [platforms][platforms-ref] |
 | [OpenTelemetry Logging and You](https://opentelemetry.io/blog/2025/opentelemetry-logging-and-you/) | logs, events, Logs API, log bridges, signal correlation | Useful when users ask how logs relate to traces and metrics in OTel's model | [instrumentation][instrumentation-ref], [collector][collector-ref] |
 | [How to Name Your Spans](https://opentelemetry.io/blog/2025/how-to-name-your-spans/) | span naming, low cardinality, semantic conventions, business spans | Good routing target for custom instrumentation and naming guidance | [instrumentation][instrumentation-ref] |
@@ -102,6 +107,8 @@ so future entries can be added without restructuring the document.
 | [Alibaba, Datadog, and Quesma Join Forces on Go Compile-Time Instrumentation](https://opentelemetry.io/blog/2025/go-compile-time-instrumentation/) | Go compile-time instrumentation, `toolexec`, zero-code Go, build-time instrumentation | Good route when users compare compile-time instrumentation with eBPF or manual Go instrumentation | [instrumentation][instrumentation-ref] |
 | [Announcing the RPC Semantic Conventions stabilization project](https://opentelemetry.io/blog/2025/stabilizing-rpc-conventions/) | RPC semantic conventions, gRPC telemetry, convention migration, stabilization | Useful for questions about RPC naming, migration windows, and convention stability expectations | [instrumentation][instrumentation-ref] |
 | [Contributing the Unroll Processor to the OpenTelemetry Collector Contrib](https://opentelemetry.io/blog/2025/contrib-unroll-processor/) | unroll processor, bundled logs, record expansion, transform vs purpose-built processor | Adds a routing path for log-pipeline questions where bundled payload expansion should not be forced into OTTL transforms | [collector][collector-ref], [monitoring][monitoring-ref] |
+| [How Mastodon Runs OpenTelemetry Collectors in Production](https://opentelemetry.io/blog/2026/devex-mastodon/) | small team, Operator-managed collectors, one collector per namespace, Datadog connector, tail sampling in production | Strong production routing example for keeping collector architecture simple, using the OpenTelemetry Operator for lifecycle, and controlling volume with aggressive error-first sampling | [architecture][architecture-ref], [collector][collector-ref], [sampling][sampling-ref] |
+| [OpenTelemetry Profiles Enters Public Alpha](https://opentelemetry.io/blog/2026/profiles-alpha/) | profiles, continuous profiling, eBPF profiler, pprof receiver, profile signal | Useful when users ask about bringing profiling into an OTel pipeline; it sets the right expectation that Profiles are practical to evaluate but still Alpha for critical production workloads | [collector][collector-ref], [platforms][platforms-ref] |
 
 ### Routing notes for future maintenance
 
@@ -203,9 +210,11 @@ explanations.
 
 - **OTel blog**: https://opentelemetry.io/blog/
 - **Developer Experience survey**: https://opentelemetry.io/blog/2025/devex-survey/
-- **Adobe source link**: https://opentelemetry.io/blog/2026/adobe-otel-pipeline/
+- **Adobe source link**: https://opentelemetry.io/blog/2026/devex-adobe/
 - **K8s discovery playbook source**: https://opentelemetry.io/blog/2025/otel-collector-k8s-discovery/
 - **Gateway API + mTLS playbook source**: https://opentelemetry.io/blog/2025/expose-otel-collector-gateway-api/
+- **Mastodon production collectors source**: https://opentelemetry.io/blog/2026/devex-mastodon/
+- **Profiles alpha source**: https://opentelemetry.io/blog/2026/profiles-alpha/
 - **Lambda extension playbook source**: https://opentelemetry.io/blog/2025/observing-lambdas/
 - **Auto-instrumentation strategy source**: https://opentelemetry.io/blog/2025/demystifying-auto-instrumentation/
 - **Logging source**: https://opentelemetry.io/blog/2025/opentelemetry-logging-and-you/
@@ -220,6 +229,8 @@ explanations.
 - **Go compile-time instrumentation source**: https://opentelemetry.io/blog/2025/go-compile-time-instrumentation/
 - **RPC semantic conventions source**: https://opentelemetry.io/blog/2025/stabilizing-rpc-conventions/
 - **Unroll processor source**: https://opentelemetry.io/blog/2025/contrib-unroll-processor/
+- **Mastodon production story source**: https://opentelemetry.io/blog/2026/devex-mastodon/
+- **Profiles alpha source**: https://opentelemetry.io/blog/2026/profiles-alpha/
 
 ---
 
@@ -237,7 +248,7 @@ explanations.
 ## Summary
 
 ✅ Keep production playbooks **generic, reusable, and routing-friendly**
-✅ Use an **expandable 2025 blog routing scan** instead of centering the
+✅ Use an **expandable 2025-2026 blog routing scan** instead of centering the
 document on one org
 ✅ Route by **technical problem space** such as serverless, ingress, logs,
 metrics, naming, transforms, and sampling
