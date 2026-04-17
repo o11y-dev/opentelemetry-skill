@@ -298,10 +298,21 @@ token_counter.add(
     {
         "gen_ai.system": "openai",
         "gen_ai.operation.name": "chat",
-        "gen_ai.token.type": "total",  # "input" or "output"
+        "gen_ai.token.type": "total",  # Common values include total/input/output; cache/reasoning buckets may appear as semantic conventions evolve
     }
 )
 ```
+
+> ⚠️ **Do not hard-code GenAI metrics to only `input` / `output` token classes.** The GenAI semantic conventions are expanding to cover finer-grained token accounting (for example cache-hit and reasoning tokens). Preserve unknown `gen_ai.token.type` values in telemetry pipelines and handle grouping in dashboards or collector transforms instead of dropping new categories.
+
+### Declarative Configuration: Verify the Effective Resource via Emitted Telemetry
+
+When an SDK is initialized from **declarative configuration**, there is not yet a stable cross-language API to read back the final merged `Resource` after config files, environment variables, and resource detectors are applied.
+
+**Practical guidance**:
+- Keep critical resource attributes (`service.name`, `deployment.environment.name`, ownership tags) explicit in config instead of relying on implicit detector merge order.
+- Verify the effective `Resource` through emitted telemetry, collector debug output, or integration tests — not by assuming the SDK exposes a post-merge resource object.
+- If you need downstream routing or access control based on resource attributes, test the serialized OTLP output end to end before promoting a declarative config change.
 
 ### Events Semantic Conventions (v1.32.0+)
 

@@ -172,6 +172,7 @@
 - ✅ Panel 6: Cache hit ratio for Claude Code
 - ✅ Warns about session.id/prompt.id cardinality if put in metric dimensions
 - ✅ Notes some agents (Claude Code) require log-based queries for session counts
+- ✅ Notes GenAI token dashboards should tolerate additional token classes (for example cache/reasoning), not just `input`/`output`
 
 ### Compliance Check
 
@@ -180,6 +181,7 @@
 - [ ] Warns about session.id as metric dimension
 - [ ] Suggests log-based queries for session/user counts
 - [ ] Mentions cache hit ratio for Claude Code
+- [ ] Avoids assuming `gen_ai.token.type` is limited to only `input` / `output`
 
 ---
 
