@@ -389,6 +389,12 @@ official March 17, 2026 blog post
 The corresponding migration plan is captured in
 [OTEP 4430](https://github.com/open-telemetry/opentelemetry-specification/blob/fd43145dde7e5192ebc59a20992d98a3e6af5553/oteps/4430-span-event-api-deprecation-plan.md).
 
+Additional event-to-logs related proposals are under discussion (for example
+`Span.SetErrorStatus`, `AlwaysStackTrace` / `NeverStackTrace`, and built-in
+event-routing processors in the spec issue tracker). Treat these as
+**non-stable design signals** until they are accepted in the specification and
+implemented in your target SDK/collector version.
+
 The important distinction is that OpenTelemetry is deprecating the **API used to
 record new span events** — methods such as `Span.AddEvent` and
 `Span.RecordException` — not the ability for backends to keep showing events in
