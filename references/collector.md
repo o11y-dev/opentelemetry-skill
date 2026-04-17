@@ -600,6 +600,16 @@ Track upstream fix: [otelcol-contrib#46489](https://github.com/open-telemetry/op
 
 Upgrading to **bbolt v1.4.3** does **not** relax the mmap/flock filesystem requirements above. Keep using local block-backed volumes (ext4/xfs, EBS, PD, Managed Disk) and avoid NFS/EFS/SMB/CephFS for `file_storage`, even on the latest bbolt release.
 
+#### bbolt Security Advisory Watch (GO-2026-4923 / CVE-2026-33817)
+
+The bbolt maintainers are tracking a security fix release request in [bbolt#1187](https://github.com/etcd-io/bbolt/issues/1187). Until a patched bbolt line is published and adopted by the collector distribution you run:
+
+- Keep collectors and node OS images on the latest patched builds from your vendor
+- Restrict `file_storage` directory permissions to the collector user (`0700`) and avoid hostPath sharing
+- Keep regular backups/snapshots for stateful collector volumes so corruption or compromise is recoverable
+
+When the upstream patch lands, prefer collector builds that vendor the fixed bbolt version and remove temporary exception handling only after validation in staging.
+
 ---
 
 ## Resiliency: Message Queues (Kafka)

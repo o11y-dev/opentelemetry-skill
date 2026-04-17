@@ -261,14 +261,16 @@ Actively prevent these common mistakes:
 ❌ Enabling captureContent/OTEL_LOG_USER_PROMPTS in shared/production environments without PII controls
 ❌ Assuming all AI coding agents emit traces (Claude Code and Codex exec do not)
 ❌ Using delta temporality with backends that expect cumulative (e.g., VictoriaMetrics silently drops)
+❌ Hard-coding `gen_ai.token.type` handling to only `input`/`output` values
+❌ Treating open spec proposals (for example `Span.SetErrorStatus`, `AlwaysStackTrace`, built-in event-routing processors) as stable APIs before they ship in SDKs/collector releases
 
 ## Version and Compatibility
 
-- **Target Version**: OpenTelemetry Collector v0.147.0+ (2026+)
+- **Target Version**: OpenTelemetry Collector v0.150.0+ (2026+)
 - **Semantic Conventions**: v1.40.0+
 - **Kubernetes**: v1.24+ (for native sidecar support)
 - **Go SDK**: v1.24.0+
-- **Python SDK**: v1.40.0+
+- **Python SDK**: v1.41.0+
 - **Claude Code Telemetry**: Compatible with current release (metrics + logs/events)
 - **Gemini CLI Telemetry**: v0.34.0+ (traces + metrics + logs, GenAI SemConv)
 - **GitHub Copilot OTel**: VS Code Insiders / latest stable (traces + metrics + events, GenAI SemConv)
@@ -280,7 +282,7 @@ Actively prevent these common mistakes:
 - **Version**: 1.2.0
 - **Author**: o11y.dev
 - **License**: Apache 2.0
-- **Last Updated**: 2026-03-10
+- **Last Updated**: 2026-04-17
 
 ---
 
