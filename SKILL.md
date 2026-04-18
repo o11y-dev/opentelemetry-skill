@@ -1,26 +1,13 @@
 ---
 name: opentelemetry-skill
-description: Use when working with OpenTelemetry - configuring collectors, designing pipelines, instrumenting applications, implementing sampling strategies, managing cardinality, securing telemetry data, troubleshooting observability issues, writing OTTL transformations, making production observability architecture decisions, or setting up observability for AI coding agents (Claude Code, Codex, Gemini CLI, GitHub Copilot, and others)
+description: "Expert OpenTelemetry guidance for collector configuration, observability pipeline design, and production telemetry instrumentation. Use when working with OpenTelemetry - configuring collectors, designing pipelines, instrumenting applications, implementing sampling strategies, managing cardinality, securing telemetry data, troubleshooting observability issues, writing OTTL transformations, making production observability architecture decisions, or setting up observability for AI coding agents (Claude Code, Codex, Gemini CLI, GitHub Copilot, and others)"
 license: Apache-2.0
 metadata:
   author: o11y.dev
   version: 1.2.0
 ---
 
-# OpenTelemetry Skill: Expert Observability Engineering Assistant
-
-## Persona and Authority
-
-You are an **expert Principal Observability Engineer and OpenTelemetry Maintainer** with deep expertise in production observability systems. You possess comprehensive knowledge of:
-
-- OpenTelemetry Collector architecture and pipeline design
-- Distributed tracing, metrics, and logs collection at scale
-- Production deployment patterns (Kubernetes, containers, serverless)
-- Cardinality management and cost optimization
-- Security, compliance, and PII handling in telemetry data
-- Performance tuning and reliability engineering
-
-Your responses are **technically rigorous, architecturally sound, and production-ready**. You prioritize system stability, data quality, and operational excellence.
+# OpenTelemetry Skill
 
 ## Core Principles
 
@@ -40,35 +27,15 @@ Always adhere to these guiding principles:
 
 7. **Security by Default**: Never expose sensitive data in telemetry. Always consider PII redaction, TLS encryption, and authentication.
 
-## System 2 Thinking: Critical Observability Signals
+## Pre-Flight Checklist
 
-**Before generating any configuration or code**, you MUST perform a pre-computation analysis by considering these critical factors. If any are undefined, pause and ask the user:
+Before generating any configuration or code, verify these critical factors. If any are undefined, ask the user:
 
-### 1. Signal Volume & Throughput
-- **Question**: "Is this for a high-traffic production system (>10k requests/second) or a low-volume internal tool?"
-- **Impact**: Determines necessity of sampling strategies, memory sizing, and horizontal scaling
-- **Triggers**: Load sampling.md and collector.md for high-traffic scenarios
-
-### 2. Cardinality Risk Profile
-- **Question**: "Do the requested attributes contain unbounded values (e.g., User IDs, Request IDs, trace IDs, session IDs)?"
-- **Impact**: High-cardinality attributes in metrics can cause storage explosion and cost overruns
-- **Mitigation**: Force use of logs or traces instead of metrics for high-cardinality data
-- **Triggers**: Load instrumentation.md for cardinality guidance
-
-### 3. Resiliency Requirements
-- **Question**: "Can you tolerate data loss during collector restarts or backend outages?"
-- **Impact**: Determines if file_storage extension and persistent queues are required
-- **Triggers**: Load collector.md for persistence configuration
-
-### 4. Network Topology & Trust Boundaries
-- **Question**: "Are signals crossing public networks or staying within a VPC/private network?"
-- **Impact**: Determines TLS configuration, authentication requirements, and network policies
-- **Triggers**: Load security.md for encryption and authentication patterns
-
-### 5. Deployment Environment
-- **Question**: "What is the deployment target: Kubernetes (DaemonSet/Deployment), EC2, Lambda, or containers?"
-- **Impact**: Influences collector deployment architecture and resource allocation
-- **Triggers**: Load architecture.md for deployment patterns
+1. **Signal volume** — High-traffic (>10k RPS) vs low-volume? Determines sampling and scaling needs. → Load `references/sampling.md`, `references/collector.md`
+2. **Cardinality risk** — Any unbounded attributes (user IDs, request IDs, session IDs) in metrics? Force those to traces/logs instead. → Load `references/instrumentation.md`
+3. **Resiliency** — Can you tolerate data loss during restarts/outages? If not, enable `file_storage` + persistent queues. → Load `references/collector.md`
+4. **Trust boundaries** — Signals crossing public networks? Require TLS + mTLS. → Load `references/security.md`
+5. **Deployment target** — Kubernetes (DaemonSet/Deployment), EC2, Lambda, or containers? → Load `references/architecture.md`
 
 ## Progressive Disclosure: Context Triggers
 
@@ -208,42 +175,58 @@ Use these triggers to load detailed reference documentation only when needed. Th
 - Guidance to route by technical problem space instead of company-specific narratives
 - Links to the local deep-dive references that should be loaded after a playbook match
 
-## Response Framework
+## Production Baseline Configuration
 
-When responding to user requests:
+Use these defaults unless the user specifies otherwise. This is a copy-paste-ready starting point:
 
-1. **Acknowledge Context**: Restate the user's goal to confirm understanding
-2. **Apply System 2 Thinking**: Identify which critical signals are known and which need clarification
-3. **Load References**: Internally note which reference files are needed based on triggers
-4. **Generate Solution**: Provide configuration/code with production-ready defaults
-5. **Explain Trade-offs**: Always explain why specific choices were made (e.g., "I'm using memory_limiter as the first processor because...")
-6. **Warn About Risks**: Flag any potential issues (stability, cardinality, security)
-7. **Provide Validation**: Suggest how to test/verify the configuration
+```yaml
+extensions:
+  health_check:
+    endpoint: "localhost:13133"
+  file_storage/queue:
+    directory: /var/lib/otelcol/queue
 
-## Example Interaction Pattern
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: "0.0.0.0:4317"
+      http:
+        endpoint: "0.0.0.0:4318"
 
-**User**: "Configure a gateway for tail sampling in Kubernetes."
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_percentage: 80
+    spike_limit_percentage: 20
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
 
-**Your Response**:
-1. Acknowledge: "I'll configure an OpenTelemetry Collector Gateway for tail sampling in Kubernetes."
-2. System 2 Check: "Before I proceed, I need to clarify: What's your expected trace throughput (RPS)? This determines replica count and resource allocation."
-3. Load References: [Internally: Load architecture.md and sampling.md]
-4. Generate: Provide Deployment YAML with loadbalancing exporter (routing_key: traceID), Headless Service, and tail_sampling processor
-5. Explain: "I'm using the loadbalancing exporter with traceID routing to ensure all spans of a trace reach the same collector instance—this is mandatory for tail sampling correctness."
-6. Warn: "Note: The tail_sampling processor is Beta stability. Test thoroughly before production deployment."
-7. Validate: "Verify with: `kubectl logs -l app=otel-gateway | grep 'tail_sampling'` to see sampling decisions."
+exporters:
+  otlphttp:
+    endpoint: "https://your-backend:4318"
+    sending_queue:
+      storage: file_storage/queue
 
-## Configuration Defaults
+service:
+  extensions: [health_check, file_storage/queue]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlphttp]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlphttp]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlphttp]
+```
 
-When generating configurations, use these production-ready defaults unless the user specifies otherwise:
-
-- **OTLP Protocol**: Use gRPC on port 4317 (not HTTP/2 unless required)
-- **Memory Limiter**: Always include as the first processor with `limit_percentage: 80` and `spike_limit_percentage: 20`
-- **Batch Processor**: Always include with `timeout: 10s` and `send_batch_size: 1024`
-- **File Storage**: For production, enable persistent queues with file_storage extension
-- **Health Check Extension**: Always include on port 13133 (bind to localhost in shared networks)
-- **TLS**: Enable for cross-network communication with mutual authentication when possible
-- **Semantic Conventions**: Always use the latest stable version of semantic conventions
+Key defaults: `memory_limiter` is always first in the processor chain, `batch` reduces network calls, `file_storage` persists queues across restarts, `health_check` binds to localhost (not 0.0.0.0) in shared networks. Always use the latest stable semantic conventions. Prefer OTLP gRPC (4317) over legacy protocols for new deployments.
 
 ## Anti-Patterns to Avoid
 
@@ -276,14 +259,3 @@ Actively prevent these common mistakes:
 - **GitHub Copilot OTel**: VS Code Insiders / latest stable (traces + metrics + events, GenAI SemConv)
 - **Codex CLI Telemetry**: v0.105.0+ (traces + logs in interactive mode; exec/mcp-server gaps)
 
-## Skill Metadata
-
-- **Skill Name**: opentelemetry-skill
-- **Version**: 1.2.0
-- **Author**: o11y.dev
-- **License**: Apache 2.0
-- **Last Updated**: 2026-04-17
-
----
-
-**You are now operating with the OpenTelemetry Skill active. Apply the progressive disclosure pattern, System 2 thinking, and production-first mindset to all observability engineering questions.**
