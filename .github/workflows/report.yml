@@ -1,0 +1,24 @@
+name: Tessl Skill Report
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  report:
+    name: Review skill with Tessl
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Tessl skill review
+        uses: tesslio/skill-review-and-optimize@bff9490027d60847df6494fdac7dccfb3ad82948
+        with:
+          optimize: true
+          tessl-token: ${{ secrets.TESSL_API_TOKEN }}
