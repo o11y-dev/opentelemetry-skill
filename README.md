@@ -180,7 +180,7 @@ This skill includes a comprehensive test and validation framework following TDD 
 - **[tests/compliance-verification.md](tests/compliance-verification.md)**: GREEN phase - Verify skill changes agent behavior as expected
 - **[tests/rationalization-table.md](tests/rationalization-table.md)**: REFACTOR phase - Document and counter agent rationalizations
 
-The testing framework validates that the skill actually changes AI behavior and doesn't allow common anti-patterns. GitHub Actions workflow automatically validates skill structure and content on every change.
+The testing framework validates that the skill actually changes AI behavior and doesn't allow common anti-patterns. GitHub Actions automatically validates skill structure and content on every change, and the Tessl report workflow posts best-practice review feedback on every pull request.
 
 An additional GitHub Agentic Workflow (`.github/workflows/otel-upstream-maintenance.yml`) runs weekly to create an upstream maintenance digest issue with recent OpenTelemetry GitHub issues, releases, and blog/community updates for practical repository refreshes.
 
