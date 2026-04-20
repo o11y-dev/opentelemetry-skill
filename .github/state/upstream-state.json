@@ -1,0 +1,174 @@
+{
+  "version": 1,
+  "description": "Per-repo heartbeat state for the upstream watcher. Updated by .github/scripts/poll-upstreams.mjs. Null values indicate the repo has never been polled yet.",
+  "repos": {
+    "open-telemetry/semantic-conventions": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-collector-contrib": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-collector": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-collector-releases": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-operator": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-proto": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-go": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-java": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-python": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-js": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-dotnet": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-specification": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/oteps": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-helm-charts": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-demo": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-java-instrumentation": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-python-contrib": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-js-contrib": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-dotnet-contrib": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-go-instrumentation": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-lambda": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-rust": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-cpp": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-ruby": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-php": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-swift": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/opentelemetry-erlang": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    },
+    "open-telemetry/community": {
+      "last_release": null,
+      "last_release_published_at": null,
+      "last_commit_sha": null,
+      "last_committed_date": null
+    }
+  }
+}
