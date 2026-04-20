@@ -385,6 +385,8 @@ processors:
 - **`silent`**: Suppress errors completely
 - **`propagate`**: Stop pipeline on errors (development only)
 
+> ⚠️ **Collector v0.150.0+ compatibility**: Recent OTTL releases now return explicit errors when setters receive the wrong value type in more contexts instead of silently doing nothing. Keep `error_mode: ignore` for production safety, validate configs before rollout, and guard/cast values when writing `set(...)` statements that may receive mixed types.
+
 ### 2. Performance Optimization
 
 **Order matters**: Apply filters before expensive transformations.

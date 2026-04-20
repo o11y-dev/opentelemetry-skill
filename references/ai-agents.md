@@ -248,7 +248,7 @@ A single OTel Collector instance can receive telemetry from all agents simultane
 ```yaml
 # otel-collector-ai-agents.yaml
 # Production-ready config for multi-agent AI coding observability
-# Tested with OTel Collector v0.147.0+
+# Tested with OTel Collector v0.150.0+
 
 extensions:
   health_check:
@@ -379,6 +379,8 @@ service:
 | Codex CLI | `codex.request.latency` | Histogram | `ms` | `model`, `status` |
 
 > ⚠️ **Dashboard for evolving `gen_ai.token.type` values.** Do not assume GenAI token metrics are permanently limited to `input` and `output`. Newer semantic-convention work is adding finer-grained categories such as cache and reasoning tokens. Build charts and cost rollups so unknown token types are grouped, not discarded.
+
+**SemConv v1.40.0 review**: Preserve `gen_ai.agent.version`, `gen_ai.usage.cache_read.input_tokens`, and `gen_ai.usage.cache_creation.input_tokens` when agents emit them. These attributes help distinguish agent releases and cached-token behavior without collapsing everything back into a fixed `input`/`output` schema.
 
 ### 4.2 Events / Logs
 
