@@ -326,7 +326,9 @@ exporters:
 
   # Preferred OTLP gRPC exporter example
   otlp/tempo:
-    endpoint: http://tempo:4317
+    endpoint: tempo:4317
+    tls:
+      insecure: true
     sending_queue:
       enabled: true
       storage: file_storage
