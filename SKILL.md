@@ -1,6 +1,6 @@
 ---
 name: opentelemetry-skill
-description: "Expert OpenTelemetry guidance for collector configuration, observability pipeline design, and production telemetry instrumentation. Use when working with OpenTelemetry - configuring collectors, designing pipelines, instrumenting applications, implementing sampling strategies, managing cardinality, securing telemetry data, troubleshooting observability issues, writing OTTL transformations, making production observability architecture decisions, or setting up observability for AI coding agents (Claude Code, Codex, Gemini CLI, GitHub Copilot, and others)"
+description: "Expert OpenTelemetry guidance for collector configuration, pipeline design, and production telemetry instrumentation. Use when configuring collectors, designing pipelines, instrumenting applications, implementing sampling, managing cardinality, securing telemetry, writing OTTL transformations, or setting up AI coding agent observability (Claude Code, Codex, Gemini CLI, GitHub Copilot)."
 license: Apache-2.0
 metadata:
   author: o11y.dev
@@ -13,19 +13,19 @@ metadata:
 
 Always adhere to these guiding principles:
 
-1. **Stability over Features**: Check component stability levels (Alpha/Beta/Stable) in otelcol-contrib. Warn users about non-stable components in production environments.
+1. **Stability over Features**: Check component stability levels (Alpha/Beta/Stable) in otelcol-contrib. Warn users about non-stable components in production.
 
-2. **Convention over Configuration**: Always prefer OpenTelemetry Semantic Conventions over custom attribute naming. Use standard attribute names from the semantic conventions specification.
+2. **Convention over Configuration**: Always prefer OpenTelemetry Semantic Conventions over custom attribute names.
 
-3. **Protocol Unification**: Always prefer OTLP (gRPC/HTTP) over legacy protocols (Zipkin, Jaeger, Prometheus Remote Write) unless there are specific compatibility requirements.
+3. **Protocol Unification**: Default to **OTLP gRPC** (port 4317); use **OTLP HTTP** (port 4318) when gRPC is unavailable due to agent, proxy, browser, or backend constraints.
 
-4. **Deterministic Routing Keys**: For load-balancing exporters, routing keys must be deterministic, low-cardinality strings (e.g., `traceID`, `tenant_id`, `cluster`). Normalize/stringify non-string attributes before routing to prevent shard churn and ensure sticky sessions for stateful processors.
+4. **Deterministic Routing Keys**: For load-balancing exporters, routing keys must be deterministic, low-cardinality strings (e.g., `traceID`, `tenant_id`, `cluster`). Normalize non-string attributes before routing.
 
 5. **Safety First**: Prioritize collector stability (memory limiters, persistent queues, backpressure) over data completeness. Dropping data is preferable to crashing the collector.
 
-6. **Cardinality Awareness**: Always evaluate the cardinality implications of attributes. High-cardinality attributes (>100 unique values) should NOT be metric dimensions—use traces or logs instead.
+6. **Cardinality Awareness**: High-cardinality attributes (>100 unique values) must NOT be metric dimensions — use traces or logs instead.
 
-7. **Security by Default**: Never expose sensitive data in telemetry. Always consider PII redaction, TLS encryption, and authentication.
+7. **Security by Default**: Redact PII, enable TLS for cross-network communication, and authenticate all collector endpoints.
 
 ## Pre-Flight Checklist
 
@@ -39,141 +39,23 @@ Before generating any configuration or code, verify these critical factors. If a
 
 ## Progressive Disclosure: Context Triggers
 
-Use these triggers to load detailed reference documentation only when needed. This optimizes context usage and prevents information overload.
+Load detailed reference documentation only when the user's request matches a trigger. This keeps context lean.
 
-### Trigger: Architecture & Deployment
-**Keywords**: "Kubernetes", "Helm", "Deployment", "DaemonSet", "Sidecar", "Gateway", "Scaling", "Load Balancing", "Horizontal Scaling"
+| Trigger keywords | Load | Key topics |
+|---|---|---|
+| Kubernetes, Helm, DaemonSet, Sidecar, Gateway, Scaling, Load Balancing | `references/architecture.md` | DaemonSet vs Gateway vs Sidecar, Target Allocator, HPA |
+| Pipeline, Receiver, Processor, Exporter, Queue, Batch, Memory, Extensions | `references/collector.md` | Processor ordering, memory_limiter, file_storage, stability levels |
+| SDK, Instrumentation, Spans, Attributes, Semantic Conventions, Cardinality | `references/instrumentation.md` | Auto vs manual, SemConv, cardinality Rule of 100 |
+| Sampling, Cost, Volume, Head Sampling, Tail Sampling, Probabilistic | `references/sampling.md` | Head/tail sampling, sticky sessions, sampling math |
+| Security, PII, GDPR, Redaction, TLS, Authentication, Credentials | `references/security.md` | PII redaction, mTLS, RBAC, extension exposure risks |
+| Monitor the collector, Health, Alerts, Self-monitoring, Collector metrics | `references/monitoring.md` | otelcol_* metrics, dashboards, alert rules |
+| Lambda, Azure Functions, GCP Functions, Serverless, FaaS, Mobile, Browser | `references/platforms.md` | FaaS patterns, Lambda extension layer, client-side apps |
+| OTTL, Transform, Transformation, Modify, Filter attributes, Parse, Extract | `references/ottl.md` | OTTL syntax, context types, built-in functions, error handling |
+| Connector, spanmetrics, servicegraph, routing connector, failover connector | `references/connectors.md` | R.E.D. metrics, service graph, routing, failover, stickiness |
+| Claude Code, Codex, Gemini CLI, Copilot, AI agent, coding agent, MCP | `references/ai-agents.md` | Agent OTel support matrix, unified collector config, GenAI SemConv |
+| playbook, production playbook, blog, 2025 blog, 2026 blog, real world | `references/playbooks.md` | Production patterns from opentelemetry.io blogs |
 
-**Action**: Load `references/architecture.md`
-
-**Contains**:
-- DaemonSet vs Gateway vs Sidecar decision matrix
-- Load balancing strategies for tail sampling (sticky sessions)
-- Horizontal scaling patterns with Target Allocator
-- Resource sizing and HPA configuration
-
-### Trigger: Collector Configuration
-**Keywords**: "Pipeline", "Receiver", "Processor", "Exporter", "Queue", "Batch", "Memory", "Components", "Extensions"
-
-**Action**: Load `references/collector.md`
-
-**Contains**:
-- Pipeline anatomy and processor ordering rules
-- memory_limiter configuration (critical for stability)
-- Persistent queues with file_storage
-- Core vs Contrib component stability levels
-- Batch processor optimization
-- **Tip**: For the `loadbalancing` exporter, the `routing_key` should be a stable, low-cardinality string (e.g., `traceID`, `tenant_id`, `cluster`). Normalize non-string attributes to strings before routing to avoid shard churn.
-
-### Trigger: Instrumentation & SDKs
-**Keywords**: "SDK", "Instrumentation", "Automatic", "Manual", "Spans", "Attributes", "Semantic Conventions", "Cardinality"
-
-**Action**: Load `references/instrumentation.md`
-
-**Contains**:
-- Auto-instrumentation vs manual instrumentation trade-offs
-- Semantic conventions enforcement
-- Cardinality management and the "Rule of 100"
-- Language-specific SDK patterns (Java, Python, Go, Node.js)
-
-### Trigger: Sampling Strategies
-**Keywords**: "Sampling", "Cost", "Volume", "Budget", "Head Sampling", "Tail Sampling", "Probabilistic", "Rate Limiting"
-
-**Action**: Load `references/sampling.md`
-
-**Contains**:
-- Head sampling (ParentBasedTraceIdRatio) configuration
-- Tail sampling policies (latency, error, probabilistic)
-- Statistical implications and sampling math
-- Architecture requirements for tail sampling (sticky sessions)
-
-### Trigger: Security & Compliance
-**Keywords**: "Security", "PII", "GDPR", "Redaction", "Masking", "TLS", "Authentication", "Credentials", "Sensitive Data"
-
-**Action**: Load `references/security.md`
-
-**Contains**:
-- PII redaction patterns and regex configurations
-- TLS mutual authentication (mTLS)
-- Extension security (pprof, zpages exposure risks)
-- Least privilege and RBAC configuration
-
-### Trigger: Meta-Monitoring
-**Keywords**: "Monitor the collector", "Health", "Metrics", "Dashboard", "Alerts", "Self-monitoring", "Collector metrics"
-
-**Action**: Load `references/monitoring.md`
-
-**Contains**:
-- Critical collector metrics (otelcol_* metrics)
-- monitoringartist dashboard patterns
-- Alert rules for data loss and resource exhaustion
-- Health check endpoints and readiness probes
-
-### Trigger: Platforms & Serverless
-**Keywords**: "Lambda", "AWS Lambda", "Azure Functions", "Google Cloud Functions", "GCP Functions", "Serverless", "FaaS", "Functions as a Service", "Mobile", "Browser", "Client-side", "iOS", "Android", "Cold start", "Timeout"
-
-**Action**: Load `references/platforms.md`
-
-**Contains**:
-- FaaS deployment patterns (Lambda, Azure, GCP)
-- Lambda best practices (non-blocking export, timeout handling)
-- Collector Extension Layer configuration
-- Lambda layers and environment variables
-- Client-side app patterns (mobile, browser)
-- Platform-specific semantic conventions
-
-### Trigger: OTTL (OpenTelemetry Transformation Language)
-**Keywords**: "OTTL", "Transform", "Transformation", "Modify", "Filter attributes", "Parse", "Extract fields", "Redact", "Rename", "Context", "Statement", "Function", "Converter"
-
-**Action**: Load `references/ottl.md`
-
-**Contains**:
-- OTTL syntax and context types (resource, scope, span, spanEvent, metric, datapoint, log)
-- Built-in functions (set, delete, truncate, limit, replace_pattern, parse_json, etc.)
-- Transformation patterns and best practices
-- Performance considerations and optimization
-- Common use cases (PII redaction, attribute enrichment, filtering)
-- Error handling and debugging transformations
-
-### Trigger: Connectors
-**Keywords**: "Connector", "span-to-metrics", "spanmetrics", "service graph", "servicegraph", "routing connector", "failover connector", "cross-pipeline", "R.E.D. metrics", "pipeline bridge", "signal to metrics"
-
-**Action**: Load `references/connectors.md`
-
-**Contains**:
-- Connector concept: simultaneously an exporter on one pipeline and a receiver on another
-- spanmetricsconnector: R.E.D. (Rate, Errors, Duration) metrics from traces
-- servicegraphconnector: service dependency graph metrics
-- routingconnector: attribute-based pipeline routing
-- failoverconnector: automatic pipeline failover
-- countconnector and signaltometricsconnector
-- Stickiness requirements for stateful connectors (spanmetrics, servicegraph)
-- Stability levels and cardinality warnings
-
-### Trigger: AI Coding Agent Observability
-**Keywords**: "Claude Code", "Codex", "Codex CLI", "Gemini CLI", "Copilot", "GitHub Copilot", "Qwen Code", "OpenCode", "Cursor", "Windsurf", "Aider", "AI agent", "coding agent", "vibe coding", "AI coding", "coding assistant", "AI IDE", "agent telemetry", "agent observability", "agent monitoring", "agent identity", "agent trust", "sandbox", "code interpreter", "MCP"
-
-**Action**: Load `references/ai-agents.md`
-
-**Contains**:
-- AI coding agent OTel support matrix (traces, metrics, logs per agent)
-- Per-agent quick-start configuration (env vars, settings files)
-- Unified OTel Collector config for multi-agent ingestion
-- Event/metric taxonomy and GenAI semantic convention mapping
-- Dashboard patterns and community resources
-- Privacy controls and cardinality management for agent telemetry
-
-### Trigger: Playbooks & Production Patterns
-**Keywords**: "playbook", "production playbook", "blog", "2025 blog", "2026 blog", "production deployment", "real world", "example deployment", "platform team", "Gateway API", "mTLS", "Lambda extension", "decouple processor", "receiver creator", "annotation-based discovery", "auto-instrumentation", "zero-code", "eBPF", "compile-time instrumentation", "span naming", "attribute naming", "metric naming", "complex attributes", "Logs API", "events", "sampling update", "TraceState", "declarative config", "health check exclusion", "OTTL", "transform processor", "RPC conventions", "unroll processor", "profiles", "profiling", "continuous profiling", "OTLP Profiles", "pprof receiver", "Mastodon", "one collector per namespace", "OpenTelemetry Operator", "Argo CD", "tail sampling"
-
-**Action**: Load `references/playbooks.md`
-
-**Contains**:
-- Generic playbook routing format for turning upstream blog posts into reusable skill guidance
-- Expanded scan of relevant 2025-2026 `opentelemetry.io` blogs for this skill
-- Routing coverage for Kubernetes discovery, secure collector ingress, Lambda extension-layer collection, auto-instrumentation strategy, logging, naming, sampling, declarative configuration, OTTL transforms, Go zero-code instrumentation, RPC convention stability, and log unrolling
-- Guidance to route by technical problem space instead of company-specific narratives
-- Links to the local deep-dive references that should be loaded after a playbook match
+> **Collector `loadbalancing` exporter tip**: `routing_key` must be a stable, low-cardinality string (`traceID`, `tenant_id`, `cluster`). Normalize non-string attributes to strings before routing to prevent shard churn.
 
 ## Production Baseline Configuration
 
@@ -208,8 +90,8 @@ processors:
     send_batch_size: 1024
 
 exporters:
-  otlphttp:
-    endpoint: "https://your-backend:4318"
+  otlp:
+    endpoint: "your-backend:4317"
     sending_queue:
       enabled: true
       storage: file_storage/queue
@@ -220,6 +102,9 @@ exporters:
       initial_interval: 1s
       max_interval: 30s
       max_elapsed_time: 300s
+  # otlphttp:                        # HTTP exporter — use when backend requires HTTP
+  #   endpoint: "https://your-backend:4318"
+  #   sending_queue: { enabled: true, storage: file_storage/queue }
 
 service:
   extensions: [health_check, file_storage/queue]
@@ -227,37 +112,78 @@ service:
     traces:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlphttp]
+      exporters: [otlp]
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlphttp]
+      exporters: [otlp]
     logs:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlphttp]
+      exporters: [otlp]
 ```
 
-Key defaults: `memory_limiter` is always first in the processor chain, `batch` reduces network calls, `file_storage` can preserve queues across restarts only when the collector comes back on the same host/volume (in Kubernetes, back `/var/lib/otelcol/queue` with a PVC or other persistent disk if queued data must survive pod replacement), `health_check` binds to localhost (not 0.0.0.0) in shared networks. Always use the latest stable semantic conventions. Prefer OTLP gRPC (4317) over legacy protocols for new deployments.
+Key defaults:
+
+- `memory_limiter` must be first in every processor chain.
+- `batch` reduces exporter network calls.
+- `file_storage` preserves queues across restarts only when the collector returns to the same host/volume. In Kubernetes, back `/var/lib/otelcol/queue` with a PVC.
+- `health_check` binds to `localhost` (not `0.0.0.0`) in shared networks.
+- Prefer OTLP gRPC (port 4317) for receivers and exporters. Fall back to OTLP HTTP (port 4318) when gRPC is unavailable.
+
+## Validation & Error Recovery
+
+Always include validation checkpoints when delivering configurations.
+
+### Validate before deploying
+
+```bash
+# Syntax and structural validation (local binary)
+otelcol validate --config config.yaml
+
+# Container-based dry-run (no outbound traffic)
+docker run --rm -v $(pwd)/config.yaml:/etc/otelcol/config.yaml \
+  otel/opentelemetry-collector-contrib:latest \
+  validate --config /etc/otelcol/config.yaml
+```
+
+### Verify a live pipeline
+
+```bash
+# Health endpoint — returns 200 when collector is ready
+curl -sf http://localhost:13133/ && echo "healthy"
+
+# Tail logs for pipeline errors and dropped data
+kubectl logs -l app=otelcol -f | grep -E "error|dropped|refused|timeout"
+
+# Collector self-metrics (Prometheus scrape)
+curl -s http://localhost:8888/metrics | grep -E "otelcol_processor_dropped|otelcol_exporter_send_failed"
+```
+
+### Error recovery guidance
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Collector exits at start | Config parse error | Run `otelcol validate`; check indentation and quoted strings |
+| `memory_limiter: data dropped` in logs | Memory limit hit | Increase `limit_percentage`, reduce `send_batch_size`, or add upstream sampling |
+| `exporter queue is full` | Backend unreachable or slow | Verify endpoint reachability; increase `queue_size`; check `retry_on_failure` settings |
+| `pipeline drops data` on restart | No persistent queue | Add `file_storage` extension and set `storage: file_storage/queue` in exporter sending_queue |
+| OTTL statement silently skipped | Type mismatch or nil value | Add `error_mode: ignore`; guard with `where attributes["key"] != nil`; use `Int()` / `String()` converters |
+| Tail sampling misses spans | Spans split across collector instances | Use `loadbalancing` exporter with `routing_key: traceID` upstream |
 
 ## Anti-Patterns to Avoid
 
-Actively prevent these common mistakes:
-
-❌ Placing memory_limiter anywhere except first in the processor chain
+❌ Placing `memory_limiter` anywhere except first in the processor chain
 ❌ Using high-cardinality attributes (user_id, trace_id) as metric dimensions
-❌ Exposing pprof (1777), zpages (55679) on 0.0.0.0 in production
-❌ Using tail_sampling without sticky session load balancing (loadbalancing exporter)
-❌ Omitting batch processor (causes excessive network calls)
-❌ Using deprecated protocols (Zipkin, Jaeger) for new deployments
-❌ Creating custom attribute names instead of using semantic conventions
-❌ Ignoring component stability levels in production
-❌ Including prompt.id or session.id as metric dimensions (unbounded cardinality)
-❌ Enabling captureContent/OTEL_LOG_USER_PROMPTS in shared/production environments without PII controls
+❌ Exposing pprof (1777), zpages (55679) on `0.0.0.0` in production
+❌ Using `tail_sampling` without sticky session load balancing (loadbalancing exporter)
+❌ Omitting `batch` processor (causes excessive network calls)
+❌ Including `prompt.id` or `session.id` as metric dimensions (unbounded cardinality)
+❌ Enabling `captureContent`/`OTEL_LOG_USER_PROMPTS` in shared/production environments without PII controls
 ❌ Assuming all AI coding agents emit traces (Claude Code and Codex exec do not)
 ❌ Using delta temporality with backends that expect cumulative (e.g., VictoriaMetrics silently drops)
 ❌ Hard-coding `gen_ai.token.type` handling to only `input`/`output` values
-❌ Treating open spec proposals (for example `Span.SetErrorStatus`, `AlwaysStackTrace`, built-in event-routing processors) as stable APIs before they ship in SDKs/collector releases
+❌ Treating open spec proposals as stable APIs before they ship in SDKs/collector releases
 
 ## Version and Compatibility
 
@@ -270,4 +196,3 @@ Actively prevent these common mistakes:
 - **Gemini CLI Telemetry**: v0.34.0+ (traces + metrics + logs, GenAI SemConv)
 - **GitHub Copilot OTel**: VS Code Insiders / latest stable (traces + metrics + events, GenAI SemConv)
 - **Codex CLI Telemetry**: v0.105.0+ (traces + logs in interactive mode; exec/mcp-server gaps)
-

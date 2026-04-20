@@ -212,7 +212,7 @@ This skill is designed to evolve with the OpenTelemetry ecosystem. Contributions
 
 ## Compatibility
 
-- **OpenTelemetry Collector**: v0.147.0+
+- **OpenTelemetry Collector**: v0.150.0+
 - **Semantic Conventions**: v1.40.0+
 - **Kubernetes**: v1.24+ (for native sidecar support)
 - **Go SDK**: v1.24.0+
