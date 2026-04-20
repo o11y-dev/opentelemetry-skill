@@ -1,209 +1,279 @@
 #!/usr/bin/env node
-// Fallback digest builder that runs without an LLM. Consumes the outputs of
-// poll-upstreams.mjs, build-context.mjs, and flag-skills.mjs, and writes a
-// single markdown document to digest.md plus a short PR body to pr-body.md.
+// Stateless upstream digest builder.
 //
-// The LLM-synthesized path overwrites digest.md with a richer version; this
-// script is both the Phase-1 baseline and the fallback when ANTHROPIC_API_KEY
-// is not configured.
+// Usage:
+//   node build-digest.mjs <tier>
+//     tier: tier1 | tier2 | tier3
+//
+// For every repo in the selected tier this fetches:
+//   - the latest release (via REST /repos/{repo}/releases/latest)
+//   - recent issues (last 14 days, top 5, via /repos/{repo}/issues?since=...)
+//
+// It then loads .github/upstream-map.yaml and, for each repo, lists the skill
+// reference files in this repository that watch it. The mapping is applied
+// statically — we do not diff heads or track state. Humans review the digest
+// issue and decide whether the surfaced releases imply a skill edit.
+//
+// Output:
+//   digest.md (consumed by peter-evans/create-issue-from-file)
+//
+// Requires env: GH_TOKEN or GITHUB_TOKEN.
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
 const REPO_ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
-const POLL = path.join(REPO_ROOT, 'context', 'poll.json');
-const REPOS_DIR = path.join(REPO_ROOT, 'context', 'repos');
-const FLAGGED = path.join(REPO_ROOT, 'context', 'flagged-skills.json');
+const REPOS_FILE = path.join(REPO_ROOT, '.github', 'scripts', 'repos.json');
+const MAP_FILE = path.join(REPO_ROOT, '.github', 'upstream-map.yaml');
 const DIGEST_OUT = path.join(REPO_ROOT, 'digest.md');
-const PR_BODY_OUT = path.join(REPO_ROOT, 'pr-body.md');
 
-const EMOJI_SECTIONS = [
-  ['### 🛑', 'Breaking', 'breaking'],
-  ['### 🚩', 'Deprecations', 'deprecation'],
-  ['### 🚀', 'New components', 'new'],
-  ['### 💡', 'Enhancements', 'enhancement'],
-  ['### 🧰', 'Bug fixes', 'fix'],
-];
+const token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN;
+if (!token) {
+  console.error('missing GH_TOKEN / GITHUB_TOKEN');
+  process.exit(1);
+}
 
-function classifyChangelog(section) {
-  if (!section) return { impact: 'unknown', summary: null };
-  const counts = {};
-  for (const [marker, name] of EMOJI_SECTIONS) {
-    const rx = new RegExp(`^${marker}[^\\n]*$`, 'gmi');
-    const matches = section.match(rx) ?? [];
-    if (matches.length) counts[name] = matches.length;
+const RECENT_WINDOW_DAYS = 14;
+const ISSUES_PER_REPO = 5;
+
+async function gh(url) {
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'otel-upstream-watcher',
+    },
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    const detail = body ? `: ${body.slice(0, 500)}` : '';
+    throw new Error(`[gh] ${res.status} ${res.statusText} ${url}${detail}`);
   }
-  const impact = section.includes('🛑') ? 'breaking'
-    : section.includes('🚩') ? 'deprecation'
-    : section.includes('🚀') ? 'new'
-    : section.includes('💡') ? 'enhancement'
-    : 'fix';
-  return { impact, counts };
+  return res.json();
 }
 
-function impactBadge(impact) {
-  return ({
-    breaking: '🔴 breaking',
-    deprecation: '🟡 deprecation',
-    stability: '🟡 stability',
-    new: '🔵 new',
-    enhancement: '🟢 enhancement',
-    fix: '🟢 fix',
-    unknown: '⚪ unknown',
-  })[impact] ?? '⚪';
+async function latestRelease(repo) {
+  const data = await gh(`https://api.github.com/repos/${repo}/releases/latest`);
+  if (!data) return null;
+  return {
+    name: data.name || data.tag_name,
+    tag: data.tag_name,
+    url: data.html_url,
+    published_at: data.published_at,
+  };
 }
 
-async function readJson(p, fallback) {
-  try {
-    return JSON.parse(await fs.readFile(p, 'utf8'));
-  } catch (err) {
-    if (err.code === 'ENOENT') return fallback;
-    throw err;
-  }
+async function recentIssues(repo) {
+  const since = new Date(Date.now() - RECENT_WINDOW_DAYS * 86400 * 1000).toISOString();
+  const url = `https://api.github.com/repos/${repo}/issues?state=all&sort=updated&direction=desc&since=${encodeURIComponent(since)}&per_page=30`;
+  const data = await gh(url);
+  if (!Array.isArray(data)) return [];
+  // Exclude PRs (the issues endpoint returns both).
+  return data.filter((i) => !i.pull_request).slice(0, ISSUES_PER_REPO).map((i) => ({
+    title: i.title,
+    url: i.html_url,
+    updated_at: i.updated_at,
+  }));
 }
 
-function clip(text, n) {
-  if (!text) return '';
-  return text.length <= n ? text : text.slice(0, n) + '\n\n…(truncated)';
+// Minimal YAML parser sufficient for the upstream-map.yaml schema.
+// Supported subset: indentation-based maps/lists, blank lines and `#`
+// comments, scalars (`null`/`~`, booleans, base-10 integers, quoted strings),
+// and simple inline arrays like `[a, b]`.
+// Limitations: this is not a full YAML implementation; advanced features such
+// as anchors, tags, block scalars, and complex flow syntax are not supported.
+function parseYaml(src) {
+  const lines = src.split(/\r?\n/);
+  let i = 0;
+  const peek = () => {
+    while (i < lines.length) {
+      const l = lines[i];
+      if (l.trim() === '' || l.trim().startsWith('#')) { i++; continue; }
+      return l;
+    }
+    return null;
+  };
+  const indent = (l) => l.match(/^( *)/)[1].length;
+  const scalar = (t) => {
+    t = t.trim();
+    if (t === '' || t === 'null' || t === '~') return null;
+    if (t === 'true') return true;
+    if (t === 'false') return false;
+    if (/^-?\d+$/.test(t)) return parseInt(t, 10);
+    if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))) return t.slice(1, -1);
+    if (t.startsWith('[') && t.endsWith(']')) {
+      const inner = t.slice(1, -1).trim();
+      return inner === '' ? [] : inner.split(',').map(scalar);
+    }
+    return t;
+  };
+  const block = (parent) => {
+    const f = peek();
+    if (f === null) return null;
+    const my = indent(f);
+    if (my <= parent) return null;
+    return f.trim().startsWith('-') ? seq(my) : map(my);
+  };
+  const seq = (my) => {
+    const out = [];
+    while (true) {
+      const l = peek();
+      if (l === null || indent(l) !== my) break;
+      const t = l.trim();
+      if (!t.startsWith('-')) break;
+      i++;
+      const rest = t.slice(1).trim();
+      if (rest === '') {
+        out.push(block(my));
+      } else if (rest.includes(':') && !rest.startsWith('"') && !rest.startsWith("'")) {
+        const obj = {};
+        const [k, ...v] = rest.split(':');
+        const val = v.join(':').trim();
+        obj[k.trim()] = val === '' ? block(my + 2) : scalar(val);
+        const cont = my + 2;
+        while (true) {
+          const n = peek();
+          if (n === null || indent(n) !== cont) break;
+          const nt = n.trim();
+          if (nt.startsWith('-')) break;
+          i++;
+          const [ck, ...cv] = nt.split(':');
+          const cval = cv.join(':').trim();
+          obj[ck.trim()] = cval === '' ? block(cont) : scalar(cval);
+        }
+        out.push(obj);
+      } else {
+        out.push(scalar(rest));
+      }
+    }
+    return out;
+  };
+  const map = (my) => {
+    const out = {};
+    while (true) {
+      const l = peek();
+      if (l === null || indent(l) !== my) break;
+      const t = l.trim();
+      if (t.startsWith('-') || !t.includes(':')) break;
+      i++;
+      const [k, ...v] = t.split(':');
+      const val = v.join(':').trim();
+      out[k.trim()] = val === '' ? block(my) : scalar(val);
+    }
+    return out;
+  };
+  return block(-1);
 }
 
 async function main() {
-  const poll = await readJson(POLL, { repos: {} });
-  const flagged = (await readJson(FLAGGED, { flagged: [] })).flagged;
-
-  const changedRepos = [];
-  for (const [repo, row] of Object.entries(poll.repos)) {
-    if (row.error || row.first_poll) continue;
-    if (!row.release_changed && !row.commit_changed) continue;
-    const filename = repo.replace('/', '__') + '.json';
-    const ctx = await readJson(path.join(REPOS_DIR, filename), null);
-    const classification = classifyChangelog(ctx?.changelog_section ?? ctx?.release_body ?? '');
-    changedRepos.push({ repo, row, ctx, classification });
+  const tier = process.argv[2] ?? 'tier1';
+  const reposCfg = JSON.parse(await fs.readFile(REPOS_FILE, 'utf8'));
+  const repos = reposCfg.tiers[tier];
+  if (!repos) {
+    console.error(`unknown tier: ${tier}`);
+    process.exit(1);
   }
 
-  // --- digest.md ---
-  const tier = poll.tier ?? 'unknown';
-  const polledAt = poll.polled_at ?? new Date().toISOString();
-  const date = polledAt.slice(0, 10);
+  let mappings = [];
+  try {
+    const parsed = parseYaml(await fs.readFile(MAP_FILE, 'utf8'));
+    mappings = parsed?.mappings ?? [];
+  } catch (err) {
+    console.warn(`[map] failed to load mapping: ${err.message}`);
+  }
 
+  // Invert the mapping: which skills watch each repo?
+  const skillsByRepo = new Map();
+  for (const m of mappings) {
+    for (const w of m.watches ?? []) {
+      if (!skillsByRepo.has(w.repo)) skillsByRepo.set(w.repo, []);
+      skillsByRepo.get(w.repo).push({
+        skill: m.skill,
+        priority: m.priority ?? 'normal',
+        paths: w.paths ?? [],
+      });
+    }
+  }
+
+  async function mapWithConcurrency(items, limit, mapper) {
+    const results = new Array(items.length);
+    let nextIndex = 0;
+
+    async function worker() {
+      while (true) {
+        const currentIndex = nextIndex++;
+        if (currentIndex >= items.length) break;
+        results[currentIndex] = await mapper(items[currentIndex], currentIndex);
+      }
+    }
+
+    const workerCount = Math.min(limit, items.length);
+    await Promise.all(Array.from({ length: workerCount }, () => worker()));
+    return results;
+  }
+
+  const repoConcurrency = 4;
+  const rows = await mapWithConcurrency(repos, repoConcurrency, async (repo) => {
+    const [release, issues] = await Promise.all([latestRelease(repo), recentIssues(repo)]);
+    const row = { repo, release, issues, skills: skillsByRepo.get(repo) ?? [] };
+    console.error(`[digest] ${repo}: release=${release?.tag ?? 'n/a'} issues=${issues.length} skills=${skillsByRepo.get(repo)?.length ?? 0}`);
+    return row;
+  });
+
+  const date = new Date().toISOString().slice(0, 10);
   const lines = [];
   lines.push(`# OpenTelemetry upstream digest — ${tier} — ${date}`);
   lines.push('');
-  lines.push(`_Auto-generated by \`.github/workflows/upstream-${tier}*.yml\`. Human review required before merging any suggested skill edits._`);
+  lines.push(`_Auto-generated by \`.github/workflows/upstream-${tier}.yml\`. Review the releases and recent issues below; the "Skills watching this repo" column points at the skill files most likely to need edits._`);
+  lines.push('');
+  lines.push('## Latest releases');
+  lines.push('');
+  lines.push('| Repo | Latest release | Published | Skills watching this repo |');
+  lines.push('|------|----------------|-----------|----------------------------|');
+  for (const { repo, release, skills } of rows) {
+    const rel = release ? `[${release.tag}](${release.url})` : '_no release found_';
+    const pub = release?.published_at?.slice(0, 10) ?? '';
+    const skillCells = skills.length === 0 ? '—' : skills.map((s) => `\`${s.skill}\`${s.priority === 'critical' ? ' ⚠️' : ''}`).join(', ');
+    lines.push(`| ${repo} | ${rel} | ${pub} | ${skillCells} |`);
+  }
   lines.push('');
 
-  if (changedRepos.length === 0) {
-    lines.push('No upstream changes detected in this run.');
-  } else {
-    lines.push('## Summary');
-    lines.push('');
-    lines.push('| Repo | Old → New | Impact | Files touched | Skill refs flagged |');
-    lines.push('|------|-----------|--------|---------------|--------------------|');
-    for (const { repo, row, ctx, classification } of changedRepos) {
-      const oldV = row.prior.last_release ?? '(main)';
-      const newV = row.current.last_release ?? `${(row.current.last_commit_sha ?? '').slice(0, 7)}@main`;
-      const fileCount = ctx?.files?.length ?? 0;
-      const skillCount = flagged.filter((f) =>
-        f.matched_files.some((m) => m.repo === repo),
-      ).length;
-      lines.push(`| ${repo} | ${oldV} → ${newV} | ${impactBadge(classification.impact)} | ${fileCount} | ${skillCount} |`);
+  lines.push('## Recent upstream issues (last 14 days)');
+  lines.push('');
+  for (const { repo, issues } of rows) {
+    if (issues.length === 0) continue;
+    lines.push(`### ${repo}`);
+    for (const i of issues) {
+      lines.push(`- [${i.title}](${i.url}) — updated ${i.updated_at.slice(0, 10)}`);
     }
     lines.push('');
-
-    lines.push('## Flagged skill references');
-    lines.push('');
-    if (flagged.length === 0) {
-      lines.push('_No skill references flagged by the upstream-map mapping._');
-    } else {
-      for (const f of flagged) {
-        const star = f.priority === 'critical' ? ' ⚠️ **critical**' : '';
-        lines.push(`- **${f.skill}**${star} — ${f.match_count} matching file(s); topics: ${f.topics.join(', ') || '(none)'}`);
-        for (const m of f.matched_files.slice(0, 5)) {
-          lines.push(`  - \`${m.repo}\` · \`${m.path}\` (matched \`${m.matched_pattern}\`)`);
-        }
-        if (f.matched_files_truncated) lines.push('  - _…additional matches truncated_');
-      }
-    }
-    lines.push('');
-
-    lines.push('## Per-repo detail');
-    lines.push('');
-    for (const { repo, row, ctx, classification } of changedRepos) {
-      const oldV = row.prior.last_release ?? '(main)';
-      const newV = row.current.last_release ?? `${(row.current.last_commit_sha ?? '').slice(0, 7)}@main`;
-      lines.push(`<details><summary><strong>${repo}</strong> — ${oldV} → ${newV} — ${impactBadge(classification.impact)}</summary>`);
-      lines.push('');
-      if (row.current.last_release_url) {
-        lines.push(`Release: [${row.current.last_release}](${row.current.last_release_url}) · published ${row.current.last_release_published_at}`);
-        lines.push('');
-      }
-      if (ctx?.changelog_section) {
-        lines.push('**Changelog section**');
-        lines.push('');
-        lines.push('```markdown');
-        lines.push(clip(ctx.changelog_section, 6000));
-        lines.push('```');
-        lines.push('');
-      } else if (ctx?.release_body) {
-        lines.push('**Release body**');
-        lines.push('');
-        lines.push('```markdown');
-        lines.push(clip(ctx.release_body, 6000));
-        lines.push('```');
-        lines.push('');
-      }
-      if (ctx?.files?.length) {
-        lines.push(`**Files touched:** ${ctx.files.length}${ctx.compare_truncated ? ' (truncated)' : ''}`);
-        lines.push('');
-        lines.push('```');
-        for (const f of ctx.files.slice(0, 40)) {
-          lines.push(`${f.status.padEnd(10)} ${f.path}`);
-        }
-        if (ctx.files.length > 40) lines.push(`… ${ctx.files.length - 40} more`);
-        lines.push('```');
-        lines.push('');
-      }
-      lines.push('</details>');
-      lines.push('');
-    }
-
-    lines.push('## Maintainer checklist');
-    lines.push('');
-    lines.push('- [ ] Review flagged skill references for needed edits.');
-    lines.push('- [ ] Confirm the state-bump PR matches upstream heartbeat.');
-    lines.push('- [ ] Escalate any 🔴 breaking / ⚠️ critical rows to a follow-up issue.');
   }
 
-  // Enforce GitHub's ~65 KB issue body limit.
+  const critical = rows.filter((r) => r.skills.some((s) => s.priority === 'critical'));
+  if (critical.length > 0) {
+    lines.push('## ⚠️ Critical-priority watches');
+    lines.push('');
+    lines.push('These repos feed skill references marked `priority: critical` in `.github/upstream-map.yaml`. A new release here should trigger an immediate review of the linked skill files.');
+    lines.push('');
+    for (const r of critical) {
+      const critSkills = r.skills.filter((s) => s.priority === 'critical').map((s) => `\`${s.skill}\``).join(', ');
+      lines.push(`- **${r.repo}** → ${critSkills}`);
+    }
+    lines.push('');
+  }
+
+  lines.push('## Maintainer checklist');
+  lines.push('');
+  lines.push('- [ ] For each new release in the table, skim its changelog for breaking changes.');
+  lines.push('- [ ] For each ⚠️ critical-priority row, verify the linked skill files still match the current upstream state.');
+  lines.push('- [ ] Close this issue once the review is complete (or convert findings into follow-up issues/PRs).');
+
   const MAX = 60 * 1024;
-  let digest = lines.join('\n') + '\n';
-  if (digest.length > MAX) {
-    digest = digest.slice(0, MAX - 200) + '\n\n_…digest truncated — see `context/` artifacts for the full payload._\n';
-  }
-  await fs.writeFile(DIGEST_OUT, digest);
-
-  // --- pr-body.md ---
-  const pr = [];
-  pr.push(`Automated upstream refresh (${tier}) at ${polledAt}.`);
-  pr.push('');
-  if (changedRepos.length === 0) {
-    pr.push('No upstream changes detected; PR bumps the heartbeat state only.');
-  } else {
-    pr.push(`Heartbeat updates for ${changedRepos.length} repo(s):`);
-    for (const { repo, row } of changedRepos) {
-      const oldV = row.prior.last_release ?? '(main)';
-      const newV = row.current.last_release ?? `${(row.current.last_commit_sha ?? '').slice(0, 7)}@main`;
-      pr.push(`- ${repo}: ${oldV} → ${newV}`);
-    }
-    pr.push('');
-    const critical = flagged.filter((f) => f.priority === 'critical');
-    if (critical.length > 0) {
-      pr.push(`⚠️ **critical** skill references flagged: ${critical.map((c) => c.skill).join(', ')}`);
-      pr.push('');
-    }
-    pr.push('See the accompanying digest issue for per-repo changelog detail.');
-  }
-  await fs.writeFile(PR_BODY_OUT, pr.join('\n') + '\n');
+  let body = lines.join('\n') + '\n';
+  if (body.length > MAX) body = body.slice(0, MAX - 120) + '\n\n_…digest truncated to fit the issue body size limit._\n';
+  await fs.writeFile(DIGEST_OUT, body);
+  console.error(`[digest] wrote ${DIGEST_OUT} (${body.length} bytes)`);
 }
 
 main().catch((err) => {
