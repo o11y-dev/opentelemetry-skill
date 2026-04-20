@@ -238,7 +238,7 @@ service:
       exporters: [otlphttp]
 ```
 
-Key defaults: `memory_limiter` is always first in the processor chain, `batch` reduces network calls, `file_storage` persists queues across restarts, `health_check` binds to localhost (not 0.0.0.0) in shared networks. Always use the latest stable semantic conventions. Prefer OTLP gRPC (4317) over legacy protocols for new deployments.
+Key defaults: `memory_limiter` is always first in the processor chain, `batch` reduces network calls, `file_storage` can preserve queues across restarts only when the collector comes back on the same host/volume (in Kubernetes, back `/var/lib/otelcol/queue` with a PVC or other persistent disk if queued data must survive pod replacement), `health_check` binds to localhost (not 0.0.0.0) in shared networks. Always use the latest stable semantic conventions. Prefer OTLP gRPC (4317) over legacy protocols for new deployments.
 
 ## Anti-Patterns to Avoid
 
