@@ -77,8 +77,12 @@ async function recentIssues(repo) {
   }));
 }
 
-// Minimal YAML parser sufficient for the upstream-map.yaml schema. See the
-// previous version for the spec we support.
+// Minimal YAML parser sufficient for the upstream-map.yaml schema.
+// Supported subset: indentation-based maps/lists, blank lines and `#`
+// comments, scalars (`null`/`~`, booleans, base-10 integers, quoted strings),
+// and simple inline arrays like `[a, b]`.
+// Limitations: this is not a full YAML implementation; advanced features such
+// as anchors, tags, block scalars, and complex flow syntax are not supported.
 function parseYaml(src) {
   const lines = src.split(/\r?\n/);
   let i = 0;
