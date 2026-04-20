@@ -46,8 +46,9 @@ async function gh(url) {
   });
   if (res.status === 404) return null;
   if (!res.ok) {
-    console.warn(`[gh] ${res.status} ${res.statusText} ${url}`);
-    return null;
+    const body = await res.text().catch(() => '');
+    const detail = body ? `: ${body.slice(0, 500)}` : '';
+    throw new Error(`[gh] ${res.status} ${res.statusText} ${url}${detail}`);
   }
   return res.json();
 }
