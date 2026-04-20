@@ -192,12 +192,30 @@ async function main() {
     }
   }
 
-  const rows = [];
-  for (const repo of repos) {
-    const [release, issues] = await Promise.all([latestRelease(repo), recentIssues(repo)]);
-    rows.push({ repo, release, issues, skills: skillsByRepo.get(repo) ?? [] });
-    console.error(`[digest] ${repo}: release=${release?.tag ?? 'n/a'} issues=${issues.length} skills=${skillsByRepo.get(repo)?.length ?? 0}`);
+  async function mapWithConcurrency(items, limit, mapper) {
+    const results = new Array(items.length);
+    let nextIndex = 0;
+
+    async function worker() {
+      while (true) {
+        const currentIndex = nextIndex++;
+        if (currentIndex >= items.length) break;
+        results[currentIndex] = await mapper(items[currentIndex], currentIndex);
+      }
+    }
+
+    const workerCount = Math.min(limit, items.length);
+    await Promise.all(Array.from({ length: workerCount }, () => worker()));
+    return results;
   }
+
+  const repoConcurrency = 4;
+  const rows = await mapWithConcurrency(repos, repoConcurrency, async (repo) => {
+    const [release, issues] = await Promise.all([latestRelease(repo), recentIssues(repo)]);
+    const row = { repo, release, issues, skills: skillsByRepo.get(repo) ?? [] };
+    console.error(`[digest] ${repo}: release=${release?.tag ?? 'n/a'} issues=${issues.length} skills=${skillsByRepo.get(repo)?.length ?? 0}`);
+    return row;
+  });
 
   const date = new Date().toISOString().slice(0, 10);
   const lines = [];
