@@ -1,26 +1,14 @@
 name: upstream-tier2-weekly
 
-# Tier-2: weekly poll of collector core, operator, proto, and the primary SDKs.
-# See .github/scripts/repos.json for membership and .github/upstream-map.yaml
-# for the skill mapping.
+# Tier-2: weekly digest of collector core, operator, proto, and primary SDKs.
 
 on:
   schedule:
     - cron: '23 07 * * 1'   # 07:23 UTC every Monday
   workflow_dispatch:
-    inputs:
-      force_digest:
-        description: 'Emit digest even if no upstream changes were detected'
-        type: boolean
-        default: false
-      use_llm:
-        description: 'Run Claude synthesis over the fallback digest'
-        type: boolean
-        default: true
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
   issues: write
 
 concurrency:
@@ -28,104 +16,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  poll:
-    name: Poll, diff, digest, publish
+  digest:
     runs-on: ubuntu-latest
-    env:
-      TIER: tier2
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Generate GitHub App token
-        id: app-token
-        if: ${{ vars.UPSTREAM_WATCHER_APP_ID != '' }}
-        uses: actions/create-github-app-token@v3
-        with:
-          app-id:      ${{ vars.UPSTREAM_WATCHER_APP_ID }}
-          private-key: ${{ secrets.UPSTREAM_WATCHER_APP_KEY }}
-
-      - name: Resolve token
-        id: token
-        run: |
-          if [ -n "${APP_TOKEN}" ]; then
-            echo "value=${APP_TOKEN}" >> "$GITHUB_OUTPUT"
-          else
-            echo "value=${GITHUB_TOKEN}" >> "$GITHUB_OUTPUT"
-          fi
-        env:
-          APP_TOKEN: ${{ steps.app-token.outputs.token }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - id: poll
-        name: Poll upstream heartbeat
+      - name: Build digest
         env:
-          GH_TOKEN: ${{ steps.token.outputs.value }}
-        run: node .github/scripts/poll-upstreams.mjs "${TIER}"
-
-      - id: context
-        name: Build per-repo context
-        if: steps.poll.outputs.has_changes == 'true' || inputs.force_digest
-        env:
-          GH_TOKEN: ${{ steps.token.outputs.value }}
-        run: node .github/scripts/build-context.mjs
-
-      - id: flag
-        name: Flag skill references
-        if: steps.poll.outputs.has_changes == 'true' || inputs.force_digest
-        run: node .github/scripts/flag-skills.mjs
-
-      - name: Render fallback digest
-        if: steps.poll.outputs.has_changes == 'true' || inputs.force_digest
-        run: node .github/scripts/build-digest.mjs
-
-      - name: Claude synthesis
-        if: |
-          (steps.poll.outputs.has_changes == 'true' || inputs.force_digest)
-          && inputs.use_llm != false
-          && env.ANTHROPIC_API_KEY != ''
-        uses: anthropics/claude-code-action@v1
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          prompt_file: .github/prompts/digest.md
-          claude_args: |
-            --max-turns 20
-            --model claude-sonnet-4-5
-            --allowedTools "Read,Write,Edit,Bash(jq:*)"
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node .github/scripts/build-digest.mjs tier2
 
       - name: Create digest issue
-        if: steps.poll.outputs.has_changes == 'true' || inputs.force_digest
         uses: peter-evans/create-issue-from-file@v5
         with:
-          token: ${{ steps.token.outputs.value }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           title: "Upstream digest (tier 2) — ${{ github.run_started_at }}"
           content-filepath: ./digest.md
           labels: |
             upstream-digest
             tier-2
-            needs-review
-            ${{ steps.flag.outputs.has_critical == 'true' && 'priority/critical' || '' }}
-
-      - name: Open state-bump + skill-edit PR
-        if: steps.poll.outputs.has_changes == 'true'
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ steps.token.outputs.value }}
-          branch: chore/upstream/tier2-${{ github.run_id }}
-          commit-message: "chore(upstream): tier-2 state bump + skill edits"
-          title: "chore(upstream): tier-2 refresh (${{ github.run_started_at }})"
-          body-path: ./pr-body.md
-          labels: |
-            automation
-            upstream
-            tier-2
-          add-paths: |
-            .github/state/upstream-state.json
-            SKILL.md
-            references/**/*.md
