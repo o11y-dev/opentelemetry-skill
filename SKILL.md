@@ -17,7 +17,7 @@ Always adhere to these guiding principles:
 
 2. **Convention over Configuration**: Always prefer OpenTelemetry Semantic Conventions over custom attribute names.
 
-3. **Protocol Unification**: Prefer OTLP over legacy protocols (Zipkin, Jaeger, Prometheus Remote Write). Default to **OTLP gRPC** (port 4317); use **OTLP HTTP** (port 4318) when gRPC is unavailable due to agent, proxy, browser, or backend constraints.
+3. **Protocol Unification**: Default to **OTLP gRPC** (port 4317); use **OTLP HTTP** (port 4318) when gRPC is unavailable due to agent, proxy, browser, or backend constraints.
 
 4. **Deterministic Routing Keys**: For load-balancing exporters, routing keys must be deterministic, low-cardinality strings (e.g., `traceID`, `tenant_id`, `cluster`). Normalize non-string attributes before routing.
 
@@ -66,7 +66,7 @@ extensions:
   health_check:
     endpoint: "0.0.0.0:13133"
   file_storage/queue:
-    directory: /var/lib/otelcol/queue   # In Kubernetes, back this path with a PVC for persistence across pod restarts
+    directory: /var/lib/otelcol/queue
     timeout: 10s
     compaction:
       on_start: true
@@ -76,9 +76,9 @@ receivers:
   otlp:
     protocols:
       grpc:
-        endpoint: "0.0.0.0:4317"   # Preferred: gRPC
+        endpoint: "0.0.0.0:4317"
       http:
-        endpoint: "0.0.0.0:4318"   # HTTP fallback when gRPC is unavailable
+        endpoint: "0.0.0.0:4318"
 
 processors:
   memory_limiter:
@@ -91,7 +91,7 @@ processors:
 
 exporters:
   otlp:
-    endpoint: "your-backend:4317"   # Preferred: gRPC exporter
+    endpoint: "your-backend:4317"
     sending_queue:
       enabled: true
       storage: file_storage/queue
@@ -178,9 +178,6 @@ curl -s http://localhost:8888/metrics | grep -E "otelcol_processor_dropped|otelc
 ❌ Exposing pprof (1777), zpages (55679) on `0.0.0.0` in production
 ❌ Using `tail_sampling` without sticky session load balancing (loadbalancing exporter)
 ❌ Omitting `batch` processor (causes excessive network calls)
-❌ Using deprecated protocols (Zipkin, Jaeger) for new deployments
-❌ Creating custom attribute names instead of using semantic conventions
-❌ Ignoring component stability levels in production
 ❌ Including `prompt.id` or `session.id` as metric dimensions (unbounded cardinality)
 ❌ Enabling `captureContent`/`OTEL_LOG_USER_PROMPTS` in shared/production environments without PII controls
 ❌ Assuming all AI coding agents emit traces (Claude Code and Codex exec do not)
