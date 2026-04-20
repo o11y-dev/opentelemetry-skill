@@ -182,7 +182,7 @@ Use these defaults unless the user specifies otherwise. This is a copy-paste-rea
 ```yaml
 extensions:
   health_check:
-    endpoint: "localhost:13133"
+    endpoint: "0.0.0.0:13133"
   file_storage/queue:
     directory: /var/lib/otelcol/queue
 
