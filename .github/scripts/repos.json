@@ -1,0 +1,40 @@
+{
+  "comment": "Tier membership for the upstream watcher. Tier 1 polls daily, Tier 2 weekly, Tier 3 monthly. 'critical' repos are included in Tier 1 regardless of their nominal tier.",
+  "version": 1,
+  "tiers": {
+    "tier1": [
+      "open-telemetry/semantic-conventions",
+      "open-telemetry/opentelemetry-collector-contrib"
+    ],
+    "tier2": [
+      "open-telemetry/opentelemetry-collector",
+      "open-telemetry/opentelemetry-collector-releases",
+      "open-telemetry/opentelemetry-operator",
+      "open-telemetry/opentelemetry-proto",
+      "open-telemetry/opentelemetry-go",
+      "open-telemetry/opentelemetry-java",
+      "open-telemetry/opentelemetry-python",
+      "open-telemetry/opentelemetry-js",
+      "open-telemetry/opentelemetry-dotnet"
+    ],
+    "tier3": [
+      "open-telemetry/opentelemetry-specification",
+      "open-telemetry/oteps",
+      "open-telemetry/opentelemetry-helm-charts",
+      "open-telemetry/opentelemetry-demo",
+      "open-telemetry/opentelemetry-java-instrumentation",
+      "open-telemetry/opentelemetry-python-contrib",
+      "open-telemetry/opentelemetry-js-contrib",
+      "open-telemetry/opentelemetry-dotnet-contrib",
+      "open-telemetry/opentelemetry-go-instrumentation",
+      "open-telemetry/opentelemetry-lambda",
+      "open-telemetry/opentelemetry-rust",
+      "open-telemetry/opentelemetry-cpp",
+      "open-telemetry/opentelemetry-ruby",
+      "open-telemetry/opentelemetry-php",
+      "open-telemetry/opentelemetry-swift",
+      "open-telemetry/opentelemetry-erlang",
+      "open-telemetry/community"
+    ]
+  }
+}
