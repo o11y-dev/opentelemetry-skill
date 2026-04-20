@@ -1,6 +1,6 @@
 ---
 name: opentelemetry-skill
-description: "Expert OpenTelemetry guidance for collector configuration, observability pipeline design, and production telemetry instrumentation. Use when working with OpenTelemetry - configuring collectors, designing pipelines, instrumenting applications, implementing sampling strategies, managing cardinality, securing telemetry data, troubleshooting observability issues, writing OTTL transformations, making production observability architecture decisions, or setting up observability for AI coding agents (Claude Code, Codex, Gemini CLI, GitHub Copilot, and others)"
+description: "Expert OpenTelemetry guidance for collector configuration, pipeline design, and production telemetry instrumentation. Use when configuring collectors, designing pipelines, instrumenting applications, implementing sampling, managing cardinality, securing telemetry, writing OTTL transformations, or setting up AI coding agent observability (Claude Code, Codex, Gemini CLI, GitHub Copilot)."
 license: Apache-2.0
 metadata:
   author: o11y.dev
@@ -66,7 +66,7 @@ extensions:
   health_check:
     endpoint: "0.0.0.0:13133"
   file_storage/queue:
-    directory: /var/lib/otelcol/queue
+    directory: /var/lib/otelcol/queue   # In Kubernetes, back this path with a PVC for persistence across pod restarts
     timeout: 10s
     compaction:
       on_start: true
@@ -123,7 +123,13 @@ service:
       exporters: [otlp]
 ```
 
-Key defaults: `memory_limiter` is always first in the processor chain, `batch` reduces network calls, `file_storage` preserves queues across restarts only when the collector returns to the same host/volume (in Kubernetes, back `/var/lib/otelcol/queue` with a PVC), `health_check` binds to localhost (not 0.0.0.0) in shared networks. Prefer OTLP gRPC (4317) for receivers and exporters; fall back to OTLP HTTP (4318) when gRPC is not possible.
+Key defaults:
+
+- `memory_limiter` must be first in every processor chain.
+- `batch` reduces exporter network calls.
+- `file_storage` preserves queues across restarts only when the collector returns to the same host/volume. In Kubernetes, back `/var/lib/otelcol/queue` with a PVC.
+- `health_check` binds to `localhost` (not `0.0.0.0`) in shared networks.
+- Prefer OTLP gRPC (port 4317) for receivers and exporters. Fall back to OTLP HTTP (port 4318) when gRPC is unavailable.
 
 ## Validation & Error Recovery
 
@@ -148,7 +154,7 @@ docker run --rm -v $(pwd)/config.yaml:/etc/otelcol/config.yaml \
 curl -sf http://localhost:13133/ && echo "healthy"
 
 # Tail logs for pipeline errors and dropped data
-kubectl logs -l app=otelcol -f | grep -E "error|dropped|refused|refused"
+kubectl logs -l app=otelcol -f | grep -E "error|dropped|refused|timeout"
 
 # Collector self-metrics (Prometheus scrape)
 curl -s http://localhost:8888/metrics | grep -E "otelcol_processor_dropped|otelcol_exporter_send_failed"
