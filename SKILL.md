@@ -185,6 +185,10 @@ extensions:
     endpoint: "0.0.0.0:13133"
   file_storage/queue:
     directory: /var/lib/otelcol/queue
+    timeout: 10s
+    compaction:
+      on_start: true
+      on_rebound: false
 
 receivers:
   otlp:
