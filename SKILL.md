@@ -211,7 +211,15 @@ exporters:
   otlphttp:
     endpoint: "https://your-backend:4318"
     sending_queue:
+      enabled: true
       storage: file_storage/queue
+      num_consumers: 4
+      queue_size: 1024
+    retry_on_failure:
+      enabled: true
+      initial_interval: 1s
+      max_interval: 30s
+      max_elapsed_time: 300s
 
 service:
   extensions: [health_check, file_storage/queue]
