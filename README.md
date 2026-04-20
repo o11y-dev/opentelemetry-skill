@@ -2,6 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](opentelemetry-skill-LICENSE)
 [![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Enabled-blueviolet)](https://opentelemetry.io/)
+[![Tessl Publish](https://github.com/o11y-dev/opentelemetry-skill/actions/workflows/publish.yml/badge.svg)](https://github.com/o11y-dev/opentelemetry-skill/actions/workflows/publish.yml)
 
 ## Overview
 
@@ -41,6 +42,14 @@ Install this skill with the skills.sh CLI:
 
 ```bash
 npx skills add o11y-dev/opentelemetry-skill
+```
+
+### Tessl Registry
+
+Install this tile from the Tessl registry (workspace: `o11y-dev`):
+
+```bash
+tessl tile install o11y-dev/opentelemetry-skill
 ```
 
 ### GitHub Copilot
