@@ -243,7 +243,7 @@ Even when native OpenTelemetry exists, hooks are useful above the agent as a lig
 
 ## 3. Unified Collector Config for Multi-Agent Ingestion
 
-A single OTel Collector instance can receive telemetry from all agents simultaneously on standard OTLP ports.
+A single OTel Collector instance can receive telemetry from all agents simultaneously on standard OTLP ports. Prefer **OTLP gRPC** end-to-end when agents and backends support it; keep **OTLP HTTP** enabled where an agent, managed ingress, or backend only exposes HTTP or gRPC is not possible.
 
 ```yaml
 # otel-collector-ai-agents.yaml
@@ -260,9 +260,9 @@ receivers:
   otlp:
     protocols:
       grpc:
-        endpoint: 0.0.0.0:4317   # Claude Code, Gemini CLI, Codex CLI (grpc)
+        endpoint: 0.0.0.0:4317   # Preferred OTLP receiver: Claude Code, Gemini CLI, Codex CLI
       http:
-        endpoint: 0.0.0.0:4318   # GitHub Copilot VS Code/CLI (http)
+        endpoint: 0.0.0.0:4318   # HTTP fallback/interop: GitHub Copilot VS Code/CLI and HTTP-only clients
 
 processors:
   # CRITICAL: memory_limiter MUST be first processor in every pipeline
@@ -315,7 +315,7 @@ exporters:
     resource_to_telemetry_conversion:
       enabled: true
 
-  # Logs → Loki
+  # OTLP HTTP exporter example — use when the backend or ingress only accepts OTLP HTTP
   otlphttp/loki:
     endpoint: http://loki:3100/otlp
     sending_queue:
@@ -324,7 +324,7 @@ exporters:
     retry_on_failure:
       enabled: true
 
-  # Traces → Tempo (for agents that emit traces: Gemini CLI, Copilot)
+  # Preferred OTLP gRPC exporter example
   otlp/tempo:
     endpoint: http://tempo:4317
     sending_queue:
@@ -354,6 +354,8 @@ service:
       processors: [memory_limiter, resource, batch]
       exporters: [otlp/tempo]
 ```
+
+**Protocol choice**: Prefer OTLP gRPC on `4317` for both receivers and exporters. Keep OTLP HTTP on `4318` available for agents like GitHub Copilot and for backends, proxies, or managed ingest endpoints where gRPC is unavailable.
 
 > **Processor ordering**: `memory_limiter` is always first. The `resource` processor runs before `transform` so enriched attributes are available for OTTL statements. `batch` is always last before exporters.
 

@@ -30,7 +30,7 @@ Always adhere to these guiding principles:
 
 2. **Convention over Configuration**: Always prefer OpenTelemetry Semantic Conventions over custom attribute naming. Use standard attribute names from the semantic conventions specification.
 
-3. **Protocol Unification**: Always prefer OTLP (gRPC/HTTP) over legacy protocols (Zipkin, Jaeger, Prometheus Remote Write) unless there are specific compatibility requirements.
+3. **Protocol Unification**: Always prefer OTLP over legacy protocols (Zipkin, Jaeger, Prometheus Remote Write). Default to **OTLP gRPC** when possible, but use **OTLP HTTP** when an agent, proxy, browser-adjacent environment, or backend does not support gRPC.
 
 4. **Deterministic Routing Keys**: For load-balancing exporters, routing keys must be deterministic, low-cardinality strings (e.g., `traceID`, `tenant_id`, `cluster`). Normalize/stringify non-string attributes before routing to prevent shard churn and ensure sticky sessions for stateful processors.
 
@@ -237,7 +237,7 @@ When responding to user requests:
 
 When generating configurations, use these production-ready defaults unless the user specifies otherwise:
 
-- **OTLP Protocol**: Use gRPC on port 4317 (not HTTP/2 unless required)
+- **OTLP Protocol**: Prefer gRPC on port 4317; use OTLP HTTP on port 4318 when required or when gRPC is not possible
 - **Memory Limiter**: Always include as the first processor with `limit_percentage: 80` and `spike_limit_percentage: 20`
 - **Batch Processor**: Always include with `timeout: 10s` and `send_batch_size: 1024`
 - **File Storage**: For production, enable persistent queues with file_storage extension

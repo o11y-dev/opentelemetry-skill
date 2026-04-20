@@ -65,6 +65,7 @@
 ### Expected WITH skill (GREEN target)
 
 - ✅ Single OTLP receiver with both gRPC (4317) and HTTP (4318) protocols enabled
+- ✅ Prefers OTLP gRPC by default, but explains when OTLP HTTP is the right fallback
 - ✅ `memory_limiter` as first processor in every pipeline
 - ✅ `resource` processor to tag `telemetry.source.type: ai-coding-agent`
 - ✅ `transform` processor adding `gen_ai.system` attribute to Claude Code data
@@ -75,6 +76,7 @@
 ### Compliance Check
 
 - [ ] Single config with both gRPC and HTTP listeners
+- [ ] Response prefers OTLP gRPC but allows OTLP HTTP when needed
 - [ ] `memory_limiter` is first processor
 - [ ] `resource` processor normalizes agent identity
 - [ ] Separate metrics/logs/traces pipelines
