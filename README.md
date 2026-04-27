@@ -2,11 +2,16 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](opentelemetry-skill-LICENSE)
 [![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Enabled-blueviolet)](https://opentelemetry.io/)
-[![Tessl Publish](https://github.com/o11y-dev/opentelemetry-skill/actions/workflows/publish.yml/badge.svg)](https://github.com/o11y-dev/opentelemetry-skill/actions/workflows/publish.yml)
+[![Tessl Registry](https://img.shields.io/endpoint?url=https%3A%2F%2Fapi.tessl.io%2Fv1%2Fbadges%2Fo11y-dev%2Fopentelemetry-skill)](https://tessl.io/registry/o11y-dev/opentelemetry-skill)
 
 ## Overview
 
 The **opentelemetry-skill** is an expert-level AI assistant skill designed to transform Large Language Models (like Claude) into Principal Observability Engineers. This skill employs **progressive disclosure** to optimize context usage and deliver production-ready OpenTelemetry configurations.
+
+This repository contains the source code for the **OpenTelemetry Skill** tile released by Tessl.
+
+- **Published versions**: https://tessl.io/registry/o11y-dev/opentelemetry-skill
+- **Source code**: https://github.com/o11y-dev/opentelemetry-skill
 
 ### What Makes This Different?
 

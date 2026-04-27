@@ -18,25 +18,27 @@ jobs:
   publish:
     name: Publish tile to Tessl registry
     runs-on: ubuntu-latest
+    env:
+      TESSL_API_TOKEN: ${{ secrets.TESSL_API_TOKEN }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Tessl CLI
-        if: ${{ secrets.TESSL_API_TOKEN != '' }}
+        if: ${{ env.TESSL_API_TOKEN != '' }}
         uses: tesslio/setup-tessl@v2
         with:
-          token: ${{ secrets.TESSL_API_TOKEN }}
+          token: ${{ env.TESSL_API_TOKEN }}
 
       - name: Lint tile
-        if: ${{ secrets.TESSL_API_TOKEN != '' }}
+        if: ${{ env.TESSL_API_TOKEN != '' }}
         run: tessl tile lint
 
       - name: Publish tile
-        if: ${{ secrets.TESSL_API_TOKEN != '' }}
+        if: ${{ env.TESSL_API_TOKEN != '' }}
         run: tessl tile publish
 
       - name: Skip publish when token is missing
-        if: ${{ secrets.TESSL_API_TOKEN == '' }}
+        if: ${{ env.TESSL_API_TOKEN == '' }}
         run: echo "TESSL_API_TOKEN is not configured; skipping Tessl tile publish."
