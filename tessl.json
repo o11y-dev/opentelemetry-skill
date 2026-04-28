@@ -1,4 +1,9 @@
 {
   "name": "opentelemetry-skill",
-  "mode": "vendored"
+  "mode": "vendored",
+  "dependencies": {
+    "tdg-personal/eval-harness": {
+      "version": "0.1.0"
+    }
+  }
 }
