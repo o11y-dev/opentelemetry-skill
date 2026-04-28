@@ -98,6 +98,13 @@ mappings:
         paths:
           - "**/*.md"
           - "docs/**"
+      - repo: anomalyco/opencode
+        paths:
+          - "README.md"
+          - "CHANGELOG.md"
+          - "docs/**"
+          - "src/**"
+          - "package.json"
       - repo: DEVtheOPS/opencode-plugin-otel
         paths:
           - "README.md"
