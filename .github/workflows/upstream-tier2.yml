@@ -41,5 +41,6 @@ jobs:
             weekly
           duplicate: true
           update_existing: true
-          update_method: replace
+<<<<<<< HEAD
+          update_method: append
           search_existing: all
