@@ -1,6 +1,6 @@
-name: upstream-tier2-weekly
+name: weekly-upstream-digest
 
-# Tier-2: weekly digest of collector core, operator, proto, and primary SDKs.
+# Weekly digest of collector core, operator, proto, and primary SDKs.
 
 on:
   schedule:
@@ -12,7 +12,7 @@ permissions:
   issues: write
 
 concurrency:
-  group: upstream-tier2
+  group: weekly-upstream
   cancel-in-progress: false
 
 jobs:
@@ -28,14 +28,18 @@ jobs:
       - name: Build digest
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node .github/scripts/build-digest.mjs tier2
+        run: node .github/scripts/build-digest.mjs weekly
 
-      - name: Create digest issue
+      - name: Create or update digest issue
         uses: peter-evans/create-issue-from-file@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          title: "Upstream digest (tier 2) — ${{ github.run_started_at }}"
+          title: "Weekly upstream digest"
           content-filepath: ./digest.md
           labels: |
             upstream-digest
-            tier-2
+            weekly
+          duplicate: true
+          update_existing: true
+          update_method: append
+          search_existing: all

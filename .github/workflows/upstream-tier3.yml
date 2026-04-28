@@ -1,6 +1,6 @@
-name: upstream-tier3-monthly
+name: monthly-upstream-digest
 
-# Tier-3: monthly digest of the specification, OTEPs, helm charts, demo, and
+# Monthly digest of the specification, OTEPs, helm charts, demo, and
 # long-tail SDK/contrib repos.
 
 on:
@@ -13,7 +13,7 @@ permissions:
   issues: write
 
 concurrency:
-  group: upstream-tier3
+  group: monthly-upstream
   cancel-in-progress: false
 
 jobs:
@@ -26,17 +26,21 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Generate human-readable date
+        id: date
+        run: echo "formatted=$(date '+%B %d, %Y')" >> $GITHUB_OUTPUT
+
       - name: Build digest
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node .github/scripts/build-digest.mjs tier3
+        run: node .github/scripts/build-digest.mjs monthly
 
       - name: Create digest issue
         uses: peter-evans/create-issue-from-file@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          title: "Upstream digest (tier 3) — ${{ github.run_started_at }}"
+          title: "Monthly upstream digest - ${{ steps.date.outputs.formatted }}"
           content-filepath: ./digest.md
           labels: |
             upstream-digest
-            tier-3
+            monthly
