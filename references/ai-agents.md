@@ -4,9 +4,9 @@ A comprehensive guide to monitoring AI coding agents (Claude Code, Gemini CLI, G
 
 <!-- UPSTREAM MONITORING NOTE:
 This file is automatically flagged for review when changes occur in:
-- GitHub repositories: github/copilot-cli, Aider-AI/aider, openai/codex, google-gemini/gemini-cli, anthropics/claude-code, anthropics/skills, QwenLM/qwen-code, microsoft/vscode-copilot-chat, anysphere/cursor-wiki, DEVtheOPS/opencode-plugin-otel
+- GitHub repositories: github/copilot-cli, Aider-AI/aider, openai/codex, google-gemini/gemini-cli, anthropics/claude-code, anthropics/skills, QwenLM/qwen-code, microsoft/vscode-copilot-chat, anysphere/cursor-wiki, DEVtheOPS/opencode-plugin-otel, badlogic/pi-mono
 - OpenTelemetry semantic conventions: open-telemetry/semantic-conventions (gen-ai model)
-- Manual monitoring recommended for official docs: docs.github.com/copilot/, aider.chat/docs/, developers.openai.com/codex/, google-gemini.github.io/gemini-cli/, claude.ai/code/, qwenlm.github.io/qwen-code-docs/, cursor.com
+- Manual monitoring recommended for official docs: docs.github.com/copilot/, aider.chat/docs/, developers.openai.com/codex/, google-gemini.github.io/gemini-cli/, claude.ai/code/, qwenlm.github.io/qwen-code-docs/, cursor.com, pi.dev
 -->
 
 ---
@@ -34,6 +34,7 @@ This file is automatically flagged for review when changes occur in:
 | **OpenAI Codex CLI** | OpenAI | ⚠️ partial | ⚠️ interactive only | ⚠️ interactive only | ✅ | ❌ (custom event names) | ✅ gap-filler + governance | `~/.codex/config.toml` `[otel]` section | `~/.codex/config.toml` | OTLP gRPC | [docs](https://developers.openai.com/codex/config-advanced) |
 | **Qwen Code** | Alibaba | 🔜 planned | 🔜 planned | 🔜 planned | 🔜 planned | 🔜 planned | ✅ interim bridge | `.qwen/settings.json` | `.qwen/settings.json` | OTLP | [docs](https://qwenlm.github.io/qwen-code-docs/en/developers/development/telemetry/) |
 | **OpenCode** | Anomaly | ❌ none | ❌ | ❌ | ❌ | ❌ | ✅ primary | Community plugin only | n/a | n/a | [plugin](https://github.com/DEVtheOPS/opencode-plugin-otel) |
+| **Pi Agent** | open-source | ❌ none | ❌ | ❌ | ⚠️ install telemetry only | ❌ | ✅ primary | `~/.pi/agent/settings.json` or `.pi/settings.json` | `PI_TELEMETRY`, `enableInstallTelemetry` | n/a | [docs](https://pi.dev) |
 | **Cursor** | Anysphere | ❌ none | ❌ | ❌ | ❌ | ❌ | ⚠️ launcher wrapper only | Via MCP servers only | n/a | n/a | — |
 | **Windsurf** | Cognition | ❌ none | ❌ | ❌ | ❌ | ❌ | ⚠️ launcher wrapper only | Agent skills for user code only | n/a | n/a | — |
 | **Amazon Q Developer** | AWS | ❌ OTLP | ❌ | ❌ | ❌ | ❌ | ✅ primary | CloudWatch/CloudTrail only | n/a | n/a | — |
