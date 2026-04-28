@@ -1,0 +1,1 @@
+Set up tail sampling in Kubernetes to sample 10% of traces but keep all error traces.

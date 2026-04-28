@@ -1,0 +1,1 @@
+Set up OpenTelemetry monitoring for Claude Code to track token usage and costs.

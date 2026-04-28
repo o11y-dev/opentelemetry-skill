@@ -1,0 +1,1 @@
+Configure an OpenTelemetry Collector to receive OTLP traces and export them to Jaeger.
