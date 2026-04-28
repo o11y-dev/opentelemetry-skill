@@ -4,7 +4,7 @@ A comprehensive guide to monitoring AI coding agents (Claude Code, Gemini CLI, G
 
 <!-- UPSTREAM MONITORING NOTE:
 This file is automatically flagged for review when changes occur in:
-- GitHub repositories: github/copilot-cli, Aider-AI/aider, openai/codex, google-gemini/gemini-cli, anthropics/claude-code, anthropics/skills, QwenLM/qwen-code, microsoft/vscode-copilot-chat, anysphere/cursor-wiki, DEVtheOPS/opencode-plugin-otel, badlogic/pi-mono
+- GitHub repositories: github/copilot-cli, Aider-AI/aider, openai/codex, google-gemini/gemini-cli, anthropics/claude-code, anthropics/skills, QwenLM/qwen-code, microsoft/vscode-copilot-chat, anysphere/cursor-wiki, anomalyco/opencode, DEVtheOPS/opencode-plugin-otel, badlogic/pi-mono
 - OpenTelemetry semantic conventions: open-telemetry/semantic-conventions (gen-ai model)
 - Manual monitoring recommended for official docs: docs.github.com/copilot/, aider.chat/docs/, developers.openai.com/codex/, google-gemini.github.io/gemini-cli/, claude.ai/code/, qwenlm.github.io/qwen-code-docs/, cursor.com, pi.dev
 -->
