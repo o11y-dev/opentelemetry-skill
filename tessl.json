@@ -1,5 +1,9 @@
 {
   "name": "opentelemetry-skill",
   "mode": "vendored",
-  "dependencies": {}
+  "dependencies": {
+    "pantheon-ai/skill-quality-auditor": {
+      "version": "0.1.5"
+    }
+  }
 }
