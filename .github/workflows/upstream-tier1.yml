@@ -1,6 +1,6 @@
-name: upstream-tier1-daily
+name: daily-upstream-digest
 
-# Tier-1: daily digest of the two highest-churn repos (semantic-conventions,
+# Daily digest of the highest-churn repos (semantic-conventions,
 # opentelemetry-collector-contrib). Membership lives in
 # .github/scripts/repos.json; the skill-to-upstream mapping lives in
 # .github/upstream-map.yaml.
@@ -15,7 +15,7 @@ permissions:
   issues: write
 
 concurrency:
-  group: upstream-tier1
+  group: daily-upstream
   cancel-in-progress: false
 
 jobs:
@@ -31,14 +31,18 @@ jobs:
       - name: Build digest
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node .github/scripts/build-digest.mjs tier1
+        run: node .github/scripts/build-digest.mjs daily
 
-      - name: Create digest issue
+      - name: Create or update digest issue
         uses: peter-evans/create-issue-from-file@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          title: "Upstream digest (tier 1) — ${{ github.run_started_at }}"
+          title: "Daily upstream digest"
           content-filepath: ./digest.md
           labels: |
             upstream-digest
-            tier-1
+            daily
+          duplicate: true
+          update_existing: true
+          update_method: replace
+          search_existing: all
