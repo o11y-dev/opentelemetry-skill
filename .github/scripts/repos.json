@@ -15,7 +15,11 @@
       "open-telemetry/opentelemetry-java",
       "open-telemetry/opentelemetry-python",
       "open-telemetry/opentelemetry-js",
-      "open-telemetry/opentelemetry-dotnet"
+      "open-telemetry/opentelemetry-dotnet",
+      "github/copilot-cli",
+      "Aider-AI/aider",
+      "anysphere/cursor-wiki",
+      "DEVtheOPS/opencode-plugin-otel"
     ],
     "monthly": [
       "open-telemetry/opentelemetry-specification",
@@ -52,7 +56,11 @@
         "open-telemetry/opentelemetry-java",
         "open-telemetry/opentelemetry-python",
         "open-telemetry/opentelemetry-js",
-        "open-telemetry/opentelemetry-dotnet"
+        "open-telemetry/opentelemetry-dotnet",
+        "github/copilot-cli",
+        "Aider-AI/aider",
+        "anysphere/cursor-wiki",
+        "DEVtheOPS/opencode-plugin-otel"
       ],
       "tier3": [
         "open-telemetry/opentelemetry-specification",
