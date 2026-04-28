@@ -15,7 +15,19 @@
       "open-telemetry/opentelemetry-java",
       "open-telemetry/opentelemetry-python",
       "open-telemetry/opentelemetry-js",
-      "open-telemetry/opentelemetry-dotnet"
+      "open-telemetry/opentelemetry-dotnet",
+      "github/copilot-cli",
+      "Aider-AI/aider",
+      "anysphere/cursor-wiki",
+      "anomalyco/opencode",
+      "DEVtheOPS/opencode-plugin-otel",
+      "openai/codex",
+      "google-gemini/gemini-cli",
+      "anthropics/claude-code",
+      "anthropics/skills",
+      "QwenLM/qwen-code",
+      "microsoft/vscode-copilot-chat",
+      "badlogic/pi-mono"
     ],
     "monthly": [
       "open-telemetry/opentelemetry-specification",
@@ -52,7 +64,19 @@
         "open-telemetry/opentelemetry-java",
         "open-telemetry/opentelemetry-python",
         "open-telemetry/opentelemetry-js",
-        "open-telemetry/opentelemetry-dotnet"
+        "open-telemetry/opentelemetry-dotnet",
+        "github/copilot-cli",
+        "Aider-AI/aider",
+        "anysphere/cursor-wiki",
+        "anomalyco/opencode",
+        "DEVtheOPS/opencode-plugin-otel",
+        "openai/codex",
+        "google-gemini/gemini-cli",
+        "anthropics/claude-code",
+        "anthropics/skills",
+        "QwenLM/qwen-code",
+        "microsoft/vscode-copilot-chat",
+        "badlogic/pi-mono"
       ],
       "tier3": [
         "open-telemetry/opentelemetry-specification",

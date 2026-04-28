@@ -2,6 +2,13 @@
 
 A comprehensive guide to monitoring AI coding agents (Claude Code, Gemini CLI, GitHub Copilot, Codex CLI, and others) via OpenTelemetry.
 
+<!-- UPSTREAM MONITORING NOTE:
+This file is automatically flagged for review when changes occur in:
+- GitHub repositories: github/copilot-cli, Aider-AI/aider, openai/codex, google-gemini/gemini-cli, anthropics/claude-code, anthropics/skills, QwenLM/qwen-code, microsoft/vscode-copilot-chat, anysphere/cursor-wiki, anomalyco/opencode, DEVtheOPS/opencode-plugin-otel, badlogic/pi-mono
+- OpenTelemetry semantic conventions: open-telemetry/semantic-conventions (gen-ai model)
+- Manual monitoring recommended for official docs: docs.github.com/copilot/, aider.chat/docs/, developers.openai.com/codex/, google-gemini.github.io/gemini-cli/, claude.ai/code/, qwenlm.github.io/qwen-code-docs/, cursor.com, pi.dev
+-->
+
 ---
 
 ## Table of Contents
@@ -27,6 +34,7 @@ A comprehensive guide to monitoring AI coding agents (Claude Code, Gemini CLI, G
 | **OpenAI Codex CLI** | OpenAI | ⚠️ partial | ⚠️ interactive only | ⚠️ interactive only | ✅ | ❌ (custom event names) | ✅ gap-filler + governance | `~/.codex/config.toml` `[otel]` section | `~/.codex/config.toml` | OTLP gRPC | [docs](https://developers.openai.com/codex/config-advanced) |
 | **Qwen Code** | Alibaba | 🔜 planned | 🔜 planned | 🔜 planned | 🔜 planned | 🔜 planned | ✅ interim bridge | `.qwen/settings.json` | `.qwen/settings.json` | OTLP | [docs](https://qwenlm.github.io/qwen-code-docs/en/developers/development/telemetry/) |
 | **OpenCode** | Anomaly | ❌ none | ❌ | ❌ | ❌ | ❌ | ✅ primary | Community plugin only | n/a | n/a | [plugin](https://github.com/DEVtheOPS/opencode-plugin-otel) |
+| **Pi Agent** | open-source | ❌ none | ❌ | ❌ | ⚠️ install telemetry only | ❌ | ✅ primary | `~/.pi/agent/settings.json` or `.pi/settings.json` | `PI_TELEMETRY`, `enableInstallTelemetry` | n/a | [docs](https://pi.dev) |
 | **Cursor** | Anysphere | ❌ none | ❌ | ❌ | ❌ | ❌ | ⚠️ launcher wrapper only | Via MCP servers only | n/a | n/a | — |
 | **Windsurf** | Cognition | ❌ none | ❌ | ❌ | ❌ | ❌ | ⚠️ launcher wrapper only | Agent skills for user code only | n/a | n/a | — |
 | **Amazon Q Developer** | AWS | ❌ OTLP | ❌ | ❌ | ❌ | ❌ | ✅ primary | CloudWatch/CloudTrail only | n/a | n/a | — |
@@ -554,6 +562,8 @@ Query in Loki/OpenSearch: `{job="claude_code"} | json | prompt_id="prompt_abc123
 **Workaround**: Use a shared `session.id` or custom correlation attribute passed as metadata to link events across agents in log queries. True distributed tracing across agents is not possible today.
 
 ### 7.6 GenAI SemConv Coverage
+
+**⚠️ Breaking Change in Semantic Conventions v1.41.0**: The gen-ai conventions now require that tool call spans include the tool name for proper span naming. This affects agents using the `gen_ai.*` namespace for tool execution spans. Ensure your instrumentation includes the tool name when creating spans for AI agent tool calls.
 
 | Agent | Uses `gen_ai.*` | Custom Prefix | Notes |
 |-------|----------------|---------------|-------|

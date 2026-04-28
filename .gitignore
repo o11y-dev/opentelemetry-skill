@@ -21,3 +21,14 @@ Gemfile.lock
 context/
 digest.md
 pr-body.md
+
+# AI agent configuration directories
+.agents/
+.claude/
+.codex/
+.cursor/
+.gemini/
+.github/skills/
+.mcp.json
+.tessl/
+.vscode/

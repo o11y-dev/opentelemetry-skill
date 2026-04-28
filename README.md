@@ -1,17 +1,49 @@
 # OpenTelemetry Skill: A Cognitive Architecture for AI-Assisted Observability Engineering
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](opentelemetry-skill-LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Enabled-blueviolet)](https://opentelemetry.io/)
 [![Tessl Registry](https://img.shields.io/endpoint?url=https%3A%2F%2Fapi.tessl.io%2Fv1%2Fbadges%2Fo11y-dev%2Fopentelemetry-skill)](https://tessl.io/registry/o11y-dev/opentelemetry-skill)
 
 ## Overview
 
-The **opentelemetry-skill** is an expert-level AI assistant skill designed to transform Large Language Models (like Claude) into Principal Observability Engineers. This skill employs **progressive disclosure** to optimize context usage and deliver production-ready OpenTelemetry configurations.
+The **opentelemetry-skill** is an AI assistant skill designed to help with OpenTelemetry configuration and observability engineering tasks. This skill employs **progressive disclosure** to optimize context usage and deliver production-ready OpenTelemetry configurations.
 
 This repository contains the source code for the **OpenTelemetry Skill** tile released by Tessl.
 
 - **Published versions**: https://tessl.io/registry/o11y-dev/opentelemetry-skill
 - **Source code**: https://github.com/o11y-dev/opentelemetry-skill
+
+## Key Features
+
+**Comprehensive Coverage**: 11 specialized reference docs covering OpenTelemetry ecosystem components
+
+**Production Focus**: Emphasizes stability, security, and cost optimization patterns
+
+**AI Agent Support**: Configuration guidance for monitoring AI coding agents alongside traditional applications
+
+**Progressive Loading**: Context-aware reference loading prevents information overload
+
+**Continuous Updates**: Automated upstream monitoring tracks OpenTelemetry releases and AI agent repositories
+
+## 📋 Table of Contents
+
+- [Key Features](#key-features)
+- [What Makes This Different?](#what-makes-this-different)
+- [Core Features](#core-features)
+- [Skill Structure](#skill-structure)
+- [Installation](#installation)
+- [Architecture](#architecture)
+- [Architecture Patterns](#architecture-patterns)
+- [Usage Examples](#usage-examples)
+- [Reference Documentation](#reference-documentation)
+- [Contrib Components & Example Configs](#contrib-components--example-configs)
+- [Testing & Validation](#testing--validation)
+- [Contributing](#contributing)
+- [Known Limitations](#known-limitations)
+- [Roadmap](#roadmap)
+- [Compatibility](#compatibility)
+- [License](#license)
+- [Related Projects](#related-projects)
 
 ### What Makes This Different?
 
@@ -21,8 +53,9 @@ Unlike loading the entire OpenTelemetry documentation into an AI's context (whic
 2. **Progressive Disclosure**: Loads detailed reference materials only when specific topics are triggered
 3. **Production-First**: Prioritizes stability, security, and cost optimization over feature completeness
 4. **Convention Enforcement**: Ensures semantic conventions, proper processor ordering, and architectural best practices
+5. **AI Agent Support**: Includes guidance for observing AI coding agents in production environments
 
-## Key Features
+## Core Features
 
 - 🧠 **Cognitive Architecture**: Meta-knowledge layer that teaches AI *how* to think about observability
 - 📊 **Cardinality Management**: Built-in guards against metric explosion and cost overruns
@@ -32,12 +65,19 @@ Unlike loading the entire OpenTelemetry documentation into an AI's context (whic
 - 📈 **Scaling Strategies**: Load balancing with sticky sessions for tail sampling
 - 🎯 **Sampling Intelligence**: Head vs tail sampling with statistical trade-off analysis
 - 🔍 **Meta-Monitoring**: Self-observability patterns for collector health
-- 🤖 **AI Agent Observability**: Configuration guides for monitoring Claude Code, Gemini CLI, GitHub Copilot, Codex CLI, and other AI coding agents via OpenTelemetry
+- 🤖 **AI Agent Observability**: Configuration guides for monitoring AI coding agents including Claude Code, Gemini CLI, GitHub Copilot, Codex CLI, Qwen Code, Pi Agent, and more via OpenTelemetry
 - ✅ **Test & Validation Framework**: TDD-based testing methodology to ensure skill effectiveness
 
 ## Skill Structure
 
 `SKILL.md` acts as the **cognitive router** — a compact instruction set that tells the AI how to reason about observability before generating any output. The `references/` directory contains deep-dive documentation that is loaded on demand when specific topics are triggered, keeping context lean and focused.
+
+### 📊 **Content Overview**
+
+- **7,851 lines** of OpenTelemetry guidance across 11 specialized reference docs
+- **12 AI coding agents** tracked with upstream monitoring  
+- **Production-tested** configurations with validation commands
+- **Current & updated** - automatically synced with latest OpenTelemetry releases
 
 ## Installation
 
@@ -92,7 +132,7 @@ opentelemetry-skill/
 │   ├── sampling.md           # Sampling strategies
 │   ├── security.md           # PII redaction & authentication
 │   └── monitoring.md         # Self-monitoring patterns
-└── opentelemetry-skill-LICENSE  # Apache 2.0
+└── LICENSE                   # Apache 2.0
 ```
 
 ## Architecture Patterns
@@ -234,7 +274,7 @@ This skill is designed to evolve with the OpenTelemetry ecosystem. Contributions
 
 ## License
 
-This skill is licensed under the **Apache License 2.0**. See [opentelemetry-skill-LICENSE](opentelemetry-skill-LICENSE) for details.
+This skill is licensed under the **Apache License 2.0**. See [LICENSE](LICENSE) for details.
 
 The OpenTelemetry project itself is a CNCF project licensed under Apache 2.0.
 
@@ -250,4 +290,5 @@ The OpenTelemetry project itself is a CNCF project licensed under Apache 2.0.
 
 ---
 
-**Transform your AI into a Principal Observability Engineer. Deploy with confidence. Observe with precision.**
+**Transform your AI into an observability-focused assistant. Production-ready. AI-agent aware.**  
+**Deploy with confidence. Observe with precision.**
