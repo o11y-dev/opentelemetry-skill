@@ -82,6 +82,28 @@ mappings:
       - repo: open-telemetry/community
         paths:
           - "projects/gen-ai/**"
+      - repo: github/copilot-cli
+        paths:
+          - "README.md"
+          - "CHANGELOG.md"
+          - "docs/**"
+          - "src/**"
+      - repo: Aider-AI/aider
+        paths:
+          - "README.md"
+          - "CHANGELOG.md"
+          - "aider/**"
+          - "docs/**"
+      - repo: anysphere/cursor-wiki
+        paths:
+          - "**/*.md"
+          - "docs/**"
+      - repo: DEVtheOPS/opencode-plugin-otel
+        paths:
+          - "README.md"
+          - "CHANGELOG.md"
+          - "src/**"
+          - "package.json"
 
   - skill: references/architecture.md
     topics: [deployment, operator, k8s]
