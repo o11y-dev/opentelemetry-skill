@@ -1,0 +1,5 @@
+{
+  "name": "opentelemetry-skill",
+  "mode": "vendored",
+  "dependencies": {}
+}
