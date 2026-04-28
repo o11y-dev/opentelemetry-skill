@@ -104,6 +104,44 @@ mappings:
           - "CHANGELOG.md"
           - "src/**"
           - "package.json"
+      - repo: openai/codex
+        paths:
+          - "README.md"
+          - "CHANGELOG.md"
+          - "docs/**"
+          - "src/**"
+          - "Cargo.toml"
+      - repo: google-gemini/gemini-cli
+        paths:
+          - "README.md"
+          - "CHANGELOG.md"
+          - "docs/**"
+          - "src/**"
+          - "package.json"
+      - repo: anthropics/claude-code
+        paths:
+          - "README.md"
+          - "CHANGELOG.md"
+          - "docs/**"
+          - "src/**"
+      - repo: anthropics/skills
+        paths:
+          - "README.md"
+          - "**/*.md"
+          - "skills/**"
+      - repo: QwenLM/qwen-code
+        paths:
+          - "README.md"
+          - "CHANGELOG.md"
+          - "docs/**"
+          - "packages/**"
+          - "package.json"
+      - repo: microsoft/vscode-copilot-chat
+        paths:
+          - "README.md"
+          - "CHANGELOG.md"
+          - "src/**"
+          - "package.json"
 
   - skill: references/architecture.md
     topics: [deployment, operator, k8s]

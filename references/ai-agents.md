@@ -2,6 +2,13 @@
 
 A comprehensive guide to monitoring AI coding agents (Claude Code, Gemini CLI, GitHub Copilot, Codex CLI, and others) via OpenTelemetry.
 
+<!-- UPSTREAM MONITORING NOTE:
+This file is automatically flagged for review when changes occur in:
+- GitHub repositories: github/copilot-cli, Aider-AI/aider, openai/codex, google-gemini/gemini-cli, anthropics/claude-code, anthropics/skills, QwenLM/qwen-code, microsoft/vscode-copilot-chat, anysphere/cursor-wiki, DEVtheOPS/opencode-plugin-otel
+- OpenTelemetry semantic conventions: open-telemetry/semantic-conventions (gen-ai model)
+- Manual monitoring recommended for official docs: docs.github.com/copilot/, aider.chat/docs/, developers.openai.com/codex/, google-gemini.github.io/gemini-cli/, claude.ai/code/, qwenlm.github.io/qwen-code-docs/, cursor.com
+-->
+
 ---
 
 ## Table of Contents
@@ -554,6 +561,8 @@ Query in Loki/OpenSearch: `{job="claude_code"} | json | prompt_id="prompt_abc123
 **Workaround**: Use a shared `session.id` or custom correlation attribute passed as metadata to link events across agents in log queries. True distributed tracing across agents is not possible today.
 
 ### 7.6 GenAI SemConv Coverage
+
+**⚠️ Breaking Change in Semantic Conventions v1.41.0**: The gen-ai conventions now require that tool call spans include the tool name for proper span naming. This affects agents using the `gen_ai.*` namespace for tool execution spans. Ensure your instrumentation includes the tool name when creating spans for AI agent tool calls.
 
 | Agent | Uses `gen_ai.*` | Custom Prefix | Notes |
 |-------|----------------|---------------|-------|

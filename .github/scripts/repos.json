@@ -19,7 +19,13 @@
       "github/copilot-cli",
       "Aider-AI/aider",
       "anysphere/cursor-wiki",
-      "DEVtheOPS/opencode-plugin-otel"
+      "DEVtheOPS/opencode-plugin-otel",
+      "openai/codex",
+      "google-gemini/gemini-cli",
+      "anthropics/claude-code",
+      "anthropics/skills",
+      "QwenLM/qwen-code",
+      "microsoft/vscode-copilot-chat"
     ],
     "monthly": [
       "open-telemetry/opentelemetry-specification",
@@ -60,7 +66,13 @@
         "github/copilot-cli",
         "Aider-AI/aider",
         "anysphere/cursor-wiki",
-        "DEVtheOPS/opencode-plugin-otel"
+        "DEVtheOPS/opencode-plugin-otel",
+        "openai/codex",
+        "google-gemini/gemini-cli",
+        "anthropics/claude-code",
+        "anthropics/skills",
+        "QwenLM/qwen-code",
+        "microsoft/vscode-copilot-chat"
       ],
       "tier3": [
         "open-telemetry/opentelemetry-specification",
