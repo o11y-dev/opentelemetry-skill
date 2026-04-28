@@ -25,7 +25,8 @@
       "anthropics/claude-code",
       "anthropics/skills",
       "QwenLM/qwen-code",
-      "microsoft/vscode-copilot-chat"
+      "microsoft/vscode-copilot-chat",
+      "badlogic/pi-mono"
     ],
     "monthly": [
       "open-telemetry/opentelemetry-specification",
@@ -72,7 +73,8 @@
         "anthropics/claude-code",
         "anthropics/skills",
         "QwenLM/qwen-code",
-        "microsoft/vscode-copilot-chat"
+        "microsoft/vscode-copilot-chat",
+        "badlogic/pi-mono"
       ],
       "tier3": [
         "open-telemetry/opentelemetry-specification",

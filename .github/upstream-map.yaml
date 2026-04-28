@@ -142,6 +142,12 @@ mappings:
           - "CHANGELOG.md"
           - "src/**"
           - "package.json"
+      - repo: badlogic/pi-mono
+        paths:
+          - "packages/coding-agent/**"
+          - "README.md"
+          - "CHANGELOG.md"
+          - "docs/**"
 
   - skill: references/architecture.md
     topics: [deployment, operator, k8s]
