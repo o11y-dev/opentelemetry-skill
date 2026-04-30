@@ -1,0 +1,31 @@
+{
+  "context": "Tests whether the skill causes the agent to provide Claude Code-specific telemetry configuration rather than generic OpenTelemetry setup. Without the skill, agents provide generic OTEL configuration that omits the required enablement flag, correct metric temporality, and privacy controls. The skill should enforce Claude Code-specific knowledge including environment variables, settings file location, and cardinality warnings.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Specifies CLAUDE_CODE_ENABLE_TELEMETRY=1 environment variable",
+      "max_score": 30,
+      "description": "The response includes the CLAUDE_CODE_ENABLE_TELEMETRY=1 environment variable as a required step to enable telemetry. Without this flag, no telemetry is emitted regardless of OTEL configuration. Responses that provide OTEL configuration without this flag score zero on this criterion."
+    },
+    {
+      "name": "Mentions OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative",
+      "max_score": 20,
+      "description": "The response specifies the correct metric temporality preference for Claude Code metrics. Using delta temporality or omitting this setting results in incorrect metric aggregation for the cumulative counters Claude Code emits."
+    },
+    {
+      "name": "References ~/.claude/settings.json for persistent configuration",
+      "max_score": 15,
+      "description": "The response mentions that environment variables can be persisted in ~/.claude/settings.json under an env block for consistent telemetry across sessions. Responses that only show environment variable exports without mentioning persistent config score zero on this criterion."
+    },
+    {
+      "name": "Includes privacy controls for prompt and tool logging",
+      "max_score": 20,
+      "description": "The response mentions OTEL_LOG_USER_PROMPTS and/or OTEL_LOG_TOOL_DETAILS privacy controls, explaining that prompt content is not logged by default and these flags must be explicitly enabled. Omitting privacy configuration entirely scores zero — this is a key safety concern for the skill."
+    },
+    {
+      "name": "Warns about session.id cardinality in metrics",
+      "max_score": 15,
+      "description": "The response warns that session.id should not be used as a metric dimension/label due to high cardinality, and recommends using it only as a trace/span attribute. Missing this warning entirely scores zero — it is a specific Claude Code observability pitfall the skill addresses."
+    }
+  ]
+}

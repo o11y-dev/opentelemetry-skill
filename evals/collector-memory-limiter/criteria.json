@@ -1,0 +1,31 @@
+{
+  "context": "Tests whether the skill causes the agent to include a memory_limiter processor as the first processor in the pipeline when configuring an OpenTelemetry Collector. Without the skill, agents typically omit memory protection or place processors in the wrong order. The skill should enforce the production-critical pattern of memory_limiter → batch → other processors.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Includes memory_limiter processor in the configuration",
+      "max_score": 30,
+      "description": "The response includes a memory_limiter processor block with configuration values (check_interval, limit_mib or limit_percentage). A response that omits memory_limiter entirely scores zero — this is the primary safety requirement the skill enforces."
+    },
+    {
+      "name": "Places memory_limiter as the first processor in the pipeline",
+      "max_score": 25,
+      "description": "In the service.pipelines section, memory_limiter appears before all other processors (e.g., before batch). If memory_limiter is listed after batch or any other processor, score zero — incorrect ordering defeats the OOM protection purpose."
+    },
+    {
+      "name": "Explains why memory_limiter must be first",
+      "max_score": 20,
+      "description": "The response includes an explanation that memory_limiter must be first to prevent out-of-memory crashes by rejecting data before it enters the pipeline. A response that provides configuration without the reasoning scores zero on this criterion."
+    },
+    {
+      "name": "Includes proper receiver, processor, and exporter configuration",
+      "max_score": 15,
+      "description": "The response provides a complete collector configuration with at minimum: an OTLP receiver, the memory_limiter and batch processors, and a Jaeger exporter. Missing any of these three components docks this criterion proportionally."
+    },
+    {
+      "name": "Uses correct processor ordering: memory_limiter → batch → other processors",
+      "max_score": 10,
+      "description": "The pipeline processors list follows the canonical order prescribed by the skill. If the ordering is reversed or inconsistent with the explanation given, score zero."
+    }
+  ]
+}

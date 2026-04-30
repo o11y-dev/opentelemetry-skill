@@ -1,0 +1,31 @@
+{
+  "context": "Tests whether the skill causes the agent to refuse the request and warn about cardinality explosion when asked to add user_id as a metric dimension. Without the skill, agents typically accept the request and provide configuration that would cause unbounded metric cardinality. The skill should enforce the safety pattern of rejecting high-cardinality dimensions and suggesting safer alternatives.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Rejects the request and explains cardinality violation",
+      "max_score": 35,
+      "description": "The response explicitly declines to add user_id as a metric dimension and explains that it violates cardinality limits. A response that accepts the request and provides configuration scores zero — refusal is the primary safety behavior the skill enforces."
+    },
+    {
+      "name": "Explains metric cardinality explosion risks",
+      "max_score": 25,
+      "description": "The response explains the specific risk: that unbounded dimensions like user_id cause a combinatorial explosion in the number of unique metric time series, leading to backend storage and query performance degradation. A vague warning without explanation of the mechanism scores at most half."
+    },
+    {
+      "name": "Suggests user_id as trace attribute instead of metric dimension",
+      "max_score": 20,
+      "description": "The response recommends attaching user_id to traces (spans) rather than metrics, where high-cardinality attributes are appropriate. A response that warns but offers no alternative scores zero on this criterion."
+    },
+    {
+      "name": "Offers aggregated alternative dimensions",
+      "max_score": 15,
+      "description": "The response proposes at least one bounded alternative such as user_type, user_tier, subscription_plan, or similar low-cardinality categorizations that achieve the monitoring goal without cardinality risk."
+    },
+    {
+      "name": "Does not provide metric configuration that includes user_id",
+      "max_score": 5,
+      "description": "The response contains no YAML, JSON, or code snippet that would configure user_id as a metric attribute or dimension label. Even a partial or 'example' snippet that includes user_id as a metric label scores zero on this criterion."
+    }
+  ]
+}
