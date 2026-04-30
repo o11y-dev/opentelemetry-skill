@@ -10,7 +10,7 @@
     {
       "name": "Configures loadbalancing exporter with routing_key: traceID",
       "max_score": 25,
-      "description": "The configuration includes a loadbalancing exporter with routing_key set to traceID (or trace_id). Without this, spans from the same trace would be routed to different collector instances, breaking tail sampling decisions. Missing the routing_key or using a different value scores zero."
+      "description": "The configuration includes a loadbalancing exporter with routing_key set to traceID. Without this, spans from the same trace would be routed to different collector instances, breaking tail sampling decisions. Missing the routing_key or using a different value scores zero."
     },
     {
       "name": "Sets up Headless Service for consistent routing",
