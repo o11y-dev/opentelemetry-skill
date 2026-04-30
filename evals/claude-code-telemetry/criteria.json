@@ -25,7 +25,7 @@
     {
       "name": "Warns about session.id cardinality in metrics",
       "max_score": 15,
-      "description": "The response warns that session.id should not be used as a metric dimension/label due to high cardinality, and recommends using it only as a trace/span attribute. Missing this warning entirely scores zero — it is a specific Claude Code observability pitfall the skill addresses."
+      "description": "The response warns that session.id should not be used as a metric dimension/label due to high cardinality, and recommends using it only in logs/events or for correlation via prompt.id. Missing this warning entirely scores zero — it is a specific Claude Code observability pitfall the skill addresses."
     }
   ]
 }
