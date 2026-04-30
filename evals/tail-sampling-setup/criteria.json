@@ -1,0 +1,31 @@
+{
+  "context": "Tests whether the skill causes the agent to recommend the Gateway deployment pattern with trace-ID-based load balancing when setting up tail sampling in Kubernetes. Without the skill, agents often suggest DaemonSet deployment which is architecturally incorrect for tail sampling. The skill should enforce the Gateway pattern with loadbalancing exporter and consistent trace routing.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Recommends Gateway deployment pattern for tail sampling",
+      "max_score": 30,
+      "description": "The response explicitly recommends a Gateway (Deployment) pattern rather than DaemonSet for the tail-sampling layer. If the response suggests DaemonSet for tail sampling, score zero — this is the core architectural mistake the skill prevents."
+    },
+    {
+      "name": "Configures loadbalancing exporter with routing_key: traceID",
+      "max_score": 25,
+      "description": "The configuration includes a loadbalancing exporter with routing_key set to traceID. Without this, spans from the same trace would be routed to different collector instances, breaking tail sampling decisions. Missing the routing_key or using a different value scores zero."
+    },
+    {
+      "name": "Sets up Headless Service for consistent routing",
+      "max_score": 15,
+      "description": "The Kubernetes configuration includes a Headless Service (clusterIP: None) for the Gateway collector tier to enable consistent hash-based routing. A regular ClusterIP Service would not support the required routing behavior."
+    },
+    {
+      "name": "Includes proper tail sampling policies for both error and probabilistic sampling",
+      "max_score": 20,
+      "description": "The tail sampling processor configuration includes at least two policies: one for keeping all error traces (status_code: ERROR or similar) and one for probabilistic 10% sampling of remaining traces. Missing either policy scores proportionally."
+    },
+    {
+      "name": "Warns about tail_sampling processor Beta stability level",
+      "max_score": 10,
+      "description": "The response explicitly mentions that the tail_sampling processor is at Beta stability level and recommends appropriate caution (version pinning, rollback plan, or production testing). Omitting the stability warning entirely scores zero."
+    }
+  ]
+}
