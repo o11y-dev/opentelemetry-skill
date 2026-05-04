@@ -24,6 +24,8 @@ This table tracks agent "excuses" discovered during RED/GREEN testing phases and
 | Semantic Conventions | "Here's how to add those attributes" | Core Principle #2: Convention over Configuration | ✅ Added |
 | Persistence | "Use retry configuration" | Core Principle #4: Persistent queues for production | ✅ Added |
 | OTTL Performance | "Here's the transformation" | OTTL trigger: Performance considerations | ✅ Added |
+| Existing Config Audit | "The YAML parses, so it's mostly fine" | Core Principle #8 + config review mode: audit cross-field contradictions | ✅ Added |
+| Metrics Config Audit | "It already has a persistent queue, so it's production-ready" | Existing config review mode + collector audit: verify filesystem safety, temporality/state assumptions, and dead config, not just queue presence | ✅ Added |
 
 ---
 
@@ -97,11 +99,11 @@ This table tracks agent "excuses" discovered during RED/GREEN testing phases and
 
 **Date:** 2026-01-31
 
-**Scenarios Tested:** 0/10 (Baseline creation)
+**Scenarios Tested:** 0/12 (Baseline creation)
 
 **Findings:**
 - Created baseline scenarios based on common OpenTelemetry pitfalls
-- Identified 10 critical patterns to test
+- Identified 12 critical patterns to test
 - Added OTTL language support with comprehensive reference
 
 **Actions Taken:**
@@ -116,7 +118,7 @@ This table tracks agent "excuses" discovered during RED/GREEN testing phases and
 
 **Date:** TBD
 
-**Scenarios Tested:** 0/10
+**Scenarios Tested:** 0/12
 
 **Baseline Results:**
 - Scenario 1: [Result]
@@ -197,13 +199,13 @@ When a new rationalization is discovered, add it to SKILL.md using this format:
 **Measurement:**
 - Count rationalizations per scenario
 - Track reduction over iterations
-- Target: 0 rationalizations in 10/10 scenarios
+- Target: 0 rationalizations in 12/12 scenarios
 
 ### Iteration Tracking
 
 | Iteration | Scenarios Passed | Avg Rationalizations per Scenario | New Rationalizations Found |
 |-----------|------------------|-----------------------------------|----------------------------|
-| 1 (Baseline) | 0/10 | N/A | 10 (initial set) |
+| 1 (Baseline) | 0/12 | N/A | 12 (initial set) |
 | 2 | TBD | TBD | TBD |
 | 3 | TBD | TBD | TBD |
 | ... | ... | ... | ... |

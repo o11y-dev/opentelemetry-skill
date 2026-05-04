@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Make bundled references and evaluation docs review-visible via a Tessl docs entrypoint
 - Move fast-changing compatibility details out of `SKILL.md` and into `references/compatibility.md`
 - Add practical upstream watch guidance for bbolt security advisory tracking and event-to-logs proposal maturity
+- Teach the skill to audit existing collector/Helm configs for cross-field contradictions such as memory limiter sizing, sticky routing for scaled tail sampling, hostPort misuse, durability gaps, rollout inconsistency, OTTL type drift, unsafe RWX/NFS-backed queues, and risky temporality conversions
 
 ## [1.2.0] - 2026-03-20
 

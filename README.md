@@ -183,6 +183,19 @@ opentelemetry-skill/
 - ✅ Suggests alternative: "Use user_id as a trace attribute instead, and create a metric for aggregated user counts."
 - ✅ Loads `references/instrumentation.md` to explain cardinality management
 
+### Example 4: Reviewing Existing Helm Values
+
+**User**: "Review this collector Helm values file and tell me what's risky."
+
+**AI Response**:
+- ✅ Audits cross-field contradictions, not just YAML syntax
+- ✅ Compares `memory_limiter` settings to container memory limits
+- ✅ Flags scaled `tail_sampling` without sticky routing
+- ✅ Questions `hostPort` on gateway Deployments
+- ✅ Calls out retry/queue durability gaps, unsafe RWX/EFS-backed `file_storage`, and rollout-setting conflicts
+- ✅ Audits metrics temporality conversions such as `deltatocumulative` when restart or scaling behavior would make the state unsafe
+- ✅ Corrects OTTL type mismatches and stale semantic convention keys
+
 See [`SKILL.md`](SKILL.md) for the full list of progressive disclosure triggers, System 2 thinking signals, core principles, and production-ready configuration defaults.
 
 ## Reference Documentation

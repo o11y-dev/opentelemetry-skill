@@ -27,6 +27,8 @@ Always adhere to these guiding principles:
 
 7. **Security by Default**: Redact PII, enable TLS for cross-network communication, and authenticate all collector endpoints.
 
+8. **Cross-Field Consistency**: Treat collector reviews as systems reviews, not YAML linting. Compare processor order, memory limits, replica strategy, routing, metric temporality state, queue storage medium, PDB/HPA settings, and OTTL attribute types together before calling a config "safe".
+
 ## Pre-Flight Checklist
 
 Before generating any configuration or code, verify these critical factors. If any are undefined, ask the user:
@@ -37,14 +39,30 @@ Before generating any configuration or code, verify these critical factors. If a
 4. **Trust boundaries** — Signals crossing public networks? Require TLS + mTLS. → Load [security.md](references/security.md)
 5. **Deployment target** — Kubernetes (DaemonSet/Deployment), EC2, Lambda, or containers? → Load [architecture.md](references/architecture.md)
 
+## Existing Configuration Review Mode
+
+When the user provides an existing collector config, Helm values file, or Kubernetes manifest, audit it for internal contradictions before proposing edits.
+
+Always compare:
+
+1. **Memory limiter vs pod limit** — `limit_mib` must stay below the container memory limit with headroom for the Go runtime and internal buffers.
+2. **Stateful processing vs scaling** — `tail_sampling`, `spanmetrics`, and `servicegraph` require sticky routing when replicas can exceed 1.
+3. **Exporter durability vs outage tolerance** — disabled retries and no persistent queue imply data loss during backend failures.
+4. **Network exposure vs deployment mode** — `hostPort` is usually a DaemonSet/node-local choice, not a horizontally scaled gateway Deployment default.
+5. **Rollout settings together** — review `replicaCount`, HPA `minReplicas`, PodDisruptionBudget, and rolling update settings as one unit.
+6. **OTTL/filter correctness** — keep attribute types consistent (for example bool vs string) and prefer current semantic convention keys such as `http.response.status_code`.
+7. **Dead config** — flag processors/exporters/extensions that are declared but never referenced by any pipeline.
+8. **Metric temporality and state** — `deltatocumulative` / `cumulativetodelta` are stateful conversions; verify source temporality, backend expectations, restart tolerance, and any replica/routing assumptions before enabling them.
+9. **Queue storage backend** — `file_storage` needs local locking-safe storage; `ReadWriteMany` / EFS / NFS-style volumes are not safe defaults.
+
 ## Progressive Disclosure: Context Triggers
 
 Load detailed reference documentation only when the user's request matches a trigger. This keeps context lean.
 
 | Trigger keywords | Load | Key topics |
 |---|---|---|
-| Kubernetes, Helm, DaemonSet, Sidecar, Gateway, Scaling, Load Balancing | [architecture.md](references/architecture.md) | DaemonSet vs Gateway vs Sidecar, Target Allocator, HPA |
-| Pipeline, Receiver, Processor, Exporter, Queue, Batch, Memory, Extensions | [collector.md](references/collector.md) | Processor ordering, memory_limiter, file_storage, stability levels |
+| Kubernetes, Helm, values.yaml, audit, review, DaemonSet, Sidecar, Gateway, Scaling, Load Balancing | [architecture.md](references/architecture.md) | DaemonSet vs Gateway vs Sidecar, Target Allocator, HPA, rollout consistency |
+| Pipeline, Receiver, Processor, Exporter, Queue, Batch, Memory, Extensions, existing config | [collector.md](references/collector.md) | Processor ordering, memory_limiter, file_storage, config audit heuristics, temporality/state audits, stability levels |
 | SDK, Instrumentation, Spans, Attributes, Semantic Conventions, Cardinality | [instrumentation.md](references/instrumentation.md) | Auto vs manual, SemConv, cardinality Rule of 100 |
 | Sampling, Cost, Volume, Head Sampling, Tail Sampling, Probabilistic | [sampling.md](references/sampling.md) | Head/tail sampling, sticky sessions, sampling math |
 | Security, PII, GDPR, Redaction, TLS, Authentication, Credentials | [security.md](references/security.md) | PII redaction, mTLS, RBAC, extension exposure risks |
@@ -125,7 +143,7 @@ Key defaults:
 
 - `memory_limiter` must be first in every processor chain.
 - `batch` reduces exporter network calls.
-- `file_storage` preserves queues across restarts only when the collector returns to the same host/volume. In Kubernetes, back `/var/lib/otelcol/queue` with a PVC.
+- `file_storage` preserves queues across restarts only when the collector returns to the same host/volume. In Kubernetes, back `/var/lib/otelcol/queue` with a `ReadWriteOnce` block-backed PVC rather than RWX/network storage.
 - `health_check` binds to `localhost` (not `0.0.0.0`) in shared networks.
 - Prefer OTLP gRPC (port 4317) for receivers and exporters. Fall back to OTLP HTTP (port 4318) when gRPC is unavailable.
 
@@ -176,12 +194,18 @@ curl -s http://localhost:8888/metrics | grep -E "otelcol_processor_dropped|otelc
 ❌ Exposing pprof (1777), zpages (55679) on `0.0.0.0` in production
 ❌ Using `tail_sampling` without sticky session load balancing (loadbalancing exporter)
 ❌ Omitting `batch` processor (causes excessive network calls)
+❌ Calling a config "fine" because it parses, without checking memory limits, sticky routing, exporter durability, and rollout settings together
+❌ Using `hostPort` on a horizontally scaled gateway Deployment without a clear node-local traffic requirement
+❌ Setting `memory_limiter.limit_mib` above the pod/container memory limit or with no runtime headroom
+❌ Converting metrics with `deltatocumulative` / `cumulativetodelta` without checking source temporality, backend expectations, and restart/scale behavior
+❌ Backing `file_storage` queues with RWX/network filesystems (EFS/NFS/CephFS) as if they were local disks
 ❌ Including `prompt.id` or `session.id` as metric dimensions (unbounded cardinality)
 ❌ Enabling `captureContent`/`OTEL_LOG_USER_PROMPTS` in shared/production environments without PII controls
 ❌ Assuming all AI coding agents emit traces (Claude Code and Codex exec do not)
 ❌ Using delta temporality with backends that expect cumulative (e.g., VictoriaMetrics silently drops)
 ❌ Hard-coding `gen_ai.token.type` handling to only `input`/`output` values
 ❌ Treating open spec proposals as stable APIs before they ship in SDKs/collector releases
+❌ Mixing OTTL/filter attribute types (for example, setting a boolean then matching it with `IsMatch(..., "true")`) or drifting back to legacy keys like `http.status_code`
 
 ## Version and Compatibility
 

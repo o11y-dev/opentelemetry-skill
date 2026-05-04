@@ -9,14 +9,15 @@ The OpenTelemetry Collector is a vendor-agnostic telemetry pipeline that receive
 1. [Pipeline Anatomy](#pipeline-anatomy)
 2. [Core vs Contrib Components](#core-vs-contrib-components)
 3. [Processor Ordering: The Critical Path](#processor-ordering-the-critical-path)
-4. [Memory Limiter: Preventing OOM Kills](#memory-limiter-preventing-oom-kills)
-5. [Persistent Queues: Preventing Data Loss](#persistent-queues-preventing-data-loss)
-6. [Resiliency: Message Queues (Kafka)](#resiliency-message-queues-kafka)
-7. [Batch Processor: Network Optimization](#batch-processor-network-optimization)
-8. [Extensions](#extensions)
-9. [Configuration Management](#configuration-management)
-10. [Configuration Patterns](#configuration-patterns)
-11. [Component Docs & Example Configs](#component-docs--example-configs)
+4. [Component Docs & Example Configs](#component-docs--example-configs)
+5. [Auditing Existing Collector Configurations](#auditing-existing-collector-configurations)
+6. [Memory Limiter: Preventing OOM Kills](#memory-limiter-preventing-oom-kills)
+7. [Persistent Queues: Preventing Data Loss](#persistent-queues-preventing-data-loss)
+8. [Resiliency: Message Queues (Kafka)](#resiliency-message-queues-kafka)
+9. [Batch Processor: Network Optimization](#batch-processor-network-optimization)
+10. [Extensions](#extensions)
+11. [Configuration Management](#configuration-management)
+12. [Configuration Patterns](#configuration-patterns)
 
 ---
 
@@ -323,6 +324,138 @@ Browse the [examples/ directory](https://github.com/open-telemetry/opentelemetry
 
 ---
 
+## Auditing Existing Collector Configurations
+
+When reviewing an existing collector config or Helm values file, do more than syntax validation. Most production failures come from **cross-field contradictions** that still parse successfully.
+
+### Review Checklist
+
+| Check | What to compare | Why it matters |
+|-------|-----------------|----------------|
+| **Processor chain** | `memory_limiter` first, `batch` near the end, every declared processor referenced by a pipeline | Correct ordering prevents OOMs and wasted work; unreferenced processors create dead config that misleads reviewers |
+| **Memory envelope** | `memory_limiter.limit_mib` / `limit_percentage` vs container memory limit | A limiter above the pod limit cannot protect the collector from cgroup OOM kills |
+| **Stateful processing** | `tail_sampling`, `spanmetrics`, `servicegraph` vs replica count/HPA and routing | Stateful processors break when traces/related spans are split across replicas |
+| **Metric temporality/state** | `deltatocumulative`, `cumulativetodelta`, source temporality, backend expectation, and replica/restart behavior | Temporality conversion is stateful; restarts or non-sticky routing can create resets or incorrect cumulative series |
+| **Exporter durability** | `retry_on_failure`, `sending_queue`, `file_storage`, and stated outage tolerance | No retry + no queue means guaranteed loss during backend or network faults |
+| **Queue storage backend** | `file_storage` access mode, storage class, and whether the filesystem is local vs RWX/networked | Persistent queues need locking-safe local block storage; EFS/NFS/RWX can corrupt or stall queue state |
+| **OTTL/filter correctness** | Attribute names, types, nil guards, and regex use | Real-world breakages often come from bool-vs-string mismatches or stale semantic convention keys |
+| **Kubernetes rollout consistency** | `replicaCount`, HPA `minReplicas`, PodDisruptionBudget, `maxUnavailable`, and `hostPort` usage | Valid YAML can still be unschedulable, non-evictable, or incompatible with scaled Deployments |
+
+### Common Audit Findings
+
+#### 1. Memory limiter larger than the pod limit
+
+```yaml
+# Bad: collector will hit the container limit first
+resources:
+  limits:
+    memory: 666Mi
+
+processors:
+  memory_limiter:
+    limit_mib: 1500
+    spike_limit_mib: 512
+```
+
+```yaml
+# Better: leave runtime headroom and let the limiter trigger first
+resources:
+  limits:
+    memory: 2Gi
+
+processors:
+  memory_limiter:
+    limit_percentage: 80
+    spike_limit_percentage: 20
+```
+
+**Rule**: Keep the limiter below the pod limit and reserve roughly 15-30% for Go runtime overhead, queues, and transient buffers.
+
+#### 2. Tail sampling on scaled gateways without sticky routing
+
+If a Deployment can scale above one replica, a regular ClusterIP Service is **not enough** for `tail_sampling`. You need an upstream `loadbalancing` exporter with `routing_key: traceID` and a Headless Service for the gateway tier. Otherwise traces fragment across pods and sampling decisions are wrong.
+
+#### 3. Retry disabled and no durable queue
+
+If `retry_on_failure.enabled: false` and there is no `sending_queue` backed by `file_storage`, the collector will drop data whenever the backend is unavailable. Treat this as an explicit durability trade-off that needs confirmation, not as a neutral default.
+
+#### 4. OTTL/filter type mismatches
+
+```yaml
+# Bad: writes a boolean, later treats it as a regex target string
+transform/flag:
+  trace_statements:
+    - context: span
+      statements:
+        - set(attributes["is_error"], true) where attributes["http.response.status_code"] >= 400
+
+filter/drop:
+  traces:
+    span:
+      - not IsMatch(attributes["is_error"], "true")
+```
+
+```yaml
+# Better: compare booleans as booleans
+filter/drop:
+  traces:
+    span:
+      - attributes["is_error"] != true
+```
+
+Also prefer current semantic convention keys such as `http.response.status_code` over legacy ad hoc names like `http.status_code`.
+
+#### 5. Metric temporality conversion without a state plan
+
+```yaml
+processors:
+  deltatocumulative:
+    max_stale: 1m
+
+service:
+  pipelines:
+    metrics:
+      processors: [deltatocumulative, batch]
+
+autoscaling:
+  enabled: true
+  maxReplicas: 6
+```
+
+`deltatocumulative` and `cumulativetodelta` keep per-timeseries state in memory. On restart, scale-out, or whenever a timeseries lands on a different replica, the converted series can reset or become inconsistent. Only use them when:
+
+- the source temporality is known,
+- the backend expectation is known,
+- and the routing/restart behavior makes the reset semantics acceptable.
+
+On generic OTLP gateway tiers, prefer matching source temporality to backend expectations instead of converting in the middle unless you have a clear reason to do otherwise.
+
+#### 6. `file_storage` on RWX or network filesystems
+
+A queue is not "durable" just because it writes to disk. The `file_storage` extension uses bbolt and needs local locking-safe storage. In Kubernetes, treat these as audit findings:
+
+- `ReadWriteMany` PVCs
+- EFS / NFS / SMB / CephFS-backed storage classes
+- designs that imply multiple pods share the same queue directory
+
+Prefer per-replica `ReadWriteOnce` block volumes. See the filesystem compatibility notes in [Persistent Queues: Preventing Data Loss](#persistent-queues-preventing-data-loss).
+
+#### 7. Dead config
+
+A processor/exporter/extension that is declared but unused is not harmless documentation. It creates false confidence during reviews because operators assume the behavior is active. During audits, verify every named component appears in at least one pipeline or `service.extensions`.
+
+### Audit Questions to Ask Explicitly
+
+1. Is data loss during backend outages acceptable here?
+2. Can this collector ever run more than one replica?
+3. What is the actual pod memory limit, and does the limiter stay below it?
+4. Is `hostPort` intentionally required for node-local traffic, or is a normal Service sufficient?
+5. Are the transform/filter expressions using the same attribute names and types end-to-end?
+6. Are temporality-conversion processors (`deltatocumulative` / `cumulativetodelta`) actually required, and can their per-timeseries state survive this routing/scaling model?
+7. Is `file_storage` backed by a local block volume (`ReadWriteOnce`), not RWX/network storage?
+
+---
+
 ## Memory Limiter: Preventing OOM Kills
 
 The `memory_limiter` is the **single most important processor** for collector stability.
@@ -353,6 +486,8 @@ processors:
 2. **Reserve for OS overhead** (e.g., 200 MiB)
 3. **Set limit_mib** = Container limit - Reserve = 1848 MiB
 4. **Set spike_limit_mib** = 20% of limit = ~370 MiB
+
+⚠️ **Never set `limit_mib` above the pod/container memory limit.** If the cgroup limit is lower than the memory limiter threshold, Kubernetes kills the process before the collector can apply backpressure or forced GC.
 
 **Example**:
 
