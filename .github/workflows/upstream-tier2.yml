@@ -31,16 +31,6 @@ jobs:
         run: node .github/scripts/build-digest.mjs weekly
 
       - name: Create or update digest issue
-        uses: peter-evans/create-issue-from-file@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          title: "Weekly upstream digest"
-          content-filepath: ./digest.md
-          labels: |
-            upstream-digest
-            weekly
-          duplicate: true
-          update_existing: true
-<<<<<<< HEAD
-          update_method: append
-          search_existing: all
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node .github/scripts/create-or-update-digest-issue.mjs "Weekly upstream digest" ./digest.md upstream-digest,weekly

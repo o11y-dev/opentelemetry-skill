@@ -35,12 +35,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node .github/scripts/build-digest.mjs monthly
 
-      - name: Create digest issue
-        uses: peter-evans/create-issue-from-file@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          title: "Monthly upstream digest - ${{ steps.date.outputs.formatted }}"
-          content-filepath: ./digest.md
-          labels: |
-            upstream-digest
-            monthly
+      - name: Create or update digest issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node .github/scripts/create-or-update-digest-issue.mjs "Monthly upstream digest - ${{ steps.date.outputs.formatted }}" ./digest.md upstream-digest,monthly
