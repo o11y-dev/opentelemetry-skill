@@ -61,18 +61,32 @@ function mergedLabels(issue, expectedLabels) {
 }
 
 async function findExistingIssue() {
-  const issues = await github(`/repos/${repository}/issues?state=open&per_page=100`);
-  const matches = issues
-    .filter((issue) => !issue.pull_request)
-    .filter((issue) => issue.title === title)
-    .filter((issue) => hasAllLabels(issue, labels))
-    .sort((left, right) => Date.parse(right.updated_at) - Date.parse(left.updated_at));
+  let page = 1;
+  const allMatches = [];
 
-  if (matches.length > 1) {
-    console.warn(`[issue] found ${matches.length} open issues matching "${title}", updating #${matches[0].number}`);
+  while (true) {
+    const issues = await github(
+      `/repos/${repository}/issues?state=open&per_page=100&sort=updated&direction=desc&page=${page}`,
+    );
+
+    if (!issues.length) break;
+
+    const pageMatches = issues
+      .filter((issue) => !issue.pull_request)
+      .filter((issue) => issue.title === title)
+      .filter((issue) => hasAllLabels(issue, labels));
+
+    allMatches.push(...pageMatches);
+
+    if (issues.length < 100) break;
+    page++;
   }
 
-  return matches[0] ?? null;
+  if (allMatches.length > 1) {
+    console.warn(`[issue] found ${allMatches.length} open issues matching "${title}", updating #${allMatches[0].number}`);
+  }
+
+  return allMatches[0] ?? null;
 }
 
 async function createIssue() {
@@ -85,15 +99,20 @@ async function createIssue() {
 
 async function updateIssue(issue) {
   const nextLabels = mergedLabels(issue, labels);
-  if ((issue.body ?? '') === body && hasAllLabels(issue, labels)) {
-    console.error(`[issue] no content change for #${issue.number}`);
+  const existingBody = issue.body ?? '';
+
+  // Skip if this digest content was already the last thing appended (idempotent re-runs)
+  if (existingBody.trimEnd().endsWith(body.trim()) && hasAllLabels(issue, labels)) {
+    console.error(`[issue] digest already present in #${issue.number}, skipping`);
     return;
   }
+
+  const appendedBody = existingBody ? `${existingBody}\n\n---\n\n${body}` : body;
 
   const updated = await github(`/repos/${repository}/issues/${issue.number}`, {
     method: 'PATCH',
     body: {
-      body,
+      body: appendedBody,
       labels: nextLabels,
     },
   });
