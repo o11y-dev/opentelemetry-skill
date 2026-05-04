@@ -99,11 +99,11 @@ This table tracks agent "excuses" discovered during RED/GREEN testing phases and
 
 **Date:** 2026-01-31
 
-**Scenarios Tested:** 0/12 (Baseline creation)
+**Scenarios Tested:** 0/10 (Baseline creation)
 
 **Findings:**
 - Created baseline scenarios based on common OpenTelemetry pitfalls
-- Identified 12 critical patterns to test
+- Identified 10 critical patterns to test
 - Added OTTL language support with comprehensive reference
 
 **Actions Taken:**
@@ -205,7 +205,7 @@ When a new rationalization is discovered, add it to SKILL.md using this format:
 
 | Iteration | Scenarios Passed | Avg Rationalizations per Scenario | New Rationalizations Found |
 |-----------|------------------|-----------------------------------|----------------------------|
-| 1 (Baseline) | 0/12 | N/A | 12 (initial set) |
+| 1 (Baseline) | 0/10 | N/A | 10 (initial set) |
 | 2 | TBD | TBD | TBD |
 | 3 | TBD | TBD | TBD |
 | ... | ... | ... | ... |

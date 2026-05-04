@@ -448,6 +448,11 @@ processors:
     keys: [cloud.region, faas.name, k8s.deployment.name]
   deltatocumulative:
     max_stale: 1m
+  filter/drop_http:
+    error_mode: ignore
+    metrics:
+      datapoint:
+        - 'attributes["http.route"] == ""'
   memory_limiter:
     limit_mib: 1500
 resources:
