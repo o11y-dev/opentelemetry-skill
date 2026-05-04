@@ -15,7 +15,7 @@ This repository contains the source code for the **OpenTelemetry Skill** tile re
 
 ## Key Features
 
-**Comprehensive Coverage**: 11 specialized reference docs covering OpenTelemetry ecosystem components
+**Comprehensive Coverage**: Specialized reference docs covering collector architecture, security, sampling, AI agents, and compatibility
 
 **Production Focus**: Emphasizes stability, security, and cost optimization patterns
 
@@ -70,12 +70,12 @@ Unlike loading the entire OpenTelemetry documentation into an AI's context (whic
 
 ## Skill Structure
 
-`SKILL.md` acts as the **cognitive router** — a compact instruction set that tells the AI how to reason about observability before generating any output. The `references/` directory contains deep-dive documentation that is loaded on demand when specific topics are triggered, keeping context lean and focused.
+`SKILL.md` acts as the **cognitive router** — a compact instruction set that tells the AI how to reason about observability before generating any output. `docs/index.md` is the tile's on-demand documentation entrypoint for Tessl, and `references/` contains the deep-dive documents that the skill links to when specific topics are triggered.
 
 ### 📊 **Content Overview**
 
-- **7,851 lines** of OpenTelemetry guidance across 11 specialized reference docs
-- **12 AI coding agents** tracked with upstream monitoring  
+- **Packaged reference docs** for architecture, collector design, instrumentation, security, sampling, AI agents, and compatibility
+- **AI coding agent coverage** tracked with upstream monitoring  
 - **Production-tested** configurations with validation commands
 - **Current & updated** - automatically synced with latest OpenTelemetry releases
 
@@ -122,11 +122,14 @@ opentelemetry-skill/
 ├── .cursor-plugin/
 │   ├── marketplace.json      # Cursor marketplace metadata
 │   └── plugin.json           # Cursor plugin manifest
+├── docs/
+│   └── index.md              # Tessl docs entrypoint for bundled references and eval assets
 ├── SKILL.md                  # Cognitive router (the "brain")
 ├── README.md                 # This file
 ├── references/
 │   ├── ai-agents.md          # AI agent observability patterns & configurations
 │   ├── architecture.md       # Deployment patterns & scaling
+│   ├── compatibility.md      # Version-sensitive support and compatibility notes
 │   ├── collector.md          # Pipeline configuration & components
 │   ├── instrumentation.md    # SDKs & semantic conventions
 │   ├── sampling.md           # Sampling strategies
@@ -230,9 +233,10 @@ The OpenTelemetry Collector Contrib repository contains extended components and 
 
 This skill includes a comprehensive test and validation framework following TDD (Test-Driven Development) principles:
 
-- **[tests/baseline-scenarios.md](tests/baseline-scenarios.md)**: RED phase - Test scenarios to run WITHOUT skill to establish baseline behavior
-- **[tests/compliance-verification.md](tests/compliance-verification.md)**: GREEN phase - Verify skill changes agent behavior as expected
-- **[tests/rationalization-table.md](tests/rationalization-table.md)**: REFACTOR phase - Document and counter agent rationalizations
+- **Structured Tessl evals** live in [`evals/`](evals/README.md) and are the canonical published scenarios
+- **[tests/baseline-scenarios.md](tests/baseline-scenarios.md)**: RED phase support document for baseline behavior capture
+- **[tests/compliance-verification.md](tests/compliance-verification.md)**: GREEN phase support document for verifying behavior changes
+- **[tests/rationalization-table.md](tests/rationalization-table.md)**: REFACTOR phase log of agent rationalizations and counters
 
 The testing framework validates that the skill actually changes AI behavior and doesn't allow common anti-patterns. GitHub Actions automatically validates skill structure and content on every change, and the Tessl report workflow posts best-practice review feedback on every pull request.
 
@@ -266,11 +270,7 @@ This skill is designed to evolve with the OpenTelemetry ecosystem. Contributions
 
 ## Compatibility
 
-- **OpenTelemetry Collector**: v0.150.0+
-- **Semantic Conventions**: v1.40.0+
-- **Kubernetes**: v1.24+ (for native sidecar support)
-- **Go SDK**: v1.24.0+
-- **Python SDK**: v1.40.0+
+Compatibility details move faster than the cognitive-router guidance in `SKILL.md`. See [`references/compatibility.md`](references/compatibility.md) for the current version floors and AI agent support notes.
 
 ## License
 

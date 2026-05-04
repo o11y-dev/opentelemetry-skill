@@ -31,11 +31,11 @@ Always adhere to these guiding principles:
 
 Before generating any configuration or code, verify these critical factors. If any are undefined, ask the user:
 
-1. **Signal volume** — High-traffic (>10k RPS) vs low-volume? Determines sampling and scaling needs. → Load `references/sampling.md`, `references/collector.md`
-2. **Cardinality risk** — Any unbounded attributes (user IDs, request IDs, session IDs) in metrics? Force those to traces/logs instead. → Load `references/instrumentation.md`
-3. **Resiliency** — Can you tolerate data loss during restarts/outages? If not, enable `file_storage` + persistent queues. → Load `references/collector.md`
-4. **Trust boundaries** — Signals crossing public networks? Require TLS + mTLS. → Load `references/security.md`
-5. **Deployment target** — Kubernetes (DaemonSet/Deployment), EC2, Lambda, or containers? → Load `references/architecture.md`
+1. **Signal volume** — High-traffic (>10k RPS) vs low-volume? Determines sampling and scaling needs. → Load [sampling.md](references/sampling.md), [collector.md](references/collector.md)
+2. **Cardinality risk** — Any unbounded attributes (user IDs, request IDs, session IDs) in metrics? Force those to traces/logs instead. → Load [instrumentation.md](references/instrumentation.md)
+3. **Resiliency** — Can you tolerate data loss during restarts/outages? If not, enable `file_storage` + persistent queues. → Load [collector.md](references/collector.md)
+4. **Trust boundaries** — Signals crossing public networks? Require TLS + mTLS. → Load [security.md](references/security.md)
+5. **Deployment target** — Kubernetes (DaemonSet/Deployment), EC2, Lambda, or containers? → Load [architecture.md](references/architecture.md)
 
 ## Progressive Disclosure: Context Triggers
 
@@ -43,19 +43,17 @@ Load detailed reference documentation only when the user's request matches a tri
 
 | Trigger keywords | Load | Key topics |
 |---|---|---|
-| Kubernetes, Helm, DaemonSet, Sidecar, Gateway, Scaling, Load Balancing | `references/architecture.md` | DaemonSet vs Gateway vs Sidecar, Target Allocator, HPA |
-| Pipeline, Receiver, Processor, Exporter, Queue, Batch, Memory, Extensions | `references/collector.md` | Processor ordering, memory_limiter, file_storage, stability levels |
-| SDK, Instrumentation, Spans, Attributes, Semantic Conventions, Cardinality | `references/instrumentation.md` | Auto vs manual, SemConv, cardinality Rule of 100 |
-| Sampling, Cost, Volume, Head Sampling, Tail Sampling, Probabilistic | `references/sampling.md` | Head/tail sampling, sticky sessions, sampling math |
-| Security, PII, GDPR, Redaction, TLS, Authentication, Credentials | `references/security.md` | PII redaction, mTLS, RBAC, extension exposure risks |
-| Monitor the collector, Health, Alerts, Self-monitoring, Collector metrics | `references/monitoring.md` | otelcol_* metrics, dashboards, alert rules |
-| Lambda, Azure Functions, GCP Functions, Serverless, FaaS, Mobile, Browser | `references/platforms.md` | FaaS patterns, Lambda extension layer, client-side apps |
-| OTTL, Transform, Transformation, Modify, Filter attributes, Parse, Extract | `references/ottl.md` | OTTL syntax, context types, built-in functions, error handling |
-| Connector, spanmetrics, servicegraph, routing connector, failover connector | `references/connectors.md` | R.E.D. metrics, service graph, routing, failover, stickiness |
-| Claude Code, Codex, Gemini CLI, Copilot, AI agent, coding agent, MCP | `references/ai-agents.md` | Agent OTel support matrix, unified collector config, GenAI SemConv |
-| playbook, production playbook, blog, 2025 blog, 2026 blog, real world | `references/playbooks.md` | Production patterns from opentelemetry.io blogs |
-
-> **Collector `loadbalancing` exporter tip**: `routing_key` must be a stable, low-cardinality string (`traceID`, `tenant_id`, `cluster`). Normalize non-string attributes to strings before routing to prevent shard churn.
+| Kubernetes, Helm, DaemonSet, Sidecar, Gateway, Scaling, Load Balancing | [architecture.md](references/architecture.md) | DaemonSet vs Gateway vs Sidecar, Target Allocator, HPA |
+| Pipeline, Receiver, Processor, Exporter, Queue, Batch, Memory, Extensions | [collector.md](references/collector.md) | Processor ordering, memory_limiter, file_storage, stability levels |
+| SDK, Instrumentation, Spans, Attributes, Semantic Conventions, Cardinality | [instrumentation.md](references/instrumentation.md) | Auto vs manual, SemConv, cardinality Rule of 100 |
+| Sampling, Cost, Volume, Head Sampling, Tail Sampling, Probabilistic | [sampling.md](references/sampling.md) | Head/tail sampling, sticky sessions, sampling math |
+| Security, PII, GDPR, Redaction, TLS, Authentication, Credentials | [security.md](references/security.md) | PII redaction, mTLS, RBAC, extension exposure risks |
+| Monitor the collector, Health, Alerts, Self-monitoring, Collector metrics | [monitoring.md](references/monitoring.md) | otelcol_* metrics, dashboards, alert rules |
+| Lambda, Azure Functions, GCP Functions, Serverless, FaaS, Mobile, Browser | [platforms.md](references/platforms.md) | FaaS patterns, Lambda extension layer, client-side apps |
+| OTTL, Transform, Transformation, Modify, Filter attributes, Parse, Extract | [ottl.md](references/ottl.md) | OTTL syntax, context types, built-in functions, error handling |
+| Connector, spanmetrics, servicegraph, routing connector, failover connector | [connectors.md](references/connectors.md) | R.E.D. metrics, service graph, routing, failover, stickiness |
+| Claude Code, Codex, Gemini CLI, Copilot, AI agent, coding agent, MCP | [ai-agents.md](references/ai-agents.md) | Agent OTel support matrix, unified collector config, GenAI SemConv |
+| playbook, production playbook, blog, 2025 blog, 2026 blog, real world | [playbooks.md](references/playbooks.md) | Production patterns from opentelemetry.io blogs |
 
 ## Production Baseline Configuration
 
@@ -187,12 +185,5 @@ curl -s http://localhost:8888/metrics | grep -E "otelcol_processor_dropped|otelc
 
 ## Version and Compatibility
 
-- **Target Version**: OpenTelemetry Collector v0.150.0+ (2026+)
-- **Semantic Conventions**: v1.40.0+
-- **Kubernetes**: v1.24+ (for native sidecar support)
-- **Go SDK**: v1.24.0+
-- **Python SDK**: v1.41.0+
-- **Claude Code Telemetry**: Compatible with current release (metrics + logs/events)
-- **Gemini CLI Telemetry**: v0.34.0+ (traces + metrics + logs, GenAI SemConv)
-- **GitHub Copilot OTel**: VS Code Insiders / latest stable (traces + metrics + events, GenAI SemConv)
-- **Codex CLI Telemetry**: v0.105.0+ (traces + logs in interactive mode; exec/mcp-server gaps)
+- Use [compatibility.md](references/compatibility.md) for fast-moving version floors and AI agent support details.
+- Keep `SKILL.md` focused on routing logic, guardrails, and production defaults rather than inline release tracking.
