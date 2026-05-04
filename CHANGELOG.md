@@ -9,7 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 - Clarify hook support and governance in AI agent observability reference
 - Document limitations, roadmap, and contribution guidelines in README, CONTRIBUTING, and this changelog
-- Refresh compatibility defaults in `SKILL.md` to Collector v0.150.0+ and Python SDK v1.41.0+
+- Make bundled references and evaluation docs review-visible via a Tessl docs entrypoint
+- Move fast-changing compatibility details out of `SKILL.md` and into `references/compatibility.md`
 - Add practical upstream watch guidance for bbolt security advisory tracking and event-to-logs proposal maturity
 
 ## [1.2.0] - 2026-03-20
