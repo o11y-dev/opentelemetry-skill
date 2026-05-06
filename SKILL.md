@@ -72,6 +72,7 @@ Load detailed reference documentation only when the user's request matches a tri
 | Connector, spanmetrics, servicegraph, routing connector, failover connector | [connectors.md](references/connectors.md) | R.E.D. metrics, service graph, routing, failover, stickiness |
 | Claude Code, Codex, Gemini CLI, Copilot, AI agent, coding agent, MCP | [ai-agents.md](references/ai-agents.md) | Agent OTel support matrix, unified collector config, GenAI SemConv |
 | playbook, production playbook, blog, 2025 blog, 2026 blog, real world | [playbooks.md](references/playbooks.md) | Production patterns from opentelemetry.io blogs |
+| anti-pattern, common mistake, what to avoid, pitfall | [anti-patterns.md](references/anti-patterns.md) | Full annotated anti-pattern catalogue: pipeline, metrics, Kubernetes, AI agents, OTTL |
 
 ## Production Baseline Configuration
 
@@ -189,23 +190,14 @@ curl -s http://localhost:8888/metrics | grep -E "otelcol_processor_dropped|otelc
 
 ## Anti-Patterns to Avoid
 
+The most critical patterns are listed here. See [anti-patterns.md](references/anti-patterns.md) for the full annotated catalog.
+
 ❌ Placing `memory_limiter` anywhere except first in the processor chain
 ❌ Using high-cardinality attributes (user_id, trace_id) as metric dimensions
 ❌ Exposing pprof (1777), zpages (55679) on `0.0.0.0` in production
 ❌ Using `tail_sampling` without sticky session load balancing (loadbalancing exporter)
 ❌ Omitting `batch` processor (causes excessive network calls)
 ❌ Calling a config "fine" because it parses, without checking memory limits, sticky routing, exporter durability, and rollout settings together
-❌ Using `hostPort` on a horizontally scaled gateway Deployment without a clear node-local traffic requirement
-❌ Setting `memory_limiter.limit_mib` above the pod/container memory limit or with no runtime headroom
-❌ Converting metrics with `deltatocumulative` / `cumulativetodelta` without checking source temporality, backend expectations, and restart/scale behavior
-❌ Backing `file_storage` queues with RWX/network filesystems (EFS/NFS/CephFS) as if they were local disks
-❌ Including `prompt.id` or `session.id` as metric dimensions (unbounded cardinality)
-❌ Enabling `captureContent`/`OTEL_LOG_USER_PROMPTS` in shared/production environments without PII controls
-❌ Assuming all AI coding agents emit traces (Claude Code and Codex exec do not)
-❌ Using delta temporality with backends that expect cumulative (e.g., VictoriaMetrics silently drops)
-❌ Hard-coding `gen_ai.token.type` handling to only `input`/`output` values
-❌ Treating open spec proposals as stable APIs before they ship in SDKs/collector releases
-❌ Mixing OTTL/filter attribute types (for example, setting a boolean then matching it with `IsMatch(..., "true")`) or drifting back to legacy keys like `http.status_code`
 
 ## Version and Compatibility
 
