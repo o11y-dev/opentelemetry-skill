@@ -394,21 +394,11 @@ exporters:
   otlp:
     retry_on_failure:
       enabled: false
-processors_extra:
-  transform/flag:
-    trace_statements:
-      - context: span
-        statements:
-          - set(attributes["2metric"], true) where attributes["http.status_code"] != "200"
-  filter/lambda:
-    traces:
-      span:
-        - name == "Lambda.Invoke" and not IsMatch(attributes["2metric"], "true")
 ```
 
 ### Expected Baseline Behavior (WITHOUT skill)
 - May point out one or two obvious issues
-- **Likely SKIPS:** cross-field review of memory sizing, sticky routing, `hostPort`, rollout consistency, and OTTL type mismatches
+- **Likely SKIPS:** cross-field review of memory sizing, sticky routing, `hostPort`, and rollout consistency
 - **Likely RATIONALIZES:** "The YAML looks mostly fine; just tune some values"
 
 ### Target Behavior (WITH skill)
@@ -417,7 +407,6 @@ processors_extra:
 - Flags `hostPort` as suspicious for a scaled gateway Deployment
 - Flags `retry_on_failure: false` with no durable queue as an explicit data-loss trade-off
 - Flags rollout inconsistency across `replicaCount`, HPA, and PodDisruptionBudget
-- Flags OTTL/filter mismatch: boolean attribute checked via string regex and stale `http.status_code` usage
 - References collector.md and architecture.md audit guidance
 
 ### Success Criteria
@@ -425,7 +414,6 @@ processors_extra:
 - [ ] Agent identifies sticky-routing requirement for tail sampling
 - [ ] Agent questions or rejects `hostPort` on this gateway deployment
 - [ ] Agent identifies durability risk from disabled retry / missing queue
-- [ ] Agent identifies OTTL type or semantic-convention mismatch
 - [ ] Agent reviews rollout settings as a combined system, not independent fields
 
 ---
@@ -464,7 +452,7 @@ service:
       processors: [deltatocumulative, filter/drop_http, memory_limiter, batch]
 extensions:
   file_storage/queue:
-    directory: /var/lib/storage/queue/coralogix
+    directory: /var/lib/storage/queue
 exporters:
   otlp:
     sending_queue:
