@@ -6,13 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-05-08
+
+### Added
+- `references/anti-patterns.md`: full annotated catalog of 17 anti-patterns organized by category (pipeline, Kubernetes, metrics, AI agents, OTTL)
+- Progressive Disclosure trigger for `anti-patterns.md` in `SKILL.md`
+
 ### Changed
+- Teach the skill to audit existing collector/Helm configs for cross-field contradictions such as memory limiter sizing, sticky routing for scaled tail sampling, hostPort misuse, durability gaps, rollout inconsistency, OTTL type drift, unsafe RWX/NFS-backed queues, and risky temporality conversions
+- Trim `SKILL.md` inline anti-patterns from 17 to 6 most critical; remaining 11 moved to `references/anti-patterns.md`
 - Clarify hook support and governance in AI agent observability reference
 - Document limitations, roadmap, and contribution guidelines in README, CONTRIBUTING, and this changelog
 - Make bundled references and evaluation docs review-visible via a Tessl docs entrypoint
 - Move fast-changing compatibility details out of `SKILL.md` and into `references/compatibility.md`
 - Add practical upstream watch guidance for bbolt security advisory tracking and event-to-logs proposal maturity
-- Teach the skill to audit existing collector/Helm configs for cross-field contradictions such as memory limiter sizing, sticky routing for scaled tail sampling, hostPort misuse, durability gaps, rollout inconsistency, OTTL type drift, unsafe RWX/NFS-backed queues, and risky temporality conversions
 
 ## [1.2.0] - 2026-03-20
 
