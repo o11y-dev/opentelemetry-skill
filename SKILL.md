@@ -41,9 +41,9 @@ Before generating config/code, confirm these. If unknown, ask first:
 
 ## Eval-Critical Response Minimums
 
-When prompts match these patterns, include these points explicitly:
+When user requests match these patterns, include these points explicitly:
 
-- **Collector setup**: include `memory_limiter`; keep it first in processor order; explain OOM-prevention rationale.
+- **Collector setup**: include `memory_limiter`; keep it first in each pipeline `processors` list; explain OOM-prevention rationale.
 - **Metric dimension request for `user_id`**: refuse; explain time-series explosion risk; suggest traces and bounded metric dimensions.
 - **Kubernetes tail sampling**: Gateway (Deployment) tier, `loadbalancing` with `routing_key: traceID`, Headless Service (`clusterIP: None`), error+10% policies, Beta stability caution.
 - **Claude Code telemetry**: include `CLAUDE_CODE_ENABLE_TELEMETRY=1`, `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative`, `~/.claude/settings.json` persistence, `OTEL_LOG_USER_PROMPTS`/`OTEL_LOG_TOOL_DETAILS`, and avoid `session.id` as a metric dimension.
