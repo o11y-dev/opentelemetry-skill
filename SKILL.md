@@ -4,7 +4,7 @@ description: "Expert OpenTelemetry guidance for collector configuration, pipelin
 license: Apache-2.0
 metadata:
   author: o11y.dev
-  version: 1.3.0
+  version: 1.4.0
 ---
 
 # OpenTelemetry Skill
@@ -19,7 +19,7 @@ Use these defaults:
 
 3. **Protocol Unification**: Default to **OTLP gRPC** (port 4317); use **OTLP HTTP** (port 4318) when gRPC is unavailable due to agent, proxy, browser, or backend constraints.
 
-4. **Deterministic Routing Keys**: For load-balancing exporters, use deterministic, low-cardinality routing keys (e.g., `traceID`, `tenant_id`, `cluster`). Normalize non-string attributes before routing.
+4. **Deterministic Routing Keys**: For load-balancing exporters, use stable, deterministic routing keys — `traceID` for tail-sampling stickiness, `tenant_id` or `cluster` for tenant/shard routing. Normalize non-string attributes before routing.
 
 5. **Safety First**: Prioritize collector stability (memory limiters, persistent queues, backpressure) over data completeness. Dropping data is preferable to crashing the collector.
 
@@ -46,7 +46,7 @@ When user requests match these patterns, include these points explicitly:
 - **Collector setup**: include `memory_limiter`; keep it first in each pipeline `processors` list; explain OOM-prevention rationale.
 - **Metric dimension request for `user_id`**: refuse; explain time-series explosion risk; suggest traces and bounded metric dimensions.
 - **Kubernetes tail sampling**: Gateway (Deployment) tier, `loadbalancing` with `routing_key: traceID`, Headless Service (`clusterIP: None`), error+10% policies, Beta stability caution.
-- **Claude Code telemetry**: include `CLAUDE_CODE_ENABLE_TELEMETRY=1`, `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative`, `~/.claude/settings.json` persistence, `OTEL_LOG_USER_PROMPTS`/`OTEL_LOG_TOOL_DETAILS`, and avoid `session.id` as a metric dimension.
+- **Claude Code telemetry**: include `CLAUDE_CODE_ENABLE_TELEMETRY=1`, `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative`, `~/.claude/settings.json` persistence; `OTEL_LOG_USER_PROMPTS`/`OTEL_LOG_TOOL_DETAILS` default to `false` — warn against enabling in shared/production environments without PII controls; avoid `session.id` as a metric dimension.
 
 ## Existing Configuration Review Mode
 
