@@ -4,7 +4,7 @@ Use this document for version-sensitive guidance that changes more frequently th
 
 ## Baseline version floors
 
-- **OpenTelemetry Collector**: v0.150.0+
+- **OpenTelemetry Collector**: v0.151.0+
 - **Semantic Conventions**: v1.40.0+
 - **Kubernetes**: v1.24+ for native sidecar support
 - **Go SDK**: v1.24.0+

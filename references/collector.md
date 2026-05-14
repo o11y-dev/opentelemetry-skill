@@ -163,16 +163,16 @@ dist:
   output_path: ./dist
 
 receivers:
-  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.100.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.100.0
+  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.151.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.151.0
 
 processors:
-  - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.100.0
-  - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.100.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor v0.100.0
+  - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.151.0
+  - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.151.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor v0.151.0
 
 exporters:
-  - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.100.0
+  - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.151.0
 ```
 
 **Benefits**:
@@ -195,6 +195,47 @@ ocb init --output-path ./my-collector
 ```
 
 This is useful for bootstrapping a new custom distribution without manually writing configuration from scratch.
+
+### ⚠️ `cmd/builder` — Relative Paths in Generated Go Modules (Breaking Change in v0.151.0)
+
+Starting with **v0.151.0**, the `cmd/builder` (OCB) tool generates `replace` statements in the Go module with **relative paths by default** (previously absolute). This change allows the generated collector source to be tracked as a portable artifact and built on any machine.
+
+**If you rely on absolute paths** in generated `replace` statements, set the new flag in your builder config:
+
+```yaml
+dist:
+  use_absolute_replace_paths: true
+```
+
+Reference: [Collector v0.151.0 release notes](https://github.com/open-telemetry/opentelemetry-collector/releases/tag/v0.151.0)
+
+### Declarative `service.telemetry.resource` Configuration (v0.151.0+)
+
+Starting with **v0.151.0**, the `service.telemetry.resource` section accepts a declarative schema with explicit name/value pairs and an optional `schema_url`:
+
+```yaml
+service:
+  telemetry:
+    resource:
+      schema_url: https://opentelemetry.io/schemas/1.38.0
+      attributes:
+        - name: service.name
+          value: my-collector
+        - name: host.name
+          value: collector-host
+```
+
+The legacy inline attribute map format is still supported for backward compatibility:
+
+```yaml
+service:
+  telemetry:
+    resource:
+      service.name: my-collector
+      host.name: collector-host
+```
+
+> **Note**: `resource.detectors` is accepted for forward compatibility in v0.151.0 but is not yet applied by the collector.
 
 ---
 
