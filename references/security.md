@@ -515,7 +515,7 @@ spec:
       type: RuntimeDefault
   containers:
   - name: otel-collector
-    image: otel/opentelemetry-collector-contrib:0.100.0
+    image: otel/opentelemetry-collector-contrib:0.151.0
     securityContext:
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true
