@@ -362,6 +362,141 @@ I need to redact all email addresses from span attributes using OTTL.
 
 ---
 
+## Scenario 11: Existing Helm Values Audit
+
+**Objective:** Verify agent audits an existing collector values file for cross-field contradictions instead of only fixing syntax.
+
+### Test Prompt
+```yaml
+Review this OpenTelemetry Collector Helm values snippet and tell me what's risky or inconsistent:
+
+mode: deployment
+replicaCount: 1
+autoscaling:
+  enabled: true
+  minReplicas: 4
+processors:
+  tail_sampling:
+    decision_wait: 5s
+    num_traces: 1000
+  memory_limiter:
+    limit_mib: 1500
+resources:
+  limits:
+    memory: 666Mi
+ports:
+  otlp:
+    hostPort: 4317
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+exporters:
+  otlp:
+    retry_on_failure:
+      enabled: false
+```
+
+### Expected Baseline Behavior (WITHOUT skill)
+- May point out one or two obvious issues
+- **Likely SKIPS:** cross-field review of memory sizing, sticky routing, `hostPort`, and rollout consistency
+- **Likely RATIONALIZES:** "The YAML looks mostly fine; just tune some values"
+
+### Target Behavior (WITH skill)
+- Flags that `memory_limiter.limit_mib` exceeds pod memory limit and should leave runtime headroom
+- Flags `tail_sampling` on a Deployment that can scale above one replica without sticky routing/loadbalancing exporter
+- Flags `hostPort` as suspicious for a scaled gateway Deployment
+- Flags `retry_on_failure: false` with no durable queue as an explicit data-loss trade-off
+- Flags rollout inconsistency across `replicaCount`, HPA, and PodDisruptionBudget
+- References collector.md and architecture.md audit guidance
+
+### Success Criteria
+- [ ] Agent compares memory limiter settings to pod memory limits
+- [ ] Agent identifies sticky-routing requirement for tail sampling
+- [ ] Agent questions or rejects `hostPort` on this gateway deployment
+- [ ] Agent identifies durability risk from disabled retry / missing queue
+- [ ] Agent reviews rollout settings as a combined system, not independent fields
+
+---
+
+## Scenario 12: Existing Metrics Helm Values Audit
+
+**Objective:** Verify agent audits metrics-specific state, storage, and processor-ordering risks in an existing collector values file.
+
+### Test Prompt
+```yaml
+Review this OpenTelemetry Collector metrics Helm values snippet and tell me what's risky or inconsistent:
+
+mode: statefulset
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 6
+processors:
+  groupbyattrs/keep_stable_labels:
+    keys: [cloud.region, faas.name, k8s.deployment.name]
+  deltatocumulative:
+    max_stale: 1m
+  filter/drop_http:
+    error_mode: ignore
+    metrics:
+      datapoint:
+        - 'attributes["http.route"] == ""'
+  memory_limiter:
+    limit_mib: 1500
+resources:
+  limits:
+    memory: 666Mi
+service:
+  pipelines:
+    metrics:
+      processors: [deltatocumulative, filter/drop_http, memory_limiter, batch]
+extensions:
+  file_storage/queue:
+    directory: /var/lib/storage/queue
+exporters:
+  otlp:
+    sending_queue:
+      enabled: true
+      storage: file_storage/queue
+statefulset:
+  volumeClaimTemplates:
+    - metadata:
+        name: queue
+      spec:
+        storageClassName: efs
+        accessModes: [ReadWriteMany]
+ports:
+  otlp:
+    hostPort: 4317
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+```
+
+### Expected Baseline Behavior (WITHOUT skill)
+- May praise the presence of a persistent queue
+- **Likely SKIPS:** that `deltatocumulative` is stateful, that EFS/RWX is unsafe for `file_storage`, that `memory_limiter` is not first, and that `groupbyattrs` is declared but unused
+- **Likely RATIONALIZES:** "It already has a queue, so it's mostly production-ready"
+
+### Target Behavior (WITH skill)
+- Flags that `memory_limiter.limit_mib` exceeds the pod memory limit and is placed too late in the metrics processor chain
+- Flags `deltatocumulative` as a stateful temporality conversion that needs source/backend justification and careful restart/scale assumptions
+- Flags `file_storage` on `efs` + `ReadWriteMany` as unsafe for bbolt-backed persistent queues
+- Flags `groupbyattrs/keep_stable_labels` as dead config because it is declared but unused
+- Questions `hostPort` on a horizontally scalable metrics gateway
+- Notes that `podDisruptionBudget.minAvailable: 1` with a single guaranteed replica prevents voluntary eviction unless that trade-off is intentional
+- References collector.md audit guidance and persistent-queue filesystem guidance
+
+### Success Criteria
+- [ ] Agent compares memory limiter settings to pod memory limits
+- [ ] Agent flags `memory_limiter` ordering in the metrics pipeline
+- [ ] Agent identifies temporality conversion as stateful and questions whether it is needed
+- [ ] Agent identifies EFS/RWX as unsafe for `file_storage`
+- [ ] Agent flags declared-but-unused `groupbyattrs`
+- [ ] Agent questions `hostPort` or PDB settings in the scaled/single-replica design
+
+---
+
 ## Running These Tests
 
 ### Step 1: Prepare Test Environment
@@ -412,7 +547,7 @@ Each rationalization gets an explicit counter added to SKILL.md.
 ### Success Metrics
 
 For skill to be considered "passing TDD":
-- [ ] **10/10 scenarios** show clear behavior change WITH skill vs baseline
+- [ ] **12/12 scenarios** show clear behavior change WITH skill vs baseline
 - [ ] Agent uses skill content (decision matrices, patterns, checklists)
 - [ ] Agent doesn't rationalize skipping best practices
 - [ ] Rationalizations documented and countered in skill
@@ -429,10 +564,12 @@ For skill to be considered "passing TDD":
 8. **Custom attribute names instead of semantic conventions** (Scenario 8)
 9. **Missing persistent queues** (Scenario 9)
 10. **Inefficient OTTL transformations** (Scenario 10)
+11. **No audit of cross-field config contradictions** (Scenario 11)
+12. **No audit of metrics temporality/storage contradictions** (Scenario 12)
 
 ### RED Phase Complete When:
 
-- [ ] All 10 scenarios run WITHOUT skill
+- [ ] All 12 scenarios run WITHOUT skill
 - [ ] Results documented in `baseline-results/` directory
 - [ ] Rationalizations captured verbatim
 - [ ] Comparison criteria defined for GREEN phase

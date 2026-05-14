@@ -7,6 +7,7 @@ This document is the Tessl docs entrypoint for the tile. `SKILL.md` remains the 
 These are the deep-dive documents that the skill loads on demand:
 
 - [AI agents](../references/ai-agents.md)
+- [Anti-patterns](../references/anti-patterns.md)
 - [Architecture](../references/architecture.md)
 - [Collector](../references/collector.md)
 - [Compatibility](../references/compatibility.md)

@@ -265,6 +265,16 @@ spec:
 ✅ **Resource over-provisioning** - Gateway handles bursts; set limits 2-4x requests
 ✅ **HPA on memory** - Collector memory usage is often the bottleneck
 ✅ **Health checks** - Always configure liveness and readiness probes
+✅ **Prefer Services over `hostPort` for gateways** - Reserve `hostPort` for node-local/DaemonSet use cases; on scaled Deployments it constrains scheduling and often fights the HPA
+✅ **Validate rollout settings together** - `replicas`, HPA `minReplicas`, PodDisruptionBudget, and `maxUnavailable` must all be satisfiable during startup and voluntary disruptions
+
+### Deployment Sanity Checks
+
+Review these together before calling a gateway Deployment production-ready:
+
+1. **Replica math**: Avoid a PodDisruptionBudget that requires more available pods than the Deployment can guarantee during startup or maintenance windows.
+2. **Tail sampling stickiness**: If HPA can scale the gateway above one replica, upstream routing must already be sticky; scaling a stateful gateway behind a normal Service breaks correctness.
+3. **Port exposure**: A gateway exposed via ClusterIP, LoadBalancer, or Ingress usually does not need `hostPort`. Using `hostPort` on a multi-replica Deployment means only one pod can bind a given port per node.
 
 ---
 

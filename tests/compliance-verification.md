@@ -278,6 +278,69 @@ Look for agent:
 
 ---
 
+## Scenario 11: Existing Helm Values Audit
+
+### Expected Improvements
+
+**Baseline → Compliance Changes:**
+- Agent NOW audits the snippet as a whole system instead of line-by-line
+- Agent compares `memory_limiter` to container limits
+- Agent requires sticky routing for scaled tail sampling
+- Agent questions `hostPort` on a gateway Deployment
+- Agent identifies retry/queue durability gaps
+- Agent catches the bool-vs-string OTTL/filter mismatch and stale semantic convention key
+
+### Success Criteria Verification
+
+- [ ] Agent compares memory limiter settings to pod memory limits
+- [ ] Agent calls out sticky-routing requirement for `tail_sampling`
+- [ ] Agent flags `hostPort` as suspicious or inappropriate here
+- [ ] Agent identifies disabled retry / missing queue as data-loss risk
+- [ ] Agent catches OTTL type mismatch or stale `http.status_code`
+- [ ] Agent evaluates HPA/PDB/replica settings together
+
+### Evidence Checklist
+
+Look for agent:
+- Mentioning that `limit_mib: 1500` conflicts with `memory: 666Mi`
+- Explaining that scaling `tail_sampling` behind a normal Service breaks correctness
+- Saying `hostPort` is usually for node-local / DaemonSet patterns, not gateway Deployments
+- Recommending `sending_queue` + `file_storage` when data loss is not acceptable
+- Correcting `http.status_code` to `http.response.status_code` and/or bool-vs-string comparison
+
+---
+
+## Scenario 12: Existing Metrics Helm Values Audit
+
+### Expected Improvements
+
+**Baseline → Compliance Changes:**
+- Agent NOW audits the metrics snippet as a stateful system, not just a queue-enabled config
+- Agent flags `memory_limiter` size and ordering problems
+- Agent questions whether `deltatocumulative` is required and explains its restart/scale trade-offs
+- Agent rejects `file_storage` on `efs` + `ReadWriteMany`
+- Agent catches dead config (`groupbyattrs`) and rollout/eviction concerns
+
+### Success Criteria Verification
+
+- [ ] Agent compares memory limiter settings to pod memory limits
+- [ ] Agent flags `memory_limiter` ordering in the metrics pipeline
+- [ ] Agent identifies temporality conversion as stateful and questions whether it is needed
+- [ ] Agent identifies EFS/RWX as unsafe for `file_storage`
+- [ ] Agent flags declared-but-unused `groupbyattrs`
+- [ ] Agent questions `hostPort` or PDB settings in the scaled/single-replica design
+
+### Evidence Checklist
+
+Look for agent:
+- Mentioning that `limit_mib: 1500` conflicts with `memory: 666Mi`
+- Calling out that `memory_limiter` should be first, not after other metric processors
+- Explaining that `deltatocumulative` keeps per-timeseries state and can reset on restart/scale events
+- Saying `ReadWriteMany` + `efs` is unsafe for bbolt-backed `file_storage`
+- Identifying `groupbyattrs/keep_stable_labels` as unused
+
+---
+
 ## Overall Compliance Assessment
 
 ### Passing Criteria
@@ -285,9 +348,9 @@ Look for agent:
 Skill is considered "passing GREEN phase" when:
 
 **Quantitative:**
-- [ ] 10/10 scenarios show measurable behavior improvement
+- [ ] 12/12 scenarios show measurable behavior improvement
 - [ ] 80%+ of success criteria met across all scenarios
-- [ ] Agent references skill content in 9/10+ scenarios
+- [ ] Agent references skill content in 11/12+ scenarios
 
 **Qualitative:**
 - [ ] Agent proactively applies patterns (not reactive)
@@ -332,7 +395,7 @@ Create file: `compliance-results/scenario-N-[name].md`
 Create file: `compliance-results/SUMMARY.md`
 
 **Include:**
-- Overview: N/10 scenarios passed
+- Overview: N/12 scenarios passed
 - Success criteria: N% met overall
 - Key improvements observed
 - Remaining gaps
@@ -342,7 +405,7 @@ Create file: `compliance-results/SUMMARY.md`
 
 ## GREEN Phase Complete When:
 
-- [ ] All 10 scenarios run WITH skill loaded
+- [ ] All 12 scenarios run WITH skill loaded
 - [ ] Results documented in `compliance-results/` directory
 - [ ] Comparison to baseline complete for all scenarios
 - [ ] Success criteria evaluated
@@ -357,6 +420,6 @@ After GREEN phase:
 1. → `rationalization-table.md` - Update with findings
 2. → REFACTOR phase - Add counters to SKILL.md for new rationalizations
 3. → Re-test scenarios that failed or partially passed
-4. → Iterate until 10/10 scenarios pass
+4. → Iterate until 12/12 scenarios pass
 
-**This is iterative:** First pass may only get 7/10 scenarios passing. That's expected. The goal is continuous improvement through the RED-GREEN-REFACTOR cycle.
+**This is iterative:** First pass may only get 9/12 scenarios passing. That's expected. The goal is continuous improvement through the RED-GREEN-REFACTOR cycle.
