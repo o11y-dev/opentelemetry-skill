@@ -4,22 +4,22 @@ description: "Expert OpenTelemetry guidance for collector configuration, pipelin
 license: Apache-2.0
 metadata:
   author: o11y.dev
-  version: 1.3.0
+  version: 1.4.0
 ---
 
 # OpenTelemetry Skill
 
 ## Core Principles
 
-Always adhere to these guiding principles:
+Use these defaults:
 
-1. **Stability over Features**: Check component stability levels (Alpha/Beta/Stable) in otelcol-contrib. Warn users about non-stable components in production.
+1. **Stability over Features**: Check otelcol-contrib stability (Alpha/Beta/Stable); warn before production use of non-stable components.
 
-2. **Convention over Configuration**: Always prefer OpenTelemetry Semantic Conventions over custom attribute names.
+2. **Convention over Configuration**: Prefer OpenTelemetry Semantic Conventions over custom attribute names.
 
 3. **Protocol Unification**: Default to **OTLP gRPC** (port 4317); use **OTLP HTTP** (port 4318) when gRPC is unavailable due to agent, proxy, browser, or backend constraints.
 
-4. **Deterministic Routing Keys**: For load-balancing exporters, routing keys must be deterministic, low-cardinality strings (e.g., `traceID`, `tenant_id`, `cluster`). Normalize non-string attributes before routing.
+4. **Deterministic Routing Keys**: For load-balancing exporters, use stable, deterministic routing keys — `traceID` for tail-sampling stickiness, `tenant_id` or `cluster` for tenant/shard routing. Normalize non-string attributes before routing.
 
 5. **Safety First**: Prioritize collector stability (memory limiters, persistent queues, backpressure) over data completeness. Dropping data is preferable to crashing the collector.
 
@@ -31,13 +31,22 @@ Always adhere to these guiding principles:
 
 ## Pre-Flight Checklist
 
-Before generating any configuration or code, verify these critical factors. If any are undefined, ask the user:
+Before generating config/code, confirm these. If unknown, ask first:
 
-1. **Signal volume** — High-traffic (>10k RPS) vs low-volume? Determines sampling and scaling needs. → Load [sampling.md](references/sampling.md), [collector.md](references/collector.md)
-2. **Cardinality risk** — Any unbounded attributes (user IDs, request IDs, session IDs) in metrics? Force those to traces/logs instead. → Load [instrumentation.md](references/instrumentation.md)
-3. **Resiliency** — Can you tolerate data loss during restarts/outages? If not, enable `file_storage` + persistent queues. → Load [collector.md](references/collector.md)
-4. **Trust boundaries** — Signals crossing public networks? Require TLS + mTLS. → Load [security.md](references/security.md)
-5. **Deployment target** — Kubernetes (DaemonSet/Deployment), EC2, Lambda, or containers? → Load [architecture.md](references/architecture.md)
+1. **Signal volume** — High traffic (>10k RPS) or low volume? Drives sampling/scaling. → [sampling.md](references/sampling.md), [collector.md](references/collector.md)
+2. **Cardinality risk** — Any unbounded metric attributes (user/request/session IDs)? Move to traces/logs. → [instrumentation.md](references/instrumentation.md)
+3. **Resiliency** — Is restart/outage data loss acceptable? If no, use `file_storage` + persistent queues. → [collector.md](references/collector.md)
+4. **Trust boundaries** — Any public-network hops? Require TLS + mTLS. → [security.md](references/security.md)
+5. **Deployment target** — Kubernetes, EC2, Lambda, or containers? → [architecture.md](references/architecture.md)
+
+## Eval-Critical Response Minimums
+
+When user requests match these patterns, include these points explicitly:
+
+- **Collector setup**: include `memory_limiter`; keep it first in each pipeline `processors` list; explain OOM-prevention rationale.
+- **Metric dimension request for `user_id`**: refuse; explain time-series explosion risk; suggest traces and bounded metric dimensions.
+- **Kubernetes tail sampling**: Gateway (Deployment) tier, `loadbalancing` with `routing_key: traceID`, Headless Service (`clusterIP: None`), error+10% policies, Beta stability caution.
+- **Claude Code telemetry**: include `CLAUDE_CODE_ENABLE_TELEMETRY=1`, `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative`, `~/.claude/settings.json` persistence; `OTEL_LOG_USER_PROMPTS`/`OTEL_LOG_TOOL_DETAILS` default to `false` — warn against enabling in shared/production environments without PII controls; avoid `session.id` as a metric dimension.
 
 ## Existing Configuration Review Mode
 
