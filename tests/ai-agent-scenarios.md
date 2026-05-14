@@ -94,7 +94,7 @@
 - Vague or outdated answer based on training data
 - May incorrectly claim Claude Code supports traces
 - Likely misses Codex CLI partial support gaps
-- No mention of Qwen Code "planned but not shipped" status
+- No mention that Qwen Code now has partial native OTel support
 - No mention of OpenCode/Cursor/Windsurf having no native OTel
 - No guidance on GenAI SemConv coverage
 
@@ -104,7 +104,7 @@
 - ✅ GitHub Copilot (VS Code + CLI): full traces ✅, follows `gen_ai.*` SemConv
 - ✅ Claude Code: NO traces ❌ — metrics + logs only; use `prompt.id` as pseudo-trace correlation
 - ✅ Codex CLI: traces ⚠️ in interactive mode only; `codex exec` drops metrics
-- ✅ Qwen Code: planned but not shipped 🔜
+- ✅ Qwen Code: partial native OTel ⚠️ (runtime confirmed active as of v0.15.10)
 - ✅ OpenCode, Cursor, Windsurf, Aider: no native OTel ❌
 - ✅ Recommends Gemini CLI or Copilot if traces are a hard requirement
 
@@ -113,7 +113,7 @@
 - [ ] Correctly identifies Gemini CLI and Copilot as trace-capable
 - [ ] Correctly states Claude Code has NO traces
 - [ ] Mentions Codex CLI partial support limitation
-- [ ] Notes Qwen Code is planned but not shipped
+- [ ] Notes Qwen Code has partial native OTel and runtime confirmation in v0.15.10
 - [ ] Suggests GenAI SemConv coverage as selection criterion
 
 ---
@@ -195,5 +195,5 @@ Document observed agent rationalizations and counter-guidance here as they are d
 |----------------|---------|
 | "Claude Code supports traces via the OTEL_TRACES_EXPORTER env var" | Claude Code explicitly does NOT emit traces. `OTEL_TRACES_EXPORTER` is ignored. Only metrics and logs are emitted. |
 | "You can use session.id as a metric label to track per-user costs" | session.id is unbounded cardinality. Use log queries with distinct count instead. |
-| "Qwen Code telemetry is available now" | As of 2026-03, docs exist but code is not shipped. Verify before building on it. |
+| "Qwen Code telemetry is still planned but not shipped" | Qwen Code's OTel runtime is active as of v0.15.10. Treat native support as partial and verify exact signal shape before depending on it. |
 | "Codex CLI telemetry works the same in exec mode" | `codex exec` drops ALL metrics. Interactive mode only for full telemetry. |

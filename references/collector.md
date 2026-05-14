@@ -162,16 +162,16 @@ dist:
   output_path: ./dist
 
 receivers:
-  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.100.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.100.0
+  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.151.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.151.0
 
 processors:
-  - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.100.0
-  - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.100.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor v0.100.0
+  - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.151.0
+  - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.151.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor v0.151.0
 
 exporters:
-  - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.100.0
+  - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.151.0
 ```
 
 **Benefits**:
