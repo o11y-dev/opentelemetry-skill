@@ -101,16 +101,18 @@ async function updateIssue(issue) {
   const nextLabels = mergedLabels(issue, labels);
   const existingBody = issue.body ?? '';
 
-  // Skip idempotent re-runs when the issue already contains this exact digest.
-  if (existingBody.trim() === body.trim() && hasAllLabels(issue, labels)) {
+  // Skip if this digest content was already the last thing appended (idempotent re-runs)
+  if (existingBody.trimEnd().endsWith(body.trim()) && hasAllLabels(issue, labels)) {
     console.error(`[issue] digest already present in #${issue.number}, skipping`);
     return;
   }
 
+  const appendedBody = existingBody ? `${existingBody}\n\n---\n\n${body}` : body;
+
   const updated = await github(`/repos/${repository}/issues/${issue.number}`, {
     method: 'PATCH',
     body: {
-      body,
+      body: appendedBody,
       labels: nextLabels,
     },
   });

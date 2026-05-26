@@ -47,6 +47,7 @@ When user requests match these patterns, include these points explicitly:
 - **Metric dimension request for `user_id`**: refuse; explain time-series explosion risk; suggest traces and bounded metric dimensions.
 - **Kubernetes tail sampling**: Gateway (Deployment) tier, `loadbalancing` with `routing_key: traceID`, Headless Service (`clusterIP: None`), error+10% policies, Beta stability caution.
 - **Claude Code telemetry**: include `CLAUDE_CODE_ENABLE_TELEMETRY=1`, `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative`, `~/.claude/settings.json` persistence; `OTEL_LOG_USER_PROMPTS`/`OTEL_LOG_TOOL_DETAILS` default to `false` — warn against enabling in shared/production environments without PII controls; avoid `session.id` as a metric dimension.
+- **AI agent tool-call tracing**: for agents using `gen_ai.*` traces, name execute-tool spans with the actual tool name (for example `bash` or `search_code`) and preserve `gen_ai.tool.name`; do not use a generic `execute_tool` span name.
 
 ## Existing Configuration Review Mode
 
