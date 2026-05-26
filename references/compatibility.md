@@ -16,6 +16,7 @@ Use this document for version-sensitive guidance that changes more frequently th
 - **Gemini CLI**: v0.34.0+ emits traces, metrics, and logs with GenAI semantic conventions
 - **GitHub Copilot**: latest stable / Insiders builds expose traces, metrics, and events with GenAI semantic conventions
 - **Codex CLI**: v0.105.0+ emits traces and logs in interactive mode, with gaps in `exec` / `mcp-server`
+- **Qwen Code**: v0.16.1+ emits traces, metrics, and logs with partial `gen_ai.*` dual-emit layered on top of authoritative `qwen-code.*` fields
 
 ## Maintenance guidance
 
