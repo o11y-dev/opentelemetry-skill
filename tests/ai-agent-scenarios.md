@@ -187,6 +187,33 @@
 
 ---
 
+## Scenario 6: GenAI Tool-Call Span Naming
+
+**Prompt**:
+> "I'm instrumenting an AI coding agent that calls `bash` and `search_code`. Show me how the OpenTelemetry spans should be named."
+
+### Expected WITHOUT skill (RED baseline)
+
+- May use a generic `execute_tool` span name for every tool call
+- May omit `gen_ai.tool.name`
+- Likely misses the Semantic Conventions v1.41.0 span-naming requirement
+
+### Expected WITH skill (GREEN target)
+
+- ✅ Uses the actual tool name as the execute-tool span name (for example `bash`, `search_code`)
+- ✅ Preserves `gen_ai.tool.name` on each tool span
+- ✅ Mentions the v1.41.0 GenAI SemConv breaking change for tool-call span naming
+- ✅ Avoids collapsing all tool calls into a generic `execute_tool` span name
+
+### Compliance Check
+
+- [ ] Response names execute-tool spans with the actual tool name
+- [ ] Response includes `gen_ai.tool.name`
+- [ ] Response mentions the v1.41.0 tool-call span-naming requirement
+- [ ] Response avoids a generic `execute_tool` span name
+
+---
+
 ## Anti-Rationalization Notes
 
 Document observed agent rationalizations and counter-guidance here as they are discovered during testing.
@@ -197,3 +224,4 @@ Document observed agent rationalizations and counter-guidance here as they are d
 | "You can use session.id as a metric label to track per-user costs" | session.id is unbounded cardinality. Use log queries with distinct count instead. |
 | "Qwen Code telemetry is still planned but not shipped" | Qwen Code ships native OTel. As of v0.16.1 it also dual-emits selected `gen_ai.*` attributes, but the private `qwen-code.*` fields remain authoritative while the schema settles. |
 | "Codex CLI telemetry works the same in exec mode" | `codex exec` drops ALL metrics. Interactive mode only for full telemetry. |
+| "Use a generic `execute_tool` span name for all agent tool calls" | GenAI SemConv v1.41.0 requires execute-tool spans to use the actual tool name while still populating `gen_ai.tool.name`. |

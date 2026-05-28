@@ -419,7 +419,7 @@ service:
 | Agent | Span Name | Kind | Key Attributes | Child Spans |
 |-------|-----------|------|----------------|-------------|
 | Gemini CLI | `gen_ai.chat` | `CLIENT` | `gen_ai.system`, `gen_ai.operation.name`, `gen_ai.request.model` | tool call spans |
-| Gemini CLI | `execute_tool` | `INTERNAL` | `gen_ai.tool.name`, `gen_ai.tool.call.id` | none |
+| Gemini CLI | tool name (for example `bash`) | `INTERNAL` | `gen_ai.tool.name`, `gen_ai.tool.call.id` | none |
 | GitHub Copilot | `gen_ai.chat` | `CLIENT` | `gen_ai.system`, `gen_ai.operation.name` | completion spans |
 | GitHub Copilot | `gen_ai.completion` | `INTERNAL` | `gen_ai.response.finish_reason`, `gen_ai.usage.input_tokens` | none |
 
@@ -568,7 +568,7 @@ Query in Loki/OpenSearch: `{job="claude_code"} | json | prompt_id="prompt_abc123
 
 ### 7.6 GenAI SemConv Coverage
 
-**⚠️ Breaking Change in Semantic Conventions v1.41.0**: The gen-ai conventions now require that tool call spans include the tool name for proper span naming. This affects agents using the `gen_ai.*` namespace for tool execution spans. Ensure your instrumentation includes the tool name when creating spans for AI agent tool calls.
+**⚠️ Breaking Change in Semantic Conventions v1.41.0**: The gen-ai conventions now require that tool call spans use the tool name for span naming. This affects agents using the `gen_ai.*` namespace for tool execution spans. Prefer span names like `bash`, `search_code`, or `read_file`, and still populate `gen_ai.tool.name`; do not emit a generic `execute_tool` span name.
 
 | Agent | Uses `gen_ai.*` | Custom Prefix | Notes |
 |-------|----------------|---------------|-------|

@@ -95,3 +95,26 @@ Ensure proper resource attribution when multiple AI agents run in the same devel
 - Missing user context attribution
 - No strategy for tool overlap detection
 - Omits resource conflict prevention
+
+---
+
+## GenAI Tool-Call Span Naming
+
+**ID**: genai-tool-span-naming  
+**Category**: AI Agents  
+**Difficulty**: Advanced  
+
+### Prompt
+I'm instrumenting an AI coding agent that calls `bash` and `search_code`. Show me how the OpenTelemetry spans should be named.
+
+### Expected Response (Key Points)
+- Uses the actual tool name as each execute-tool span name (for example `bash`, `search_code`)
+- Preserves `gen_ai.tool.name` on each tool span
+- Mentions the Semantic Conventions v1.41.0 span-naming requirement
+- Avoids recommending a generic `execute_tool` span name
+
+### Failure Modes
+- Uses a generic `execute_tool` span name for every tool call
+- Omits `gen_ai.tool.name`
+- Misses the v1.41.0 GenAI SemConv naming requirement
+- Gives generic tracing advice without tool-call specifics
