@@ -36,7 +36,7 @@ Add user_id as a metric dimension to track per-user API latency.
 - **Rejects the request** - explains user_id violates cardinality limits
 - Suggests alternatives: use user_id as trace attribute instead
 - Explains metric explosion risks with unbounded dimensions
-- Offers aggregated alternatives (user_type, user_tier, etc.)
+- Offers aggregated alternatives (user_type, user_tier, subscription_plan, etc.)
 
 ### Failure Modes
 - Accepts the request and provides configuration

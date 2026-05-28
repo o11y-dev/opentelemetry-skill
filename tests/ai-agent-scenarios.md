@@ -143,6 +143,7 @@
 ### Compliance Check
 
 - [ ] States prompts are redacted by default in Claude Code
+- [ ] Addresses `OTEL_LOG_USER_PROMPTS` explicitly
 - [ ] Addresses `OTEL_LOG_TOOL_DETAILS` specifically
 - [ ] Includes or recommends OTTL redaction for tool parameters
 - [ ] Does NOT accidentally suggest enabling prompt logging

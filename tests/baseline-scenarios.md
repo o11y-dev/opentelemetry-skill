@@ -83,7 +83,7 @@ I want to track request latency as a metric. Add dimensions for:
 - Recommends:
   - Use traces for user_id and request_id
   - Keep only `http.request.method` and `http.response.status_code` in metrics
-  - Or suggest aggregated user count metric
+  - Or suggest bounded aggregates like user_type, user_tier, or subscription_plan
 - References instrumentation.md cardinality section
 
 ### Success Criteria
