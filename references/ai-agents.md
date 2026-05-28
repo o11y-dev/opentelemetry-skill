@@ -32,7 +32,7 @@ This file is automatically flagged for review when changes occur in:
 | **GitHub Copilot VS Code** | Microsoft | ✅ full | ✅ | ✅ | ✅ | ✅ (`gen_ai.*`) | ⚠️ launcher wrapper only | VS Code `settings.json` or env var | `COPILOT_OTEL_ENABLED` | OTLP HTTP | [docs](https://code.visualstudio.com/docs/copilot/guides/monitoring-agents) |
 | **GitHub Copilot CLI** | Microsoft | ✅ full | ✅ | ✅ | ✅ | ✅ (`gen_ai.*`) | ✅ governance wrapper | Same span model as VS Code | `COPILOT_OTEL_ENABLED` | OTLP HTTP | [docs](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference) |
 | **OpenAI Codex CLI** | OpenAI | ⚠️ partial | ⚠️ interactive only | ⚠️ interactive only | ✅ | ❌ (custom event names) | ✅ gap-filler + governance | `~/.codex/config.toml` `[otel]` section | `~/.codex/config.toml` | OTLP gRPC | [docs](https://developers.openai.com/codex/config-advanced) |
-| **Qwen Code** | Alibaba | ⚠️ partial | 🔜 planned | 🔜 planned | ⚠️ partial | 🔜 planned | ✅ interim bridge | `.qwen/settings.json` | `.qwen/settings.json` | OTLP | [docs](https://qwenlm.github.io/qwen-code-docs/en/developers/development/telemetry/) |
+| **Qwen Code** | Alibaba | ⚠️ partial | ⚠️ partial | ⚠️ partial | ⚠️ partial | ⚠️ partial | ✅ interim bridge | `.qwen/settings.json`, env vars, CLI flags | `.qwen/settings.json`, `QWEN_TELEMETRY_*`, `OTEL_*` | OTLP gRPC/HTTP | [docs](https://qwenlm.github.io/qwen-code-docs/en/developers/development/telemetry/) |
 | **OpenCode** | Anomaly | ❌ none | ❌ | ❌ | ❌ | ❌ | ✅ primary | Community plugin only | n/a | n/a | [plugin](https://github.com/DEVtheOPS/opencode-plugin-otel) |
 | **Pi Agent** | open-source | ❌ none | ❌ | ❌ | ⚠️ install telemetry only | ❌ | ✅ primary | `~/.pi/agent/settings.json` or `.pi/settings.json` | `PI_TELEMETRY`, `enableInstallTelemetry` | n/a | [docs](https://pi.dev) |
 | **Cursor** | Anysphere | ❌ none | ❌ | ❌ | ❌ | ❌ | ⚠️ launcher wrapper only | Via MCP servers only | n/a | n/a | — |
@@ -89,8 +89,11 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 | `OTEL_LOG_USER_PROMPTS` | `false` | Includes raw user prompts in log events |
 | `OTEL_LOG_TOOL_DETAILS` | `false` | Includes tool call parameters in logs |
 | `OTEL_METRICS_INCLUDE_SESSION_ID` | `false` | Adds `session.id` as metric dimension (⚠️ high cardinality) |
+| `OTEL_METRICS_INCLUDE_ENTRYPOINT` | `false` | Adds bounded `app.entrypoint` as a metric dimension for dashboard slicing |
 
 > ⚠️ **Temporality**: Claude Code emits cumulative metrics. Set `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative` to match. VictoriaMetrics and some Prometheus backends will silently drop delta-converted metrics from cumulative sources.
+
+> ✅ **Bounded metric dimension**: Prefer `OTEL_METRICS_INCLUDE_ENTRYPOINT=true` over `OTEL_METRICS_INCLUDE_SESSION_ID=true` when you need a stable breakdown of CLI vs IDE/SDK launches. `app.entrypoint` stays bounded and is safe for dashboards; `session.id` is still high-cardinality.
 
 ---
 
@@ -184,7 +187,7 @@ exporter = { otlp-grpc = { endpoint = "http://localhost:4317" } }
 
 ### 2.6 Qwen Code
 
-Docs describe a telemetry system with `.qwen/settings.json`. As of v0.15.10, OpenTelemetry is active within Qwen Code (a UI suppression PR for OTel diagnostics was merged in v0.15.10, confirming the telemetry runtime is live). Verify your specific build's telemetry output by checking the [Qwen Code telemetry docs](https://qwenlm.github.io/qwen-code-docs/en/developers/development/telemetry/) before building infrastructure dependencies on it.
+Qwen Code exposes OpenTelemetry via `.qwen/settings.json`, `QWEN_TELEMETRY_*` / `OTEL_*` environment variables, and CLI flags. As of **v0.16.1**, the runtime emits native spans/logs/metrics with **partial GenAI semantic-convention dual-emit** (`gen_ai.request.model`, `gen_ai.usage.*`, `gen_ai.server.time_to_first_token`) on top of its private `qwen-code.*` fields. Treat the private names as authoritative and the `gen_ai.*` fields as a compatibility layer while the signal surface continues to stabilize.
 
 **Config (`.qwen/settings.json`):**
 
@@ -236,7 +239,7 @@ otel-hooks --service-name cursor --otlp-endpoint http://localhost:4317 -- cursor
 | **GitHub Copilot CLI** | ✅ full | Governance wrapper | Use native telemetry for primary observability; add hooks when you need consistent launch policies, ownership tags, or process-boundary audit signals across multiple CLI agents. |
 | **GitHub Copilot VS Code** | ✅ full | Limited launcher wrapper | Prefer native telemetry. Hooks can wrap the editor launch, but they provide only outer-process coverage because most agent activity occurs inside the desktop process after startup. |
 | **OpenAI Codex CLI** | ⚠️ partial | Gap-filler + governance | Use native OTel where available, especially interactive mode. Add hooks to cover outer invocation telemetry, standardize controls, and partially bridge `exec`/`mcp-server` gaps. |
-| **Qwen Code** | ⚠️ partial | Gap-filler until native stabilizes | OTel runtime is active as of v0.15.10; use hooks for process-level invocation coverage while the native telemetry API surface stabilizes. Move to native-only once signal shape is verified. |
+| **Qwen Code** | ⚠️ partial | Gap-filler until native stabilizes | Native traces/logs/metrics are active, and v0.16.1 added partial `gen_ai.*` dual-emit. Keep hooks for process-level invocation coverage and for teams that want a stable outer wrapper while Qwen's native schema continues to evolve. |
 | **OpenCode** | ❌ none | Primary | Use [opentelemetry-hooks](https://github.com/o11y-dev/opentelemetry-hooks) as the primary instrumentation path; community plugin: [opencode-plugin-otel](https://github.com/DEVtheOPS/opencode-plugin-otel) is an additional fallback. Feature request: [#14697](https://github.com/anomalyco/opencode/issues/14697). |
 | **Cursor** | ❌ none | Limited launcher wrapper | Wrap only when you have a headless/CLI invocation. For the desktop app, hooks provide launch/exit coverage only; MCP servers instrument user code, not Cursor itself. |
 | **Windsurf** | ❌ none | Limited launcher wrapper | Wrap only CLI/headless entrypoints. For the desktop app, hooks provide launch/exit coverage only; Windsurf agent skills can instrument user code but not Windsurf itself. |
@@ -543,11 +546,11 @@ Query in Loki/OpenSearch: `{job="claude_code"} | json | prompt_id="prompt_abc123
 
 **Workaround**: Use interactive `codex` mode for telemetry. For `codex exec` pipelines, instrument the calling shell script with timing/exit code metrics via a Prometheus Pushgateway or write structured JSON logs that a filelog receiver can ingest.
 
-### 7.3 Qwen Code: Runtime Active, API Surface Stabilizing
+### 7.3 Qwen Code: Runtime Active, Partial GenAI Dual-Emit
 
-**Status**: As of v0.15.10, the OpenTelemetry telemetry runtime is active in Qwen Code (UI suppression PR for OTel diagnostics merged in v0.15.10). The `.qwen/settings.json` telemetry config documented in the official docs is operational.
+**Status**: As of **v0.16.1**, Qwen Code's OpenTelemetry runtime emits native traces, logs, and metrics, and its LLM spans partially dual-emit GenAI semantic conventions such as `gen_ai.request.model`, `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`, `gen_ai.usage.cached_tokens`, and `gen_ai.server.time_to_first_token`. The official docs also expose `.qwen/settings.json`, `QWEN_TELEMETRY_*`, and CLI flags for telemetry control.
 
-**Action**: Verify your build's telemetry signal shape before committing to production dashboards. The native API surface is still stabilizing. Use hooks for outer invocation coverage while the native telemetry is maturing.
+**Action**: Verify your build's exact signal shape before committing to production dashboards. Qwen still treats its private `qwen-code.*` attributes as authoritative, with `gen_ai.*` emitted as a compatibility layer. Use hooks for outer invocation coverage while the native telemetry schema continues to mature.
 
 ### 7.4 Agents With No Native OTel — Hook-Based Coverage and Control
 
@@ -573,7 +576,7 @@ Query in Loki/OpenSearch: `{job="claude_code"} | json | prompt_id="prompt_abc123
 | GitHub Copilot | ✅ Full | — | Follows `gen_ai.*` v1.40.0+ |
 | Claude Code | ❌ | `claude_code.*` | Uses OTTL `transform` to map (see §3) |
 | Codex CLI | ❌ | `codex.*` | Custom event names, partial coverage |
-| Qwen Code | ⚠️ partial | `.qwen.*` | OTel runtime active as of v0.15.10; semconv alignment not yet verified |
+| Qwen Code | ⚠️ partial | `qwen-code.*` | v0.16.1 dual-emits selected `gen_ai.*` attributes (`gen_ai.request.model`, `gen_ai.usage.*`, `gen_ai.server.time_to_first_token`); private names remain authoritative |
 
 Use the `transform/normalize_agent_metrics` processor from [§3](#3-unified-collector-config-for-multi-agent-ingestion) to add `gen_ai.system` attributes to Claude Code and Codex telemetry for unified dashboard queries.
 
