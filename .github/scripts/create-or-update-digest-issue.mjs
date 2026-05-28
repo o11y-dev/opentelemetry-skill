@@ -101,7 +101,7 @@ async function updateIssue(issue) {
   const nextLabels = mergedLabels(issue, labels);
   const existingBody = issue.body ?? '';
 
-  // Skip exact no-op updates for idempotent re-runs
+  // Skip exact no-op updates for idempotent re-runs.
   if (existingBody.trim() === body.trim() && hasAllLabels(issue, labels)) {
     console.error(`[issue] digest already current in #${issue.number}, skipping`);
     return;
