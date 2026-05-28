@@ -157,7 +157,7 @@ mappings:
           - "docs/**"
 
   - skill: references/architecture.md
-    topics: [deployment, operator, k8s]
+    topics: [deployment, operator, k8s, documentation]
     watches:
       - repo: open-telemetry/opentelemetry-operator
         paths:
@@ -168,6 +168,11 @@ mappings:
         paths:
           - "charts/opentelemetry-operator/**"
           - "charts/opentelemetry-collector/values.yaml"
+      - repo: open-telemetry/opentelemetry.io
+        paths:
+          - "README.md"
+          - "CHANGELOG.md"
+          - "docs/**"
 
   - skill: references/instrumentation.md
     topics: [instrumentation, sdks, auto-instrumentation]
