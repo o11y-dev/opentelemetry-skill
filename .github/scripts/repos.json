@@ -16,6 +16,7 @@
       "open-telemetry/opentelemetry-python",
       "open-telemetry/opentelemetry-js",
       "open-telemetry/opentelemetry-dotnet",
+      "open-telemetry/opentelemetry.io",
       "github/copilot-cli",
       "Aider-AI/aider",
       "anysphere/cursor-wiki",
@@ -48,55 +49,5 @@
       "open-telemetry/opentelemetry-erlang",
       "open-telemetry/community"
     ]
-  },
-  "legacy": {
-    "tiers": {
-      "tier1": [
-        "open-telemetry/semantic-conventions",
-        "open-telemetry/opentelemetry-collector-contrib"
-      ],
-      "tier2": [
-        "open-telemetry/opentelemetry-collector",
-        "open-telemetry/opentelemetry-collector-releases",
-        "open-telemetry/opentelemetry-operator",
-        "open-telemetry/opentelemetry-proto",
-        "open-telemetry/opentelemetry-go",
-        "open-telemetry/opentelemetry-java",
-        "open-telemetry/opentelemetry-python",
-        "open-telemetry/opentelemetry-js",
-        "open-telemetry/opentelemetry-dotnet",
-        "github/copilot-cli",
-        "Aider-AI/aider",
-        "anysphere/cursor-wiki",
-        "anomalyco/opencode",
-        "DEVtheOPS/opencode-plugin-otel",
-        "openai/codex",
-        "google-gemini/gemini-cli",
-        "anthropics/claude-code",
-        "anthropics/skills",
-        "QwenLM/qwen-code",
-        "microsoft/vscode-copilot-chat",
-        "badlogic/pi-mono"
-      ],
-      "tier3": [
-        "open-telemetry/opentelemetry-specification",
-        "open-telemetry/oteps",
-        "open-telemetry/opentelemetry-helm-charts",
-        "open-telemetry/opentelemetry-demo",
-        "open-telemetry/opentelemetry-java-instrumentation",
-        "open-telemetry/opentelemetry-python-contrib",
-        "open-telemetry/opentelemetry-js-contrib",
-        "open-telemetry/opentelemetry-dotnet-contrib",
-        "open-telemetry/opentelemetry-go-instrumentation",
-        "open-telemetry/opentelemetry-lambda",
-        "open-telemetry/opentelemetry-rust",
-        "open-telemetry/opentelemetry-cpp",
-        "open-telemetry/opentelemetry-ruby",
-        "open-telemetry/opentelemetry-php",
-        "open-telemetry/opentelemetry-swift",
-        "open-telemetry/opentelemetry-erlang",
-        "open-telemetry/community"
-      ]
-    }
   }
 }
