@@ -3,7 +3,7 @@
 //
 // Usage:
 //   node build-digest.mjs <frequency>
-//     frequency: daily | weekly | monthly (preferred) or tier1 | tier2 | tier3 (legacy)
+//     frequency: daily | weekly | monthly
 //
 // For every repo in the selected frequency this fetches:
 //   - the latest release (via REST /repos/{repo}/releases/latest)
@@ -30,17 +30,11 @@ const WORKFLOW_FILE_BY_FREQUENCY = {
   daily: '.github/workflows/upstream-tier1.yml',
   weekly: '.github/workflows/upstream-tier2.yml',
   monthly: '.github/workflows/upstream-tier3.yml',
-  tier1: '.github/workflows/upstream-tier1.yml',
-  tier2: '.github/workflows/upstream-tier2.yml',
-  tier3: '.github/workflows/upstream-tier3.yml',
 };
 const DISPLAY_NAME_BY_FREQUENCY = {
   daily: 'Daily',
   weekly: 'Weekly',
   monthly: 'Monthly',
-  tier1: 'Tier 1',
-  tier2: 'Tier 2',
-  tier3: 'Tier 3',
 };
 
 const token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN;
@@ -186,17 +180,9 @@ async function main() {
   const frequency = process.argv[2] ?? 'daily';
   const reposCfg = JSON.parse(await fs.readFile(REPOS_FILE, 'utf8'));
   
-  // Handle both new frequency names and legacy tier names for backward compatibility
-  let repos;
-  if (reposCfg.frequencies && reposCfg.frequencies[frequency]) {
-    repos = reposCfg.frequencies[frequency];
-  } else if (reposCfg.legacy?.tiers?.[frequency]) {
-    repos = reposCfg.legacy.tiers[frequency];
-  } else if (reposCfg.tiers && reposCfg.tiers[frequency]) {
-    // Legacy fallback
-    repos = reposCfg.tiers[frequency];
-  } else {
-    console.error(`unknown frequency/tier: ${frequency}`);
+  const repos = reposCfg.frequencies?.[frequency];
+  if (!repos) {
+    console.error(`unknown frequency: ${frequency}`);
     process.exit(1);
   }
 
