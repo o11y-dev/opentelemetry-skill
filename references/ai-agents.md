@@ -422,6 +422,30 @@ service:
 
 > **Note**: Claude Code emits **no traces**. Use `prompt.id` correlation across log events as a pseudo-trace (see [Known Gaps](#7-known-gaps--workarounds)).
 
+### 4.4 Context-Boundary Receipts for Agent Context Loading
+
+Agent telemetry often answers *which model/tool ran* but not *which context crossed the agent boundary*. For coding agents, this gap matters when teams use MCP Tool Search, lazy skill loading, memory retrieval, `AGENTS.md`/rules files, compaction, or hook-based governance. The safe default is to emit small **receipt-style events** that prove selection and hydration decisions without exporting raw prompts, tool schemas, file contents, memory bodies, or secrets.
+
+Use these as **logs/events attached to an agent/session span** when the agent or wrapper can observe context selection. Keep token/cost metrics on the model-call spans; receipts are for boundary evidence and debugging.
+
+| Event | Purpose | Recommended attributes |
+|-------|---------|------------------------|
+| `gen_ai.context.selection.evaluated` | Summarize candidate → selected → suppressed context before an LLM call | `gen_ai.context.candidate_count`, `gen_ai.context.selected_count`, `gen_ai.context.suppressed_count`, `gen_ai.context.delivered_hash_count`, `gen_ai.context.selection.reason`, `gen_ai.context.selection.token_bucket` |
+| `gen_ai.context.hydration.evaluated` | Show which lazy component hydrated vs stayed deferred | `gen_ai.context.component.type` (`mcp_server`, `tool`, `skill`, `rule`, `instruction`, `memory`), `gen_ai.context.component.hash`, `gen_ai.context.hydration.state` (`hydrated`, `deferred`, `suppressed`), `gen_ai.context.hydration.reason` |
+| `gen_ai.context.decision_relevance.evaluated` | Optional post-hoc verifier/human/eval accounting | `gen_ai.context.decision.id_hash`, `gen_ai.context.relevance.decisive_count`, `supporting_count`, `unused_count`, `unknown_count`, `accounted_count`, `evaluator.type` |
+
+**Accounting invariant:** when a relevance event exists, require
+`selected_count == decisive_count + supporting_count + unused_count + unknown_count`. This keeps over-selection visible instead of hiding unused context behind a generic count.
+
+**Privacy guardrails:**
+
+- Hash or bucket component identities; do not emit raw file paths, MCP server config, commands, environment variables, tool schemas, tool arguments, tool outputs, memory text, or repository excerpts.
+- Use coarse token buckets (`0`, `1-1k`, `1k-8k`, `8k+`) instead of exact per-component token counts when exact values create fingerprinting risk.
+- Treat delivered-context hashes as evidence of what reached the model after templating/normalization, not as a promise that raw source bytes were identical.
+- Make suppression/hydration policy explicit (`tool_search`, `memory_retrieval`, `agent_skill_router`, `manual_pin`, `governance_policy`) so operators can distinguish "too much context" from "wrong context selected".
+
+Reference implementation / fixture examples: [Pluribus context receipts](https://github.com/caioribeiroclw-pixel/pluribus/blob/main/docs/context-receipts-for-agent-observability.md) and the experimental OpenTelemetry GenAI discussion in [open-telemetry/semantic-conventions-genai#181](https://github.com/open-telemetry/semantic-conventions-genai/issues/181).
+
 ---
 
 ## 5. Dashboard Patterns

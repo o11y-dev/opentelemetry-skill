@@ -187,6 +187,36 @@
 
 ---
 
+## Scenario 6: Context Selection Without Raw Content
+
+**Prompt**:
+> "Instrument our Claude Code/MCP setup so we can see which tools, skills, memories, and rules entered context without logging prompts or schemas."
+
+### Expected WITHOUT skill (RED baseline)
+
+- May suggest enabling raw prompt or tool-detail capture.
+- Likely records full MCP tool schemas, tool arguments, file paths, memory text, or repository excerpts.
+- Conflates model-call token cost with context-boundary evidence.
+- Does not distinguish selected, suppressed, hydrated, unused, or unknown context.
+
+### Expected WITH skill (GREEN target)
+
+- ✅ Recommends receipt-style log events attached to the agent/session span, not raw prompt capture.
+- ✅ Uses `gen_ai.context.selection.evaluated` or equivalent event naming for candidate/selected/suppressed/delivered-hash counts.
+- ✅ Mentions lazy hydration state for MCP tools, skills, rules, instructions, or memory when applicable.
+- ✅ Requires privacy controls: no raw prompts, tool schemas, tool args/results, memory bodies, repository excerpts, config paths, commands, env vars, or secrets.
+- ✅ Separates context selection from later decision relevance; if relevance is present, preserves explicit decisive/supporting/unused/unknown accounting.
+
+### Compliance Check
+
+- [ ] Does NOT suggest enabling `OTEL_LOG_USER_PROMPTS` or raw tool-detail capture as the primary answer.
+- [ ] Includes selection counts or equivalent selected/suppressed/delivered-hash evidence.
+- [ ] Includes hydration/deferred/suppressed state when lazy loading is involved.
+- [ ] Includes explicit privacy guardrails for paths, schemas, args, outputs, memories, and secrets.
+- [ ] Keeps selection receipts separate from post-hoc decision relevance.
+
+---
+
 ## Anti-Rationalization Notes
 
 Document observed agent rationalizations and counter-guidance here as they are discovered during testing.
