@@ -20,7 +20,7 @@
     {
       "name": "Offers aggregated alternative dimensions",
       "max_score": 15,
-      "description": "The response proposes at least one bounded alternative such as user_type, user_tier, subscription_plan, or similar low-cardinality categorizations that achieve the monitoring goal without cardinality risk."
+      "description": "The response proposes at least one bounded alternative such as user_type, user_tier, subscription_plan, or another low-cardinality aggregate that still answers the monitoring question without adding user_id to metrics."
     },
     {
       "name": "Does not provide metric configuration that includes user_id",

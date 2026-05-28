@@ -20,7 +20,7 @@
     {
       "name": "Includes privacy controls for prompt and tool logging",
       "max_score": 20,
-      "description": "The response mentions OTEL_LOG_USER_PROMPTS and/or OTEL_LOG_TOOL_DETAILS privacy controls, explaining that prompt content is not logged by default and these flags must be explicitly enabled. Omitting privacy configuration entirely scores zero — this is a key safety concern for the skill."
+      "description": "The response mentions both prompt and tool logging controls (OTEL_LOG_USER_PROMPTS and OTEL_LOG_TOOL_DETAILS), explains that prompts are redacted by default, and warns that either flag should stay off in shared or production environments unless PII controls are in place."
     },
     {
       "name": "Warns about session.id cardinality in metrics",

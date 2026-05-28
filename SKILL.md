@@ -13,21 +13,21 @@ metadata:
 
 Use these defaults:
 
-1. **Stability over Features**: Check otelcol-contrib stability (Alpha/Beta/Stable); warn before production use of non-stable components.
+1. **Stability over Features**: Check otelcol-contrib stability (Alpha/Beta/Stable) and warn on non-stable components in production.
 
 2. **Convention over Configuration**: Prefer OpenTelemetry Semantic Conventions over custom attribute names.
 
-3. **Protocol Unification**: Default to **OTLP gRPC** (port 4317); use **OTLP HTTP** (port 4318) when gRPC is unavailable due to agent, proxy, browser, or backend constraints.
+3. **Protocol Unification**: Default to **OTLP gRPC** (4317); use **OTLP HTTP** (4318) when gRPC is blocked by the agent, proxy, browser, or backend.
 
-4. **Deterministic Routing Keys**: For load-balancing exporters, use stable, deterministic routing keys — `traceID` for tail-sampling stickiness, `tenant_id` or `cluster` for tenant/shard routing. Normalize non-string attributes before routing.
+4. **Deterministic Routing Keys**: Use stable routing keys for load-balancing exporters (`traceID` for tail sampling, `tenant_id` or `cluster` for tenant/shard routing). Normalize non-string attributes first.
 
-5. **Safety First**: Prioritize collector stability (memory limiters, persistent queues, backpressure) over data completeness. Dropping data is preferable to crashing the collector.
+5. **Safety First**: Prefer collector stability (memory limiters, persistent queues, backpressure) over completeness. Dropping data is better than crashing the collector.
 
-6. **Cardinality Awareness**: High-cardinality attributes (>100 unique values) must NOT be metric dimensions — use traces or logs instead.
+6. **Cardinality Awareness**: High-cardinality attributes (>100 unique values) must not be metric dimensions; use traces or logs instead.
 
 7. **Security by Default**: Redact PII, enable TLS for cross-network communication, and authenticate all collector endpoints.
 
-8. **Cross-Field Consistency**: Treat collector reviews as systems reviews, not YAML linting. Compare processor order, memory limits, replica strategy, routing, metric temporality state, queue storage medium, PDB/HPA settings, and OTTL attribute types together before calling a config "safe".
+8. **Cross-Field Consistency**: Treat collector reviews as systems reviews. Check processor order, memory limits, replica strategy, routing, metric temporality, queue storage, PDB/HPA settings, and OTTL types together before calling a config safe.
 
 ## Pre-Flight Checklist
 
@@ -53,17 +53,16 @@ When user requests match these patterns, include these points explicitly:
 
 When the user provides an existing collector config, Helm values file, or Kubernetes manifest, audit it for internal contradictions before proposing edits.
 
-Always compare:
+Check these interactions together:
 
-1. **Memory limiter vs pod limit** — `limit_mib` must stay below the container memory limit with headroom for the Go runtime and internal buffers.
-2. **Stateful processing vs scaling** — `tail_sampling`, `spanmetrics`, and `servicegraph` require sticky routing when replicas can exceed 1.
-3. **Exporter durability vs outage tolerance** — disabled retries and no persistent queue imply data loss during backend failures.
-4. **Network exposure vs deployment mode** — `hostPort` is usually a DaemonSet/node-local choice, not a horizontally scaled gateway Deployment default.
-5. **Rollout settings together** — review `replicaCount`, HPA `minReplicas`, PodDisruptionBudget, and rolling update settings as one unit.
-6. **OTTL/filter correctness** — keep attribute types consistent (for example bool vs string) and prefer current semantic convention keys such as `http.response.status_code`.
-7. **Dead config** — flag processors/exporters/extensions that are declared but never referenced by any pipeline.
-8. **Metric temporality and state** — `deltatocumulative` / `cumulativetodelta` are stateful conversions; verify source temporality, backend expectations, restart tolerance, and any replica/routing assumptions before enabling them.
-9. **Queue storage backend** — `file_storage` needs local locking-safe storage; `ReadWriteMany` / EFS / NFS-style volumes are not safe defaults.
+1. **Memory vs pod limit** — `limit_mib` must leave headroom for the Go runtime and buffers.
+2. **Stateful processing vs scaling** — `tail_sampling`, `spanmetrics`, and `servicegraph` need sticky routing above one replica.
+3. **Durability vs outage tolerance** — disabled retries and no persistent queue mean data loss on backend failure.
+4. **Deployment mode vs exposure** — `hostPort` fits DaemonSet/node-local patterns, not scaled gateway Deployments.
+5. **Rollout settings** — review `replicaCount`, HPA `minReplicas`, PodDisruptionBudget, and rolling updates together.
+6. **OTTL/filter correctness** — keep attribute types consistent and prefer current semantic convention keys.
+7. **Metric temporality and state** — `deltatocumulative` / `cumulativetodelta` need source/backend/restart checks.
+8. **Queue storage backend** — `file_storage` needs local locking-safe storage; RWX, EFS, and NFS are unsafe defaults.
 
 ## Progressive Disclosure: Context Triggers
 
@@ -87,7 +86,7 @@ Load detailed reference documentation only when the user's request matches a tri
 
 ## Production Baseline Configuration
 
-Use these defaults unless the user specifies otherwise. This is a copy-paste-ready starting point:
+Use this copy-paste-ready baseline unless the user wants something different:
 
 ```yaml
 extensions:
@@ -155,7 +154,7 @@ Key defaults:
 
 - `memory_limiter` must be first in every processor chain.
 - `batch` reduces exporter network calls.
-- `file_storage` preserves queues across restarts only when the collector returns to the same host/volume. In Kubernetes, back `/var/lib/otelcol/queue` with a `ReadWriteOnce` block-backed PVC rather than RWX/network storage.
+- `file_storage` preserves queues across restarts only on the same host/volume. In Kubernetes, back `/var/lib/otelcol/queue` with a `ReadWriteOnce` block-backed PVC, not RWX/network storage.
 - `health_check` binds to `localhost` (not `0.0.0.0`) in shared networks.
 - Prefer OTLP gRPC (port 4317) for receivers and exporters. Fall back to OTLP HTTP (port 4318) when gRPC is unavailable.
 
