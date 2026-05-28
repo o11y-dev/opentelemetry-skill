@@ -7,7 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
+- Replace upstream digest issue updates to overwrite issue body snapshots (instead of appending) while preserving idempotent no-op reruns on exact body matches
 - Add authoritative AI-agent eval coverage for the GenAI SemConv v1.41.0 tool-call span-naming requirement, alongside the skill/router guidance update
+- Bump published skill/package metadata versions for this update (`SKILL.md`, tile manifest, and marketplace plugin manifests)
 
 ## [1.3.0] - 2026-05-08
 
