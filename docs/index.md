@@ -19,6 +19,7 @@ These are the deep-dive documents that the skill loads on demand:
 - [Playbooks](../references/playbooks.md)
 - [Sampling](../references/sampling.md)
 - [Security](../references/security.md)
+- [Validation](../references/validation.md)
 
 ## Evaluation surface
 

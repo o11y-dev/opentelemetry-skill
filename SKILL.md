@@ -81,6 +81,7 @@ Load detailed reference documentation only when the user's request matches a tri
 | OTTL, Transform, Transformation, Modify, Filter attributes, Parse, Extract | [ottl.md](references/ottl.md) | OTTL syntax, context types, built-in functions, error handling |
 | Connector, spanmetrics, servicegraph, routing connector, failover connector | [connectors.md](references/connectors.md) | R.E.D. metrics, service graph, routing, failover, stickiness |
 | Claude Code, Codex, Gemini CLI, Copilot, AI agent, coding agent, MCP | [ai-agents.md](references/ai-agents.md) | Agent OTel support matrix, unified collector config, GenAI SemConv |
+| validate, dry-run, startup error, pipeline error, dropped data, queue full, recovery | [validation.md](references/validation.md) | Config validation commands, live checks, symptom→cause→fix recovery guidance |
 | playbook, production playbook, blog, 2025 blog, 2026 blog, real world | [playbooks.md](references/playbooks.md) | Production patterns from opentelemetry.io blogs |
 | anti-pattern, common mistake, what to avoid, pitfall | [anti-patterns.md](references/anti-patterns.md) | Full annotated anti-pattern catalogue: pipeline, metrics, Kubernetes, AI agents, OTTL |
 
@@ -160,47 +161,10 @@ Key defaults:
 
 ## Validation & Error Recovery
 
-Always include validation checkpoints when delivering configurations.
-
-### Validate before deploying
-
-```bash
-# Syntax and structural validation (local binary)
-otelcol validate --config config.yaml
-
-# Container-based dry-run (no outbound traffic)
-docker run --rm -v $(pwd)/config.yaml:/etc/otelcol/config.yaml \
-  otel/opentelemetry-collector-contrib:latest \
-  validate --config /etc/otelcol/config.yaml
-```
-
-### Verify a live pipeline
-
-```bash
-# Health endpoint — returns 200 when collector is ready
-curl -sf http://localhost:13133/ && echo "healthy"
-
-# Tail logs for pipeline errors and dropped data
-kubectl logs -l app=otelcol -f | grep -E "error|dropped|refused|timeout"
-
-# Collector self-metrics (Prometheus scrape)
-curl -s http://localhost:8888/metrics | grep -E "otelcol_processor_dropped|otelcol_exporter_send_failed"
-```
-
-### Error recovery guidance
-
-| Symptom | Likely cause | Fix |
-|---|---|---|
-| Collector exits at start | Config parse error | Run `otelcol validate`; check indentation and quoted strings |
-| `memory_limiter: data dropped` in logs | Memory limit hit | Increase `limit_percentage`, reduce `send_batch_size`, or add upstream sampling |
-| `exporter queue is full` | Backend unreachable or slow | Verify endpoint reachability; increase `queue_size`; check `retry_on_failure` settings |
-| `pipeline drops data` on restart | No persistent queue | Add `file_storage` extension and set `storage: file_storage/queue` in exporter sending_queue |
-| OTTL statement silently skipped | Type mismatch or nil value | Add `error_mode: ignore`; guard with `where attributes["key"] != nil`; use `Int()` / `String()` converters |
-| Tail sampling misses spans | Spans split across collector instances | Use `loadbalancing` exporter with `routing_key: traceID` upstream |
+Always include at least one validation checkpoint: `otelcol validate --config <path>`.
+For container dry-run commands, live pipeline checks, and symptom→cause→fix recovery, load [validation.md](references/validation.md).
 
 ## Anti-Patterns to Avoid
-
-The most critical patterns are listed here. See [anti-patterns.md](references/anti-patterns.md) for the full annotated catalog.
 
 ❌ Placing `memory_limiter` anywhere except first in the processor chain
 ❌ Using high-cardinality attributes (user_id, trace_id) as metric dimensions
@@ -208,6 +172,8 @@ The most critical patterns are listed here. See [anti-patterns.md](references/an
 ❌ Using `tail_sampling` without sticky session load balancing (loadbalancing exporter)
 ❌ Omitting `batch` processor (causes excessive network calls)
 ❌ Calling a config "fine" because it parses, without checking memory limits, sticky routing, exporter durability, and rollout settings together
+
+See [anti-patterns.md](references/anti-patterns.md) for the full annotated catalog.
 
 ## Version and Compatibility
 
