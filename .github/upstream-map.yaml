@@ -157,7 +157,7 @@ mappings:
           - "docs/**"
 
   - skill: references/architecture.md
-    topics: [deployment, operator, k8s, documentation]
+    topics: [deployment, operator, k8s, documentation, demo]
     watches:
       - repo: open-telemetry/opentelemetry-operator
         paths:
@@ -173,10 +173,50 @@ mappings:
           - "README.md"
           - "CHANGELOG.md"
           - "docs/**"
+      - repo: open-telemetry/opentelemetry-demo
+        paths:
+          - "README.md"
+          - "CHANGELOG.md"
+          - "docs/**"
+          - "kubernetes/**"
+          - "docker-compose.yml"
 
   - skill: references/instrumentation.md
-    topics: [instrumentation, sdks, auto-instrumentation]
+    topics: [instrumentation, sdks, auto-instrumentation, language-sdks]
     watches:
+      - repo: open-telemetry/opentelemetry-go
+        paths:
+          - "CHANGELOG.md"
+          - "README.md"
+          - "go.opentelemetry.io/**"
+      - repo: open-telemetry/opentelemetry-java
+        paths:
+          - "CHANGELOG.md"
+          - "README.md"
+          - "sdk/**"
+          - "api/**"
+      - repo: open-telemetry/opentelemetry-python
+        paths:
+          - "CHANGELOG.md"
+          - "README.md"
+          - "opentelemetry-sdk/**"
+          - "docs/**"
+      - repo: open-telemetry/opentelemetry-js
+        paths:
+          - "CHANGELOG.md"
+          - "README.md"
+          - "packages/**"
+      - repo: open-telemetry/opentelemetry-dotnet
+        paths:
+          - "CHANGELOG.md"
+          - "README.md"
+          - "src/**"
+          - "docs/**"
+      - repo: open-telemetry/opentelemetry-dotnet-contrib
+        paths:
+          - "CHANGELOG.md"
+          - "README.md"
+          - "src/**"
       - repo: open-telemetry/opentelemetry-python-contrib
         paths:
           - "instrumentation/**"
@@ -194,6 +234,36 @@ mappings:
         paths:
           - "internal/pkg/instrumentation/**"
           - "CHANGELOG.md"
+      - repo: open-telemetry/opentelemetry-rust
+        paths:
+          - "CHANGELOG.md"
+          - "README.md"
+          - "opentelemetry/**"
+      - repo: open-telemetry/opentelemetry-cpp
+        paths:
+          - "CHANGELOG.md"
+          - "README.md"
+          - "sdk/**"
+      - repo: open-telemetry/opentelemetry-ruby
+        paths:
+          - "CHANGELOG.md"
+          - "README.md"
+          - "sdk/**"
+      - repo: open-telemetry/opentelemetry-php
+        paths:
+          - "CHANGELOG.md"
+          - "README.md"
+          - "src/**"
+      - repo: open-telemetry/opentelemetry-swift
+        paths:
+          - "CHANGELOG.md"
+          - "README.md"
+          - "Sources/**"
+      - repo: open-telemetry/opentelemetry-erlang
+        paths:
+          - "CHANGELOG.md"
+          - "README.md"
+          - "apps/**"
 
   - skill: references/security.md
     topics: [cve, security, tls, auth]
@@ -248,6 +318,10 @@ mappings:
   - skill: SKILL.md
     topics: [overview, specification, protocol]
     watches:
+      - repo: open-telemetry/oteps
+        paths:
+          - "README.md"
+          - "text/**"
       - repo: open-telemetry/opentelemetry-specification
         paths:
           - "specification/overview.md"

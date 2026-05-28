@@ -66,6 +66,7 @@
         "open-telemetry/opentelemetry-python",
         "open-telemetry/opentelemetry-js",
         "open-telemetry/opentelemetry-dotnet",
+        "open-telemetry/opentelemetry.io",
         "github/copilot-cli",
         "Aider-AI/aider",
         "anysphere/cursor-wiki",
