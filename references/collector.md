@@ -1234,6 +1234,141 @@ exporters:
 
 ---
 
+## Exporter Configuration Patterns
+
+### OTLP Exporter: Minimal (Development)
+
+For development and testing, use the minimal configuration:
+
+```yaml
+exporters:
+  otlp:
+    endpoint: localhost:4317    # gRPC by default
+```
+
+**When to use**: Local development, lab testing, or when you trust the network.
+
+### OTLP Exporter: Resilient (Production)
+
+For production backends, enable disk-backed queues and retries:
+
+```yaml
+extensions:
+  file_storage/queue:
+    directory: /var/lib/otel/queue
+    timeout: 10s
+    compaction:
+      on_start: true
+      on_rebound: false
+
+exporters:
+  otlp:
+    endpoint: backend.example.com:4317
+    sending_queue:
+      enabled: true
+      storage: file_storage/queue    # Persist to disk on overflow
+      queue_size: 5000               # In-memory queue size
+      num_consumers: 10              # Parallel exports
+      storage_client:
+        timeout: 30s
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s         # 5 min total retry time
+    timeout: 30s
+    tls:
+      insecure: false                # Enforce TLS
+
+service:
+  extensions: [file_storage/queue]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp]
+```
+
+**When to use**: Production, multi-tier deployments, or when backend latency/unavailability is a risk.
+
+### OTLP Exporter: HTTP (Firewall/Proxy Restrictions)
+
+Use OTLP HTTP when gRPC is blocked by network, proxy, or backend:
+
+```yaml
+exporters:
+  otlphttp:
+    endpoint: https://backend.example.com:4318
+    headers:
+      Authorization: "Bearer ${env:OTEL_BEARER_TOKEN}"
+    compression: gzip
+    sending_queue:
+      enabled: true
+      storage: file_storage/queue
+    retry_on_failure:
+      enabled: true
+      max_elapsed_time: 300s
+    timeout: 30s
+    tls:
+      insecure_skip_verify: false
+```
+
+**When to use**:
+- gRPC is blocked by firewall / proxy rules
+- Backend only supports HTTP (Datadog, Splunk, etc.)
+- Certificate pinning for HTTPS required
+
+### Load-Balancing Exporter: Multi-Backend with Tail Sampling
+
+For stateful processors like `tail_sampling`, use load-balancing exporter to ensure all spans of a trace go to the same collector instance:
+
+```yaml
+exporters:
+  loadbalancing:
+    protocol:
+      otlp:
+        tls:
+          insecure: true                    # For demo; enable TLS in production
+    resolver:
+      dns:
+        hostname: otel-gateway-headless.otel.svc.cluster.local
+        port: 4317
+        interval: 5s                        # DNS refresh interval
+    routing_key: traceID                    # ⚠️ Critical: Deterministic hash on trace ID
+    balancer: random_no_repeat              # Alternative: `least_loaded`, `round_robin`
+```
+
+**Critical Rules**:
+1. **`routing_key: traceID`**: Must hash on trace ID (not random) to ensure all spans of a trace reach the same backend instance.
+2. **Headless Service** (Kubernetes): Use `clusterIP: None` for DNS resolution to all backend pods.
+3. **Pair with stateful processors**: Use this exporter when you have `tail_sampling`, `spanmetrics`, or `servicegraph` on the backend tier.
+
+### Load-Balancing Exporter: Multi-Backend with Failover
+
+For resilience without statefulness:
+
+```yaml
+exporters:
+  loadbalancing:
+    protocol:
+      otlp:
+        tls:
+          insecure: false
+    resolver:
+      dns:
+        hostname: backends.example.com
+        port: 4317
+    routing_key: "random"                   # Random distribution (no statefulness)
+    balancer: least_loaded                  # Send to least-busy backend
+    retry_on_failure:
+      enabled: true
+      max_elapsed_time: 300s
+```
+
+**When to use**: Multiple independent backends without trace-level statefulness (separate processing per signal).
+
+---
+
 ## Reference Links
 
 - **Collector Documentation**: https://opentelemetry.io/docs/collector/

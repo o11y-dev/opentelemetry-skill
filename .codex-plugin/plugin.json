@@ -1,0 +1,69 @@
+{
+  "name": "opentelemetry-skill",
+  "displayName": "OpenTelemetry Observability Engineering",
+  "version": "1.0.1",
+  "description": "Expert OpenTelemetry guidance for collector configuration, pipeline design, production telemetry instrumentation, and deployment architecture across Kubernetes, ECS, serverless, and standalone environments.",
+  "author": {
+    "name": "o11y.dev",
+    "url": "https://skills.o11y.dev"
+  },
+  "homepage": "https://github.com/o11y-dev/opentelemetry-skill",
+  "repository": "https://github.com/o11y-dev/opentelemetry-skill",
+  "license": "Apache-2.0",
+  "keywords": [
+    "opentelemetry",
+    "otel",
+    "observability",
+    "o11y",
+    "telemetry",
+    "monitoring",
+    "tracing",
+    "metrics",
+    "logs",
+    "collector",
+    "otelcol",
+    "pipeline",
+    "instrumentation",
+    "kubernetes",
+    "ecs",
+    "docker",
+    "serverless",
+    "lambda",
+    "gcp",
+    "aws",
+    "azure",
+    "deployment",
+    "architecture",
+    "sampling",
+    "cardinality",
+    "security",
+    "ottl",
+    "transform",
+    "codex",
+    "ai-agent"
+  ],
+  "categories": ["DevOps", "Observability", "Infrastructure", "Monitoring"],
+  "capabilities": {
+    "progressive_disclosure": true,
+    "context_aware": true,
+    "production_ready": true,
+    "multi_platform": true
+  },
+  "metadata": {
+    "skill_type": "expert_assistant",
+    "domain": "observability_engineering",
+    "expertise_level": "principal",
+    "primary_technology": "opentelemetry",
+    "supported_signals": ["traces", "metrics", "logs", "profiles"],
+    "supported_platforms": ["kubernetes", "ecs", "docker", "vm", "lambda", "gcp-functions", "azure-functions"],
+    "supported_languages": ["yaml", "go", "python", "java", "javascript", "typescript", ".net", "ruby"],
+    "vendor_agnostic": true,
+    "deployment_patterns": [
+      "daemonset",
+      "sidecar",
+      "gateway",
+      "standalone",
+      "serverless"
+    ]
+  }
+}

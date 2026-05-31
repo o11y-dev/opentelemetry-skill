@@ -8,10 +8,11 @@ Security in observability systems is critical: telemetry data often contains sen
 
 1. [Data Redaction & Sanitization](#data-redaction--sanitization)
 2. [TLS & Encryption](#tls--encryption)
-3. [Authentication & Authorization](#authentication--authorization)
-4. [Extension Security](#extension-security)
-5. [Least Privilege & RBAC](#least-privilege--rbac)
-6. [Compliance Patterns](#compliance-patterns)
+3. [Platform-Specific TLS Configuration](#platform-specific-tls-configuration)
+4. [Authentication & Authorization](#authentication--authorization)
+5. [Extension Security](#extension-security)
+6. [Least Privilege & RBAC](#least-privilege--rbac)
+7. [Compliance Patterns](#compliance-patterns)
 
 ---
 
@@ -294,6 +295,58 @@ spec:
         secret:
           secretName: otel-collector-tls
 ```
+
+---
+
+## Platform-Specific TLS Configuration
+
+Different deployment environments require different approaches to certificate management, storage, and rotation. This section provides platform-specific guidance for configuring TLS/mTLS in your OpenTelemetry collector setup.
+
+### Kubernetes: cert-manager & Secrets
+
+For Kubernetes deployments, use **cert-manager** for automated certificate provisioning and rotation:
+
+- **Certificate provisioning**: cert-manager automatically generates and rotates TLS certificates
+- **Storage**: Certificates stored in Kubernetes Secrets
+- **Renewal**: Automatic renewal before expiration
+- **Detailed setup**: See [setup-kubernetes.md](setup-kubernetes.md) for cert-manager integration, ClusterIssuer configuration, and multi-namespace strategies
+
+**Quick reference**: The Kubernetes example above shows the recommended pattern using cert-manager with ClusterIssuer, where cert-manager handles all provisioning and the Deployment references the secret.
+
+### AWS ECS: Secrets Manager & IAM
+
+For ECS deployments, leverage AWS Secrets Manager for certificate management:
+
+- **Certificate storage**: AWS Secrets Manager (encrypted with KMS)
+- **Credential injection**: Environment variables or task role assumptions
+- **Rotation**: Native AWS Secrets rotation policies
+- **IAM policy**: Grant ECS task role `secretsmanager:GetSecretValue` on the secret ARN
+- **Detailed setup**: See [setup-ecs.md](setup-ecs.md) for task definition configuration, IAM role binding, and cross-account certificate access patterns
+
+**Quick reference**: ECS task definitions can pull certificates from Secrets Manager and inject them into container environment variables or volume mounts.
+
+### Docker: Secrets & Volume Mounts
+
+For Docker Compose or Docker Swarm deployments:
+
+- **Certificate storage**: Docker secrets (Swarm) or volume-mounted files
+- **Volume mounting**: `/etc/otel/certs` directory with read-only permissions
+- **Ownership**: Run collector as non-root user (UID 10001) with restrictive file permissions
+- **Detailed setup**: See [setup-docker.md](setup-docker.md) for Compose configurations, Swarm secret definitions, and secure volume mounting patterns
+
+**Quick reference**: Docker secrets are mounted at `/run/secrets/` in Swarm mode, or use volume mounts with `./certs:/etc/otel/certs:ro`.
+
+### Standalone VM: Filesystem-Based Management
+
+For on-premises or VM-based deployments:
+
+- **Certificate storage**: Filesystem at `/etc/otel/certs/` with restricted permissions (`0600` for keys, `0644` for certs)
+- **Rotation**: Implement certificate rotation via cron jobs or configuration management tools (Ansible, Chef, Puppet)
+- **Ownership**: Ensure files are owned by the collector service user (e.g., `otel:otel`)
+- **Monitoring**: Track certificate expiration dates and send alerts
+- **Detailed setup**: See [setup-vm.md](setup-vm.md) for self-hosted CA management, systemd service configuration, and automated renewal scripts
+
+**Quick reference**: Use OpenSSL or Let's Encrypt client to generate and renew certificates; update collector config and reload service when certificates rotate.
 
 ---
 

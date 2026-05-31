@@ -1,10 +1,95 @@
 ---
 name: opentelemetry-skill
-description: "Expert OpenTelemetry guidance for collector configuration, pipeline design, and production telemetry instrumentation. Use when configuring collectors, designing pipelines, instrumenting applications, implementing sampling, managing cardinality, securing telemetry, writing OTTL transformations, or setting up AI coding agent observability (Claude Code, Codex, Gemini CLI, GitHub Copilot)."
+description: "Expert OpenTelemetry guidance for collector configuration, pipeline design, and production telemetry instrumentation across Kubernetes, ECS, serverless, and standalone deployments. Use when configuring collectors, designing pipelines, instrumenting applications, implementing sampling, managing cardinality, securing telemetry, writing OTTL transformations, or setting up AI coding agent observability (Claude Code, Codex, Gemini CLI, GitHub Copilot)."
 license: Apache-2.0
 metadata:
   author: o11y.dev
-  version: 1.4.1
+  version: 1.5.0
+  signals:
+    - traces
+    - metrics
+    - logs
+    - profiles
+  deployments:
+    - kubernetes
+    - ecs
+    - docker
+    - vm
+    - serverless
+    - lambda
+    - gcp-functions
+    - azure-functions
+  deployment_patterns:
+    - daemonset
+    - sidecar
+    - gateway
+    - standalone
+  supported_platforms:
+    - aws
+    - gcp
+    - azure
+    - on-premises
+  vendor_agnostic: true
+  triggers:
+    file_patterns:
+      - "**/collector*.yaml"
+      - "**/otelcol*.yaml"
+      - "**/values*.yaml"
+      - "**/trace-config*.yaml"
+      - "**/metric-config*.yaml"
+      - "**/log-config*.yaml"
+      - "**/helm*.yaml"
+      - "**/docker-compose*.yaml"
+      - "**/task-definition*.yaml"
+      - "**/task-definition*.json"
+    config_keys:
+      - "receivers:"
+      - "processors:"
+      - "exporters:"
+      - "service:"
+      - "pipelines:"
+      - "extensions:"
+      - "connectors:"
+    keywords:
+      - opentelemetry
+      - otel
+      - otelcol
+      - collector
+      - observability
+      - traces
+      - metrics
+      - logs
+      - pipeline
+      - sampler
+      - sampling
+      - cardinality
+      - instrumentation
+      - kubernetes
+      - helm
+      - ecs
+      - docker
+      - compose
+      - serverless
+      - lambda
+      - deployment
+      - architecture
+      - receiver
+      - processor
+      - exporter
+      - connector
+      - spanmetrics
+      - tail sampling
+      - memory limiter
+      - batch processor
+      - ottl
+      - transform
+      - security
+      - tls
+      - pii
+      - redaction
+      - codex
+      - ai-agent
+      - genai
 ---
 
 # OpenTelemetry Skill
@@ -37,19 +122,141 @@ Before generating config/code, confirm these. If unknown, ask first:
 2. **Cardinality risk** — Any unbounded metric attributes (user/request/session IDs)? Move to traces/logs. → [instrumentation.md](references/instrumentation.md)
 3. **Resiliency** — Is restart/outage data loss acceptable? If no, use `file_storage` + persistent queues. → [collector.md](references/collector.md)
 4. **Trust boundaries** — Any public-network hops? Require TLS + mTLS. → [security.md](references/security.md)
-5. **Deployment target** — Kubernetes, EC2, Lambda, or containers? → [architecture.md](references/architecture.md)
+5. **Deployment target** — Kubernetes, ECS, Lambda, VM, or other? → [architecture.md](references/architecture.md), [setup guides](#when-to-use-this-skill)
+
+## When to Use This Skill
+
+Use this table to navigate specific use cases to their reference docs:
+
+| Your question | Key topics | Go to |
+|---|---|---|
+| **Deploy to Kubernetes** — EKS, GKE, AKS, OpenShift, Autopilot, Fargate | DaemonSet, Gateway, Sidecar, Helm, RBAC, persistent volumes | [setup-kubernetes.md](references/setup-kubernetes.md) |
+| **Deploy to ECS** — EC2 or Fargate | CloudWatch Logs, Task definition, networking, service discovery | [setup-ecs.md](references/setup-ecs.md) |
+| **Docker / Docker Compose** — Container or compose stack | Volume mounts, bridge/host networking, state persistence | [setup-docker.md](references/setup-docker.md) |
+| **Standalone VM / EC2** — Linux, Windows, or macOS | Systemd service, binary install, config management | [setup-vm.md](references/setup-vm.md) |
+| **Choose your deployment pattern** — Not sure which platform? | DaemonSet vs Gateway vs Sidecar, decision tree | [setup-index.md](references/setup-index.md) |
+| **Collector basics** — Receivers, processors, exporters, pipelines | Config audit, processor ordering, memory limits, queues | [collector.md](references/collector.md) |
+| **Architecture & scaling** — Replicas, affinity, load balancing, resilience | Target Allocator, HPA, PodDisruptionBudget, steady-state | [architecture.md](references/architecture.md) |
+| **SDK instrumentation** — Auto-instrumentation vs manual, SemConv, cardinality | Language-specific setup, span attributes, best practices | [instrumentation.md](references/instrumentation.md) |
+| **Sampling strategy** — Head sampling, tail sampling, probabilistic, cost optimization | Sampling rate math, trace propagation, sticky sessions | [sampling.md](references/sampling.md) |
+| **Security & compliance** — PII redaction, TLS, mTLS, GDPR, secrets | Redaction processor, allow-lists, encryption, RBAC | [security.md](references/security.md) |
+| **OTTL / Transformations** — Parse, extract, modify attributes, enrich spans | OTTL syntax, context types, error handling, examples | [ottl.md](references/ottl.md) |
+| **Connectors** — spanmetrics, servicegraph, routing, failover | R.E.D. metrics, sticky routing, statefulness | [connectors.md](references/connectors.md) |
+| **Serverless & FaaS** — Lambda, Google Cloud Functions, Azure Functions | Lambda Layer, memory constraints, cost, cold-start mitigation | [platforms.md](references/platforms.md) |
+| **Monitoring the collector** — Health, alerts, self-monitoring, diagnostics | otelcol_* metrics, dashboards, pprof, health check | [monitoring.md](references/monitoring.md) |
+| **Validation & troubleshooting** — "No data reaching backend", config errors, symptom→fix | Config validation, dry-run, live checks, recovery steps | [validation.md](references/validation.md) |
+| **Production anti-patterns** — What NOT to do, common mistakes | Cardinality explosions, processor ordering, unsafe defaults | [anti-patterns.md](references/anti-patterns.md) |
+| **Real-world playbooks** — Production patterns, best practices from blog | Multi-signal, multi-tenant, high-volume setups | [playbooks.md](references/playbooks.md) |
+| **AI agent telemetry** — Claude Code, Codex, Gemini CLI, Copilot, MCP | Agent OTel support, unified config, GenAI SemConv | [ai-agents.md](references/ai-agents.md) |
 
 ## Eval-Critical Response Minimums
 
 When user requests match these patterns, include these points explicitly:
 
 - **Collector setup**: include `memory_limiter`; keep it first in each pipeline `processors` list; explain OOM-prevention rationale.
-- **Metric dimension request for `user_id`**: refuse; explain time-series explosion risk; suggest traces and bounded metric dimensions.
-- **Kubernetes tail sampling**: Gateway (Deployment) tier, `loadbalancing` with `routing_key: traceID`, Headless Service (`clusterIP: None`), error+10% policies, Beta stability caution.
+- **Metric dimension request for `user_id`, `request_id`, or other high-cardinality**: refuse; explain time-series explosion risk; suggest traces and bounded metric dimensions; reference Rule of 100.
+- **Exporter resilience**: For production, enable `sending_queue` with `file_storage` backend and `retry_on_failure` with exponential backoff. Explain data preservation and backpressure benefits.
+- **OTLP gRPC vs HTTP**: Default to gRPC (port 4317); switch to HTTP only if gRPC is blocked by network, proxy, or backend. Include rationale (binary efficiency, TLS-by-default, bidirectional).
+- **Kubernetes tail sampling**: Gateway (Deployment) tier, `loadbalancing` exporter with `routing_key: traceID`, Headless Service (`clusterIP: None`), tail sampling policy with error+10% rules, Beta stability caution.
+- **Multi-signal consistency**: When reviewing collector config, verify processor order consistency across traces/metrics/logs pipelines; ensure `memory_limiter` is first in all; check temporality and routing coherence.
+- **DaemonSet vs Gateway vs Sidecar**: Clarify the pattern matching the user's deployment topology before prescribing a config (see [setup-index.md](references/setup-index.md)).
+- **Cardinality guardrails**: `aggregation_cardinality_limit` is a guardrail, not a fix. Still recommend removing or normalizing high-cardinality labels in the pipeline.
 - **Claude Code telemetry**: include `CLAUDE_CODE_ENABLE_TELEMETRY=1`, `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative`, `~/.claude/settings.json` persistence; `OTEL_LOG_USER_PROMPTS`/`OTEL_LOG_TOOL_DETAILS` default to `false` — warn against enabling in shared/production environments without PII controls; avoid `session.id` as a metric dimension.
 - **AI agent tool-call tracing**: for agents using `gen_ai.*` traces, name execute-tool spans with the actual tool name (for example `bash` or `search_code`) and preserve `gen_ai.tool.name`; do not use a generic `execute_tool` span name.
 
-## Existing Configuration Review Mode
+## Common Workflows
+
+### 1. Triage: "No data reaching the backend"
+
+Follow these steps in order before touching any OTTL/transforms:
+
+1. **Verify the collector is running and alive** (Kubernetes example):
+   ```bash
+   kubectl logs -n otel-system <collector-pod>
+   # Look for "starting otelcontribcol" or config parse errors at startup
+   ```
+
+2. **Check if exporter is emitting** (any platform):
+   ```bash
+   # Enable debug logging in exporter config: debug_metrics: true
+   # Then check: Are otelcol_exporter_sent_* metrics > 0 and climbing?
+   # Or use health_check endpoint (default :13133)
+   ```
+
+3. **Verify receiver is receiving data**:
+   - Do clients point to the correct receiver endpoint (default OTLP: 4317 gRPC, 4318 HTTP)?
+   - Are they using the correct protocol (gRPC vs HTTP)?
+   - Check receiver logs: `otelcol_receiver_accepted_*` metrics increasing?
+
+4. **Check network connectivity**:
+   ```bash
+   # From collector → backend: DNS, TLS, routing, firewall, proxy?
+   curl -v https://backend-endpoint:443
+   # Or inside a container: nc -zv backend-endpoint 443
+   ```
+
+5. **Verify authentication**:
+   - Are credentials (API key, TLS cert) correct and not expired?
+   - Is the exporter passing auth headers correctly?
+
+Reference: [validation.md](references/validation.md) for detailed commands per platform.
+
+### 2. Diagnose: "Metric cardinality explosion" or "time-series overflow"
+
+1. **Identify high-cardinality dimensions**:
+   ```bash
+   # If metrics are reaching backend, query your metrics store for series count by dimension
+   # E.g., Prometheus: topk(10, count by (__name__, dimension_name) (...))
+   ```
+
+2. **Verify Rule of 100**:
+   - Does any metric dimension have > 100 unique values? ❌ Move to span/log attributes or normalize.
+   - Examples: `user_id`, `request_id`, `pod_name` (per pod × per host × ...) are all high-cardinality.
+
+3. **Apply guardrails** (not a fix, a stopgap):
+   ```yaml
+   spanmetrics:
+     aggregation_cardinality_limit: 1000  # overflow handling
+   ```
+
+4. **Normalize or drop** (permanent fix):
+   - Use OTTL to extract low-cardinality parts (e.g., `http.route` instead of full URL).
+   - Reference: [anti-patterns.md](references/anti-patterns.md) — "High-cardinality metric dimensions".
+
+### 3. Fix: "Collector out of memory" or `memory_limiter` firing constantly
+
+1. **Check if `memory_limiter` is first in processor chain**:
+   - If not → move it to position 0 in `processors:` array. ❌ This is a critical anti-pattern.
+
+2. **Adjust limits** (conservative defaults):
+   ```yaml
+   processors:
+     memory_limiter:
+       check_interval: 1s
+       limit_percentage: 80        # 80% of pod memory limit
+       spike_limit_percentage: 20  # allow 20% spike
+   ```
+
+3. **Check pod memory request/limit**:
+   - `limit_mib` must leave headroom for Go runtime, OS buffers, and spike handling.
+   - E.g., if pod limit is 1Gi, set `limit_percentage: 80` → ~800Mi for otelcol, ~200Mi for runtime.
+
+4. **Enable disk-backed queues**:
+   ```yaml
+   exporters:
+     otlp:
+       sending_queue:
+         enabled: true
+         storage: file_storage/queue  # enables disk buffering
+   ```
+
+5. **Reduce receiver load** (if safe):
+   - Enable sampling (head or tail) to reduce span/metric volume.
+   - Reference: [sampling.md](references/sampling.md).
+
+Reference: [collector.md](references/collector.md) — "Memory and Performance" section.
+
+
 
 When the user provides an existing collector config, Helm values file, or Kubernetes manifest, audit it for internal contradictions before proposing edits.
 
