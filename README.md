@@ -59,35 +59,31 @@ Unlike loading the entire OpenTelemetry documentation into an AI's context (whic
 
 - 🧠 **Cognitive Architecture**: Meta-knowledge layer that teaches AI *how* to think about observability
 - 📊 **Cardinality Management**: Built-in guards against metric explosion and cost overruns
-- 🏗️ **Deployment Patterns**: DaemonSet vs Gateway vs Sidecar decision matrices for Kubernetes
-- 🔒 **Security by Default**: PII redaction, TLS, and authentication patterns
+- 🏗️ **Deployment Patterns**: Platform-specific setup guides for Kubernetes, ECS, Docker, and standalone VMs
+- 🎯 **Multi-Platform Support**: DaemonSet vs Gateway vs Sidecar decision matrices for Kubernetes; EC2 daemon and Fargate patterns for ECS; Docker Compose patterns
+- 🔒 **Security by Default**: PII redaction, TLS/mTLS configuration, and authentication patterns with platform-specific guidance
 - 🔄 **OTTL Transformations**: Comprehensive OpenTelemetry Transformation Language guidance with patterns and best practices
-- 📈 **Scaling Strategies**: Load balancing with sticky sessions for tail sampling
+- 📈 **Scaling Strategies**: Load balancing with sticky sessions for tail sampling, resource management for high-throughput collectors
 - 🎯 **Sampling Intelligence**: Head vs tail sampling with statistical trade-off analysis
 - 🔍 **Meta-Monitoring**: Self-observability patterns for collector health
-- 🤖 **AI Agent Observability**: Configuration guides for monitoring AI coding agents including Claude Code, Gemini CLI, GitHub Copilot, Codex CLI, Qwen Code, Pi Agent, and more via OpenTelemetry
-- ✅ **Test & Validation Framework**: TDD-based testing methodology to ensure skill effectiveness
+- 🤖 **AI Agent Observability**: Configuration guides for monitoring AI coding agents including Claude Code, Gemini CLI, GitHub Copilot, Codex, Qwen Code, Pi Agent, and more via OpenTelemetry
+- ✅ **Test & Validation Framework**: TDD-based testing methodology and 20+ comprehensive evaluation scenarios to ensure skill effectiveness
 
 ## Skill Structure
 
 `SKILL.md` acts as the **cognitive router** — a compact instruction set that tells the AI how to reason about observability before generating any output. `docs/index.md` is the tile's on-demand documentation entrypoint for Tessl, and `references/` contains the deep-dive documents that the skill links to when specific topics are triggered.
 
+The skill now includes **5 platform-specific setup guides** (`setup-kubernetes.md`, `setup-ecs.md`, `setup-docker.md`, `setup-vm.md`) that provide concrete deployment patterns and copy-paste-ready configurations for multiple cloud providers and deployment scenarios.
+
 ### 📊 **Content Overview**
 
 - **Packaged reference docs** for architecture, collector design, instrumentation, security, sampling, AI agents, and compatibility
+- **Platform-specific setup guides** for Kubernetes (EKS/GKE/AKS/OpenShift/Autopilot/Fargate), AWS ECS (EC2/Fargate), Docker/Compose, and standalone VMs
 - **AI coding agent coverage** tracked with upstream monitoring  
-- **Production-tested** configurations with validation commands
+- **Production-tested** configurations with validation commands and 20+ comprehensive evaluation scenarios
 - **Current & updated** - automatically synced with latest OpenTelemetry releases
 
 ## Installation
-
-### skills.sh
-
-Install this skill with the skills.sh CLI:
-
-```bash
-npx skills add o11y-dev/opentelemetry-skill
-```
 
 ### Tessl Registry
 
@@ -97,17 +93,21 @@ Install this tile from the Tessl registry (workspace: `o11y-dev`):
 tessl tile install o11y-dev/opentelemetry-skill
 ```
 
-### GitHub Copilot
-
-Attach `SKILL.md` as a custom instructions file, or reference the repository as a Copilot Skill in your Copilot settings: [`https://github.com/o11y-dev/opentelemetry-skill`](https://github.com/o11y-dev/opentelemetry-skill)
-
 ### Claude
 
-Add `SKILL.md` to your project knowledge or paste it into your system prompt.
+Add `SKILL.md` to your project knowledge or paste it into your system prompt. The skill is also available as a Claude plugin via the Claude marketplace.
 
 ### Cursor
 
 Plugin manifests are available in `.cursor-plugin/` for use with the Cursor marketplace.
+
+### OpenAI Codex
+
+The skill is available as a Codex plugin with comprehensive deployment and configuration guidance. Manifests are available in `.codex-plugin/` for use with the OpenAI Codex marketplace.
+
+### GitHub Copilot
+
+Attach `SKILL.md` as a custom instructions file, or reference the repository as a Copilot Skill in your Copilot settings: [`https://github.com/o11y-dev/opentelemetry-skill`](https://github.com/o11y-dev/opentelemetry-skill)
 
 ### Other AI Systems
 
@@ -118,7 +118,9 @@ Point your agent at `SKILL.md` as the primary instruction set, with `references/
 ```
 opentelemetry-skill/
 ├── .claude-plugin/
-│   └── marketplace.json      # Plugin metadata
+│   └── marketplace.json      # Plugin metadata (Claude marketplace)
+├── .codex-plugin/
+│   └── plugin.json           # Codex plugin manifest (OpenAI Codex)
 ├── .cursor-plugin/
 │   ├── marketplace.json      # Cursor marketplace metadata
 │   └── plugin.json           # Cursor plugin manifest
@@ -129,24 +131,35 @@ opentelemetry-skill/
 ├── references/
 │   ├── ai-agents.md          # AI agent observability patterns & configurations
 │   ├── architecture.md       # Deployment patterns & scaling
-│   ├── compatibility.md      # Version-sensitive support and compatibility notes
 │   ├── collector.md          # Pipeline configuration & components
+│   ├── compatibility.md      # Version-sensitive support and compatibility notes
 │   ├── instrumentation.md    # SDKs & semantic conventions
+│   ├── monitoring.md         # Self-monitoring patterns
+│   ├── ottl.md               # OpenTelemetry Transformation Language
+│   ├── platforms.md          # Serverless & FaaS patterns
+│   ├── playbooks.md          # Production incident response playbooks
 │   ├── sampling.md           # Sampling strategies
-│   ├── security.md           # PII redaction & authentication
-│   └── monitoring.md         # Self-monitoring patterns
+│   ├── security.md           # PII redaction, TLS & authentication
+│   ├── setup-index.md        # Platform deployment decision tree
+│   ├── setup-kubernetes.md   # Kubernetes DaemonSet/Gateway/Sidecar deployment
+│   ├── setup-ecs.md          # AWS ECS EC2 & Fargate deployment
+│   ├── setup-docker.md       # Docker & Docker Compose deployment
+│   └── setup-vm.md           # Standalone VM/EC2 deployment
+├── evals/                    # Comprehensive evaluation scenarios (20+ evals)
 └── LICENSE                   # Apache 2.0
 ```
 
 ## Architecture Patterns
 
-| Category | Pattern | Description |
-|----------|---------|-------------|
-| **Kubernetes** | **DaemonSet / Gateway / Sidecar** | Choose based on workload type and data volume |
-| **Serverless** | **FaaS Extension Layer** | Lambda, Azure Functions, GCP with non-blocking export |
-| **Sampling** | **Head / Tail Sampling** | Trade-off between cost and completeness |
-| **Security** | **mTLS + RBAC** | Secure cross-network telemetry pipelines |
-| **AI Agents** | **Agent Telemetry** | Monitor coding agents as first-class services in your observability stack |
+| Category | Pattern | Reference | Description |
+|----------|---------|-----------|-------------|
+| **Kubernetes** | **DaemonSet / Gateway / Sidecar** | [setup-kubernetes.md](references/setup-kubernetes.md) | Choose based on workload type and data volume (EKS/GKE/AKS/OpenShift/Autopilot/Fargate) |
+| **AWS ECS** | **EC2 Daemon / Fargate Sidecar** | [setup-ecs.md](references/setup-ecs.md) | EC2 daemon service with host IP networking; Fargate sidecar with container networking |
+| **Docker** | **Standalone / Compose** | [setup-docker.md](references/setup-docker.md) | Docker container with volumes and restart policies; Docker Compose with service discovery |
+| **Standalone VM** | **Linux / Windows / macOS** | [setup-vm.md](references/setup-vm.md) | systemd service (Linux), Windows Service, LaunchAgent (macOS), Terraform IaC |
+| **Sampling** | **Head / Tail Sampling** | [sampling.md](references/sampling.md) | Trade-off between cost and completeness |
+| **Security** | **mTLS + RBAC** | [security.md](references/security.md) | Secure cross-network telemetry pipelines with platform-specific configuration |
+| **AI Agents** | **Agent Telemetry** | [ai-agents.md](references/ai-agents.md) | Monitor coding agents as first-class services in your observability stack |
 
 ## Usage Examples
 
@@ -202,14 +215,22 @@ See [`SKILL.md`](SKILL.md) for the full list of progressive disclosure triggers,
 
 Deep-dive guides are available in the `references/` directory:
 
+### Platform-Specific Deployment Guides
+- **[setup-index.md](references/setup-index.md)**: Platform selection decision tree (when to use DaemonSet vs Gateway vs Sidecar)
+- **[setup-kubernetes.md](references/setup-kubernetes.md)**: Kubernetes deployment patterns including DaemonSet, Gateway, Sidecar, with support for EKS, GKE, AKS, OpenShift, Autopilot, and Fargate
+- **[setup-ecs.md](references/setup-ecs.md)**: AWS ECS deployment patterns for EC2 daemon service and Fargate sidecar
+- **[setup-docker.md](references/setup-docker.md)**: Docker and Docker Compose deployment patterns
+- **[setup-vm.md](references/setup-vm.md)**: Standalone VM/EC2 deployment guidance for Linux (systemd), Windows (Service), macOS (LaunchAgent), and Infrastructure-as-Code (Terraform)
+
+### Core Reference Guides
 - **[ai-agents.md](references/ai-agents.md)**: AI agent observability patterns, per-agent setup guidance, dashboards, and operational caveats
-- **[architecture.md](references/architecture.md)**: Deployment patterns, load balancing, Target Allocator
-- **[collector.md](references/collector.md)**: Pipeline anatomy, processor ordering, memory management
-- **[instrumentation.md](references/instrumentation.md)**: SDKs, semantic conventions, cardinality management
+- **[architecture.md](references/architecture.md)**: Deployment patterns, load balancing, Target Allocator, and platform setup guide cross-links
+- **[collector.md](references/collector.md)**: Pipeline anatomy, processor ordering, memory management, and exporter configuration patterns
+- **[instrumentation.md](references/instrumentation.md)**: SDKs, semantic conventions, cardinality management, and collector deployment guidance
 - **[ottl.md](references/ottl.md)**: OpenTelemetry Transformation Language syntax, functions, patterns, and best practices
 - **[platforms.md](references/platforms.md)**: FaaS (Lambda, Azure, GCP), client-side apps, serverless best practices
 - **[sampling.md](references/sampling.md)**: Head vs tail, probabilistic strategies, sticky sessions
-- **[security.md](references/security.md)**: PII redaction, TLS, extension security
+- **[security.md](references/security.md)**: PII redaction, TLS/mTLS configuration, platform-specific security guidance
 - **[monitoring.md](references/monitoring.md)**: Collector metrics, dashboards, alerts
 - **[playbooks.md](references/playbooks.md)**: Reusable production playbooks distilled from OpenTelemetry blog posts and real-world deployment stories
 
