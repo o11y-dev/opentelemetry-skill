@@ -1,0 +1,36 @@
+{
+  "context": "Tests whether the skill causes the agent to provide production-ready Docker Compose configuration for OpenTelemetry Collector. Docker Compose configurations should include proper networking, health checks, volume management, and are often used in development and simple production setups.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Includes collector and sample application services",
+      "max_score": 15,
+      "description": "The docker-compose.yml defines at least two services: the collector and an application that sends telemetry to it. Score zero if only the collector is defined."
+    },
+    {
+      "name": "Uses custom network for service discovery",
+      "max_score": 20,
+      "description": "Services are connected via a custom bridge network (not the default network) to enable DNS-based service discovery. Apps should reference collector by service name (e.g., 'otel-collector') not localhost."
+    },
+    {
+      "name": "Mounts collector configuration file",
+      "max_score": 15,
+      "description": "The collector service includes a volume mount for the configuration file (e.g., './otel-collector-config.yaml:/etc/otel-collector-config.yaml'). Score zero if config is not mounted."
+    },
+    {
+      "name": "Includes health checks for both services",
+      "max_score": 15,
+      "description": "Both collector and application containers include healthcheck directives to enable Docker monitoring. Health checks should verify service availability (e.g., HTTP endpoint for collector, open port for app)."
+    },
+    {
+      "name": "Exposes collector ports appropriately",
+      "max_score": 15,
+      "description": "The collector service exposes necessary ports: receiver ports (e.g., 4317 for gRPC OTLP) should NOT be exposed externally (only within network), while exporter targets are configured for backend communication."
+    },
+    {
+      "name": "Includes environment variables for configuration",
+      "max_score": 20,
+      "description": "Services use environment variables for configuration (e.g., OTEL_EXPORTER_OTLP_ENDPOINT, backend credentials). Secrets should not be hardcoded in the compose file."
+    }
+  ]
+}

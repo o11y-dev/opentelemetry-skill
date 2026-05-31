@@ -1,0 +1,36 @@
+{
+  "context": "Tests whether the skill causes the agent to correctly configure an OpenTelemetry Collector sidecar in AWS ECS Fargate tasks. Fargate has specific constraints: no host network access, must use container networking, requires proper CPU/memory allocation shared with app container.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Configures collector as sidecar in task definition",
+      "max_score": 20,
+      "description": "The response includes the collector as a container in the ECS task definition JSON/Terraform, alongside the application container. Score zero if the collector is deployed separately (wrong architecture)."
+    },
+    {
+      "name": "Uses container network mode (not host) and container hostname",
+      "max_score": 20,
+      "description": "The configuration uses networkMode: 'awsvpc' or container-to-container networking and instructs the app to use the collector container name (e.g., 'otel-collector') as hostname. Score zero if host networking is suggested."
+    },
+    {
+      "name": "Allocates CPU and memory within Fargate limits",
+      "max_score": 15,
+      "description": "The task definition allocates appropriate CPU and memory to both app and collector (must total ≤ Fargate task limit). Partial credit if only task-level allocation is specified without container-level breakdown."
+    },
+    {
+      "name": "Includes CloudWatch logging for troubleshooting",
+      "max_score": 15,
+      "description": "The collector container includes logConfiguration for CloudWatch Logs, enabling visibility into collector errors and startup issues. Score zero if logging is omitted."
+    },
+    {
+      "name": "Configures environment variables for secrets/config",
+      "max_score": 15,
+      "description": "The task definition uses environment variables and/or Secrets Manager for sensitive configuration (e.g., backend API keys). Must avoid hardcoding secrets in the definition."
+    },
+    {
+      "name": "Warns about sidecar resource overhead",
+      "max_score": 15,
+      "description": "The response explicitly mentions that sidecar overhead reduces resources available to the application and recommends monitoring resource utilization. Score zero if resource considerations are not mentioned."
+    }
+  ]
+}

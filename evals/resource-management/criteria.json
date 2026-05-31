@@ -1,0 +1,31 @@
+{
+  "context": "Tests whether the skill causes the agent to correctly configure resource limits and memory management for a high-throughput collector. Processing 100k traces/sec requires proper memory_limiter configuration, queue strategies, and Kubernetes resource allocation.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Configures memory_limiter processor",
+      "max_score": 25,
+      "description": "The configuration includes memory_limiter processor with: limit_mib (80% of pod memory limit), spike_limit_mib (20% of limit), and check_interval. Score zero if memory_limiter is missing."
+    },
+    {
+      "name": "Sets appropriate queue settings for backpressure",
+      "max_score": 20,
+      "description": "The configuration includes queue settings: persistent queue (file_storage) for production, queue size appropriate for trace volume. Must address what happens when queue is full (drop vs backpressure)."
+    },
+    {
+      "name": "Specifies Kubernetes resource requests and limits",
+      "max_score": 20,
+      "description": "The pod/container configuration includes requests and limits for CPU and memory. For 100k traces/sec, should estimate appropriate values (typically 2+ CPU, 4GB+ memory). Partial credit for only requests or only limits."
+    },
+    {
+      "name": "Explains memory monitoring and alerting",
+      "max_score": 15,
+      "description": "The response includes how to monitor memory usage (e.g., Prometheus metrics, kubectl top) and set alerts when memory usage approaches limits. Score zero if monitoring is not addressed."
+    },
+    {
+      "name": "Provides scaling guidance",
+      "max_score": 20,
+      "description": "The response explains when to scale horizontally (add more replicas) vs vertically (increase per-pod resources). Should mention that 100k traces/sec may require multiple replicas and a load balancer."
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "context": "Tests whether the skill works well with Codex for code generation tasks. Codex should be able to generate valid OpenTelemetry Collector configurations in JSON format that are production-ready and follow best practices.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Generates valid JSON configuration structure",
+      "max_score": 20,
+      "description": "The generated configuration is valid JSON with proper structure: receivers, processors, exporters, service (with pipelines). Score zero if JSON is malformed."
+    },
+    {
+      "name": "Configures OTLP receiver on port 4317",
+      "max_score": 15,
+      "description": "The configuration includes an OTLP receiver (otlp or otlp/grpc) listening on gRPC port 4317 with proper protocol field. Score zero if receiver is missing or incorrect port."
+    },
+    {
+      "name": "Includes batch processor with reasonable timeout",
+      "max_score": 15,
+      "description": "The configuration includes a batch processor with send_batch_timeout (1-10 seconds) and batch_size. Score zero if batch processor is missing."
+    },
+    {
+      "name": "Configures exporter for backend system",
+      "max_score": 15,
+      "description": "The configuration includes an exporter (e.g., otlp, logging) with appropriate endpoint configuration. Score zero if exporter is missing or malformed."
+    },
+    {
+      "name": "Defines service section with pipelines",
+      "max_score": 20,
+      "description": "The configuration includes a service section that wires receivers -> processors -> exporters in proper pipelines (traces, metrics, logs). Partial credit if only one pipeline is defined."
+    },
+    {
+      "name": "Includes comments or follows naming conventions",
+      "max_score": 15,
+      "description": "The configuration is readable with appropriate naming (e.g., 'batch', 'otlp', 'exporter_name') and ideally includes comments explaining sections. This demonstrates code quality awareness."
+    }
+  ]
+}

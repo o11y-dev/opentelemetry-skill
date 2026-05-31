@@ -1,0 +1,36 @@
+{
+  "context": "Tests whether the skill causes the agent to correctly configure mutual TLS (mTLS) for secure communication between applications and the OpenTelemetry Collector. This is a critical security pattern for production environments.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Explains certificate generation (CA, server cert, client cert)",
+      "max_score": 20,
+      "description": "The response includes steps to generate: CA certificate, server certificate (signed by CA), and client certificate (signed by CA). Should mention CA cert is needed for validation."
+    },
+    {
+      "name": "Configures Kubernetes secrets for certificates",
+      "max_score": 15,
+      "description": "The response shows how to create Kubernetes secrets for server and client certificates/keys and mount them into pods. Must include proper secret naming and mount paths."
+    },
+    {
+      "name": "Configures collector with client authentication",
+      "max_score": 20,
+      "description": "The collector configuration includes TLS settings that: (1) present server cert/key, (2) require client certificates, (3) validate client certs against CA. Score zero if client authentication is not enabled."
+    },
+    {
+      "name": "Configures application SDK with client certificates",
+      "max_score": 20,
+      "description": "The response shows how to configure the application SDK (environment variables or code) to present client cert/key when connecting to collector. Must show how to specify the CA cert for validation."
+    },
+    {
+      "name": "Includes certificate rotation/expiration strategy",
+      "max_score": 15,
+      "description": "The response addresses certificate rotation: either manual process, automation (cert-manager), or at minimum, documentation of when certs expire and how to update. Score zero if expiration is not mentioned."
+    },
+    {
+      "name": "Provides troubleshooting guidance for TLS errors",
+      "max_score": 10,
+      "description": "The response includes debugging tips: how to check certificate validity, verify certificate chain, check that certificates are mounted correctly. Optional but recommended."
+    }
+  ]
+}
