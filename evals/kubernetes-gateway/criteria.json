@@ -1,0 +1,36 @@
+{
+  "context": "Tests whether the skill causes the agent to correctly configure a Kubernetes Deployment (Gateway pattern) for centralized telemetry collection. Unlike DaemonSets, Gateways require load balancing, resilience configuration, and proper service exposure.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses Deployment resource type with configurable replicas",
+      "max_score": 20,
+      "description": "The response specifies Deployment as the Kubernetes resource type with a replicas field (not fixed to 1). This enables horizontal scaling. Score zero if DaemonSet is suggested instead."
+    },
+    {
+      "name": "Configures LoadBalancer or ClusterIP Service",
+      "max_score": 15,
+      "description": "The configuration includes a Service resource (LoadBalancer for external traffic or ClusterIP for internal). Service must be properly labeled and port names must match collector port naming conventions."
+    },
+    {
+      "name": "Includes resource requests, limits, and HPA autoscaling",
+      "max_score": 20,
+      "description": "The configuration includes both resource requests/limits and optionally a HorizontalPodAutoscaler for auto-scaling based on CPU/memory. Full score with HPA, partial credit with just requests/limits."
+    },
+    {
+      "name": "Uses persistent queues for resilience",
+      "max_score": 15,
+      "description": "The collector configuration includes file_storage extension and persistence queue settings to survive pod restarts. Must include volume mounts for persistence. Score zero if queues are in-memory only."
+    },
+    {
+      "name": "Implements loadbalancing exporter with trace ID routing",
+      "max_score": 20,
+      "description": "For backend systems that require consistent trace routing, the configuration includes a loadbalancing exporter with routing_key: traceID. This enables tail sampling across replicas. Score zero if routing is not addressed."
+    },
+    {
+      "name": "Includes PodDisruptionBudget for high availability",
+      "max_score": 10,
+      "description": "The configuration includes a PodDisruptionBudget to ensure minimum replicas during node maintenance. Optional but recommended for production."
+    }
+  ]
+}

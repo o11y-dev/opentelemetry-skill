@@ -1,0 +1,36 @@
+{
+  "context": "Tests whether the skill causes the agent to correctly configure Docker networking for the OpenTelemetry Collector. Proper networking is critical for enabling telemetry flow from apps to collector to backend observability platforms.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses custom bridge network (not default bridge)",
+      "max_score": 20,
+      "description": "The configuration creates or uses a custom user-defined bridge network (docker network create otel-network) rather than the default bridge. Custom networks enable DNS-based service discovery."
+    },
+    {
+      "name": "Configures service discovery by container name",
+      "max_score": 20,
+      "description": "Application containers are configured to reference the collector by container name (e.g., 'otel-collector:4317'), leveraging custom network's embedded DNS resolver."
+    },
+    {
+      "name": "Exposes ports selectively",
+      "max_score": 15,
+      "description": "The configuration distinguishes between internal ports (only exposed on custom network) and external ports (exposed to host/outside world). Receiver ports should NOT be exposed externally without auth."
+    },
+    {
+      "name": "Handles backend connectivity",
+      "max_score": 15,
+      "description": "The configuration allows collector to reach external observability backends (via host network or explicit routing). Environment variables or configuration files should specify backend endpoints."
+    },
+    {
+      "name": "Addresses firewall and proxy considerations",
+      "max_score": 20,
+      "description": "The response mentions Docker daemon network settings, firewall rules, or proxy configuration if collector needs to reach backends outside the Docker host. Partial credit if only mentioned, full credit if configured."
+    },
+    {
+      "name": "Includes network troubleshooting guidance",
+      "max_score": 10,
+      "description": "The response provides commands to verify connectivity (docker exec -it container-id telnet collector:4317) or log collector connection errors. Optional but recommended."
+    }
+  ]
+}

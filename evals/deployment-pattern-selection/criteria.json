@@ -1,0 +1,31 @@
+{
+  "context": "Tests whether the skill causes the agent to make appropriate deployment pattern recommendations for different scenarios. This requires understanding trade-offs between DaemonSet, Gateway, and Sidecar patterns, including resource usage, operational complexity, and scalability.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Recommends Gateway pattern for high-volume centralized collection",
+      "max_score": 25,
+      "description": "For 500k traces/min, the response should recommend Gateway pattern over DaemonSet because: (1) concentrates processing, (2) enables tail sampling, (3) reduces per-node overhead. Score zero if DaemonSet is recommended as primary pattern."
+    },
+    {
+      "name": "Explains trade-offs between patterns",
+      "max_score": 20,
+      "description": "The response discusses trade-offs: DaemonSet (low latency, high per-node cost) vs Gateway (centralized, requires load balancing) vs Sidecar (isolation, highest overhead). Must mention at least 2 trade-offs."
+    },
+    {
+      "name": "Addresses multi-region deployment considerations",
+      "max_score": 20,
+      "description": "The response acknowledges multi-region constraints and recommends per-region deployment patterns or cross-region forwarding with appropriate latency/cost considerations. Score zero if multi-region is not addressed."
+    },
+    {
+      "name": "Provides resource estimates for 500k traces/min",
+      "max_score": 15,
+      "description": "The response includes rough CPU/memory estimates for the proposed pattern at 500k traces/min scale. Partial credit for back-of-envelope calculations."
+    },
+    {
+      "name": "Considers scaling and cost implications",
+      "max_score": 20,
+      "description": "The response discusses how to handle dynamic scaling (HPA/scaling groups) and includes rough cost comparison between patterns. Must acknowledge that costs vary by cloud provider and usage."
+    }
+  ]
+}

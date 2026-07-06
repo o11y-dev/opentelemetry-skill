@@ -1,0 +1,41 @@
+{
+  "context": "Tests whether the skill causes the agent to correctly configure an OpenTelemetry Collector as a systemd service on Linux. Systemd is the standard process manager on modern Linux distributions and requires specific unit file configuration for reliability and observability.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Creates systemd unit file in /etc/systemd/system/",
+      "max_score": 15,
+      "description": "The response provides a systemd unit file (e.g., otel-collector.service) located in the correct directory. Score zero if the file path is incorrect or systemd is not used."
+    },
+    {
+      "name": "Configures [Unit] section with proper metadata",
+      "max_score": 10,
+      "description": "The unit file includes [Unit] section with Description, Documentation (optional), and any dependency declarations. This provides visibility into the service purpose."
+    },
+    {
+      "name": "Sets up [Service] section with ExecStart and ExecReload",
+      "max_score": 20,
+      "description": "The [Service] section includes: ExecStart (collector binary path), ExecReload for config reloads, Restart policy (always/on-failure), and RestartSec. Score based on completeness and appropriateness of settings."
+    },
+    {
+      "name": "Includes User and resource limits (MemoryLimit, LimitNOFILE)",
+      "max_score": 15,
+      "description": "The service runs as a dedicated user (not root) and includes resource limits (MemoryLimit, LimitNOFILE). This prevents resource exhaustion. Score zero if running as root."
+    },
+    {
+      "name": "Configures logging via StandardOutput and StandardError",
+      "max_score": 15,
+      "description": "The [Service] section directs logs to journal (StandardOutput=journal) or file (StandardOutput=file). This enables log aggregation and troubleshooting via 'journalctl'."
+    },
+    {
+      "name": "Includes [Install] section for systemd enable",
+      "max_score": 10,
+      "description": "The unit file includes [Install] section with WantedBy=multi-user.target to enable auto-startup on boot. Score zero if this section is missing."
+    },
+    {
+      "name": "Documents environment variable setup for configuration",
+      "max_score": 15,
+      "description": "The response explains how to configure the collector using environment variables (EnvironmentFile= or -e flags) or separate config file. Score zero if configuration method is not explained."
+    }
+  ]
+}

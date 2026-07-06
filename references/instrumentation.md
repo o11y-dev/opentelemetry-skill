@@ -55,6 +55,8 @@ java -javaagent:opentelemetry-javaagent.jar \
      -jar myapp.jar
 ```
 
+**Next**: Once your Java application is instrumented, see [setup-kubernetes.md](setup-kubernetes.md), [setup-ecs.md](setup-ecs.md), [setup-docker.md](setup-docker.md), or [setup-vm.md](setup-vm.md) to deploy the OpenTelemetry Collector.
+
 #### Python (opentelemetry-instrument)
 
 ```bash
@@ -67,6 +69,8 @@ opentelemetry-instrument \
     --exporter_otlp_endpoint http://otel-collector:4317 \
     python app.py
 ```
+
+**Next**: Once your Python application is instrumented, see [setup-kubernetes.md](setup-kubernetes.md), [setup-ecs.md](setup-ecs.md), [setup-docker.md](setup-docker.md), or [setup-vm.md](setup-vm.md) to deploy the OpenTelemetry Collector.
 
 #### Node.js (Auto-Instrumentation SDK)
 
@@ -91,6 +95,8 @@ registerInstrumentations({
 ```bash
 node -r ./tracing.js app.js
 ```
+
+**Next**: Once your Node.js application is instrumented, see [setup-kubernetes.md](setup-kubernetes.md), [setup-ecs.md](setup-ecs.md), [setup-docker.md](setup-docker.md), or [setup-vm.md](setup-vm.md) to deploy the OpenTelemetry Collector.
 
 ### Manual Instrumentation
 
@@ -854,6 +860,26 @@ See the [OTel blog post on complex attribute types](https://opentelemetry.io/blo
   - TypeScript: https://opentelemetry.io/docs/languages/js/
 - **Auto-Instrumentation**: https://opentelemetry.io/docs/zero-code/
 - **Registry (Instrumentation Libraries)**: https://opentelemetry.io/ecosystem/registry/
+
+---
+
+## Next Steps: Deploy the Collector
+
+After instrumenting your application with the OpenTelemetry SDK, the next step is to deploy an OpenTelemetry Collector to receive, process, and export telemetry data to your observability backend.
+
+Choose a deployment option based on your infrastructure:
+
+- **[Kubernetes](setup-kubernetes.md)** — Deploy the collector as a sidecar, daemonset, or standalone service in a Kubernetes cluster
+- **[AWS ECS](setup-ecs.md)** — Deploy the collector as an ECS task or sidecar container in AWS ECS
+- **[Docker](setup-docker.md)** — Run the collector as a container in Docker Compose or standalone Docker
+- **[Standalone VM](setup-vm.md)** — Deploy the collector directly on a Linux/Windows VM or host machine
+- **[Setup Index](setup-index.md)** — Compare all deployment options and choose the right one for your environment
+
+Each guide includes:
+- Collector installation and configuration
+- OTLP receiver setup to accept telemetry from your instrumented applications
+- Exporter configuration for your observability backend (Datadog, New Relic, Grafana Cloud, etc.)
+- Common troubleshooting steps
 
 ---
 

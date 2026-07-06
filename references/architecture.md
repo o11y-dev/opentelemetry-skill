@@ -634,6 +634,27 @@ Is otelcol_exporter_queue_size / queue_capacity > 0.8?
 
 ---
 
+## Platform Setup Guides
+
+Once you've decided on your architecture pattern, use these platform-specific setup guides for concrete deployment instructions:
+
+| Pattern | Platform | Guide |
+|---------|----------|-------|
+| **DaemonSet** | Kubernetes (all variants) | [setup-kubernetes.md](setup-kubernetes.md) |
+| **Gateway Deployment** | Kubernetes with tail sampling | [setup-kubernetes.md](setup-kubernetes.md) |
+| **Sidecar** | Kubernetes per-pod | [setup-kubernetes.md](setup-kubernetes.md) |
+| **Daemon Service** | AWS ECS on EC2 | [setup-ecs.md](setup-ecs.md) |
+| **Sidecar Task** | AWS ECS Fargate | [setup-ecs.md](setup-ecs.md) |
+| **Standalone Container** | Docker, Docker Compose | [setup-docker.md](setup-docker.md) |
+| **Systemd Service** | Linux VM / EC2 | [setup-vm.md](setup-vm.md) |
+| **Windows Service** | Windows VM / EC2 | [setup-vm.md](setup-vm.md) |
+| **LaunchAgent** | macOS VM | [setup-vm.md](setup-vm.md) |
+| **Serverless** | AWS Lambda, GCP Functions | [platforms.md](platforms.md) |
+
+For initial platform selection (which pattern matches your use case), see [setup-index.md](setup-index.md).
+
+---
+
 ## Reference Links
 
 - **Deployment Patterns**: https://opentelemetry.io/docs/collector/deployment/

@@ -1,12 +1,14 @@
 {
   "name": "opentelemetry-skill",
   "displayName": "OpenTelemetry Observability Engineering",
-  "version": "1.0.2",
+  "version": "1.0.1",
   "description": "Expert OpenTelemetry guidance for collector configuration, pipeline design, production telemetry instrumentation, and deployment architecture across Kubernetes, ECS, serverless, and standalone environments.",
   "author": {
     "name": "o11y.dev",
     "url": "https://skills.o11y.dev"
   },
+  "homepage": "https://github.com/o11y-dev/opentelemetry-skill",
+  "repository": "https://github.com/o11y-dev/opentelemetry-skill",
   "license": "Apache-2.0",
   "keywords": [
     "opentelemetry",
@@ -23,7 +25,6 @@
     "pipeline",
     "instrumentation",
     "kubernetes",
-    "k8s",
     "ecs",
     "docker",
     "serverless",
@@ -38,15 +39,10 @@
     "security",
     "ottl",
     "transform",
-    "cursor",
+    "codex",
     "ai-agent"
   ],
   "categories": ["DevOps", "Observability", "Infrastructure", "Monitoring"],
-  "homepage": "https://skills.o11y.dev",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/o11y-dev/opentelemetry-skill"
-  },
   "capabilities": {
     "progressive_disclosure": true,
     "context_aware": true,
@@ -69,6 +65,5 @@
       "standalone",
       "serverless"
     ]
-  },
-  "skills": "SKILL.md"
+  }
 }

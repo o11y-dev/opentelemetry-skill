@@ -2,9 +2,122 @@
 name: opentelemetry-skill
 description: "Expert OpenTelemetry guidance for collector configuration, pipeline design, and production telemetry instrumentation. Use when configuring collectors, designing pipelines, instrumenting applications, implementing sampling, managing cardinality, securing telemetry, writing OTTL transformations, or setting up AI coding agent observability (Claude Code, Codex, Gemini CLI, GitHub Copilot)."
 license: Apache-2.0
+tags:
+  - opentelemetry
+  - otel
+  - observability
+  - telemetry
+  - monitoring
+  - tracing
+  - metrics
+  - logs
+  - collector
+  - otelcol
+  - pipeline
+  - instrumentation
+  - kubernetes
+  - ecs
+  - docker
+  - serverless
+  - deployment
+  - architecture
+  - sampling
+  - cardinality
+  - security
+  - ottl
+  - transform
+  - codex
+  - ai-agent
 metadata:
   author: o11y.dev
-  version: 1.4.1
+  version: 0.3.0
+  tessl_version: 0.3.0
+  signals:
+    - traces
+    - metrics
+    - logs
+    - profiles
+  deployments:
+    - kubernetes
+    - ecs
+    - docker
+    - vm
+    - serverless
+    - lambda
+    - gcp-functions
+    - azure-functions
+  deployment_patterns:
+    - daemonset
+    - sidecar
+    - gateway
+    - standalone
+    - serverless
+  supported_platforms:
+    - aws
+    - gcp
+    - azure
+    - on-premises
+  vendor_agnostic: true
+  triggers:
+    file_patterns:
+      - "**/collector*.yaml"
+      - "**/otelcol*.yaml"
+      - "**/values*.yaml"
+      - "**/trace-config*.yaml"
+      - "**/metric-config*.yaml"
+      - "**/log-config*.yaml"
+      - "**/helm*.yaml"
+      - "**/docker-compose*.yaml"
+      - "**/task-definition*.yaml"
+      - "**/task-definition*.json"
+    config_keys:
+      - "receivers:"
+      - "processors:"
+      - "exporters:"
+      - "service:"
+      - "pipelines:"
+      - "extensions:"
+      - "connectors:"
+    keywords:
+      - opentelemetry
+      - otel
+      - otelcol
+      - collector
+      - observability
+      - traces
+      - metrics
+      - logs
+      - pipeline
+      - sampler
+      - sampling
+      - cardinality
+      - instrumentation
+      - kubernetes
+      - helm
+      - ecs
+      - docker
+      - compose
+      - serverless
+      - lambda
+      - deployment
+      - architecture
+      - receiver
+      - processor
+      - exporter
+      - connector
+      - spanmetrics
+      - tail sampling
+      - memory limiter
+      - batch processor
+      - ottl
+      - transform
+      - security
+      - tls
+      - pii
+      - redaction
+      - codex
+      - ai-agent
+      - genai
 ---
 
 # OpenTelemetry Skill

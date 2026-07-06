@@ -1,0 +1,36 @@
+{
+  "context": "Tests whether the skill causes the agent to correctly configure an OpenTelemetry Collector daemon service in AWS ECS on EC2. EC2 daemon services have unique constraints: applications must reference the host IP (not localhost), and the collector must be resilient to host failures.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Configures collector as ECS service (not task)",
+      "max_score": 20,
+      "description": "The collector is configured as an ECS service with desiredCount matching EC2 instance count, enabling daemon-like behavior. Score zero if collector is a one-off task."
+    },
+    {
+      "name": "Uses host IP for application-to-collector communication",
+      "max_score": 25,
+      "description": "Applications are configured to send telemetry to 169.254.169.254 (EC2 metadata endpoint) or to the EC2 host IP via service discovery, NOT to localhost. This is the critical constraint for EC2 daemon deployment. Score zero if localhost is suggested."
+    },
+    {
+      "name": "Configures host port mapping",
+      "max_score": 15,
+      "description": "The task definition includes hostPort mapping to expose collector ports on the EC2 host (e.g., 4317:4317). This allows applications to reach the collector via host IP."
+    },
+    {
+      "name": "Implements IAM roles for AWS service access",
+      "max_score": 15,
+      "description": "The configuration includes IAM task role with permissions for collector to publish metrics/logs (CloudWatch, X-Ray). Score zero if IAM permissions are not addressed."
+    },
+    {
+      "name": "Includes service discovery configuration",
+      "max_score": 15,
+      "description": "The response explains how applications discover the collector: CloudWatch Service Discovery, DNS, or environment variables. Applications must find collector via host IP."
+    },
+    {
+      "name": "Addresses restart and failure handling",
+      "max_score": 10,
+      "description": "The configuration includes ECS service restart policies and health checks to ensure collector availability. Optional but recommended for production."
+    }
+  ]
+}

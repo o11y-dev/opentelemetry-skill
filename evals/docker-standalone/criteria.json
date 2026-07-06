@@ -1,0 +1,36 @@
+{
+  "context": "Tests whether the skill causes the agent to correctly configure a standalone Docker container for the OpenTelemetry Collector. Standalone deployment is the most straightforward pattern for simple production setups and development environments.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Specifies appropriate Docker image",
+      "max_score": 15,
+      "description": "The response uses official otelcontributors/opentelemetry-collector-contrib image or similar production-grade image. Score zero if using unsupported or outdated images."
+    },
+    {
+      "name": "Mounts configuration file as volume",
+      "max_score": 20,
+      "description": "The docker run command includes -v flag to mount configuration file from host into container. Configuration path should be /etc/otel-collector-config.yaml or similar standard path."
+    },
+    {
+      "name": "Exposes necessary ports",
+      "max_score": 15,
+      "description": "The configuration exposes receiver ports (e.g., 4317 for OTLP gRPC) and any exporter ports. Port mapping should be explicit (-p 4317:4317)."
+    },
+    {
+      "name": "Includes restart policy",
+      "max_score": 15,
+      "description": "The docker run command includes --restart policy (always or unless-stopped) to ensure collector restarts on failure or host reboot."
+    },
+    {
+      "name": "Sets resource limits",
+      "max_score": 15,
+      "description": "The configuration includes memory and CPU limits (--memory, --cpus flags) to prevent resource exhaustion. Typical values: 2GB memory, 1 CPU for moderate telemetry volume."
+    },
+    {
+      "name": "Configures logging and monitoring",
+      "max_score": 20,
+      "description": "The response includes setup for viewing logs (docker logs) and health checks. Partial credit if only logs are included, full credit for both logs and health checks."
+    }
+  ]
+}

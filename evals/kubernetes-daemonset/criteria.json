@@ -1,0 +1,36 @@
+{
+  "context": "Tests whether the skill causes the agent to correctly configure a Kubernetes DaemonSet for collecting telemetry from all nodes. A properly configured DaemonSet should include resource limits, health checks, RBAC permissions, and node affinity rules to ensure scalability and reliability.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses DaemonSet resource type (not Deployment)",
+      "max_score": 20,
+      "description": "The response specifies DaemonSet as the Kubernetes resource type for collecting telemetry from all nodes. Using Deployment would require manual scaling. Score zero if Deployment is suggested instead."
+    },
+    {
+      "name": "Includes resource requests and limits",
+      "max_score": 20,
+      "description": "The DaemonSet configuration includes requests (CPU/memory) and limits to prevent node resource exhaustion. Both requests and limits must be specified for full score. Partial credit if only limits or only requests are present."
+    },
+    {
+      "name": "Configures readiness and liveness probes",
+      "max_score": 15,
+      "description": "The configuration includes both readiness and liveness probes to ensure unhealthy collectors are restarted. Score based on presence of both probe types and reasonable thresholds (e.g., timeout < 5s, initialDelaySeconds > 5s)."
+    },
+    {
+      "name": "Implements node affinity or node selectors",
+      "max_score": 15,
+      "description": "The DaemonSet includes node affinity rules or nodeSelector to avoid scheduling on specific nodes (e.g., master nodes, GPU nodes). This ensures the DaemonSet scales appropriately."
+    },
+    {
+      "name": "Includes RBAC configuration (ServiceAccount, ClusterRole)",
+      "max_score": 20,
+      "description": "The response includes RBAC resources (ServiceAccount, ClusterRole, ClusterRoleBinding) with minimum required permissions. Score zero if RBAC is omitted; partial credit if minimal permissions are not verified."
+    },
+    {
+      "name": "Uses toleration for node taints",
+      "max_score": 10,
+      "description": "The DaemonSet includes tolerations to run on all nodes despite taints (e.g., NoSchedule taints on control plane nodes). Missing tolerations scores zero if the response mentions control plane telemetry collection."
+    }
+  ]
+}

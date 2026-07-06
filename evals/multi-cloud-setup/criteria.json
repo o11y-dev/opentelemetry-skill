@@ -1,0 +1,36 @@
+{
+  "context": "Tests whether the skill causes the agent to correctly design multi-cloud OpenTelemetry Collector deployments. This is complex because each cloud provider has different authentication, networking, and compliance requirements.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses cloud-agnostic OpenTelemetry components",
+      "max_score": 20,
+      "description": "The response recommends standard OpenTelemetry receivers and processors that work across clouds (OTLP, prometheus, etc.) rather than cloud-specific collectors. Score zero if solution is cloud-vendor-specific."
+    },
+    {
+      "name": "Addresses cloud-specific authentication (IAM, Service Accounts)",
+      "max_score": 25,
+      "description": "The response configures authentication for each cloud: AWS IAM roles, GCP Service Accounts, Azure Managed Identities. Must address how credentials are passed to collectors without hardcoding secrets."
+    },
+    {
+      "name": "Implements per-region or per-cloud aggregation",
+      "max_score": 20,
+      "description": "The architecture includes aggregation strategy: either per-region gateways or centralized collector tiers that aggregate from all clouds. Must explain trade-offs of each approach."
+    },
+    {
+      "name": "Handles networking constraints (VPCs, Security Groups)",
+      "max_score": 15,
+      "description": "The response addresses cloud-specific networking: AWS security groups, GCP firewall rules, Azure NSGs. Must explain how collectors in different clouds can reach central backend."
+    },
+    {
+      "name": "Considers compliance and data residency",
+      "max_score": 15,
+      "description": "The response mentions data residency requirements (e.g., EU data must stay in EU) and how collector placement addresses compliance. Partial credit if mentioned, full credit if configured."
+    },
+    {
+      "name": "Provides cost and operational considerations",
+      "max_score": 5,
+      "description": "The response acknowledges different costs and operational complexity across clouds. Optional but recommended."
+    }
+  ]
+}

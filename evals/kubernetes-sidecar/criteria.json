@@ -1,0 +1,36 @@
+{
+  "context": "Tests whether the skill causes the agent to correctly configure a Kubernetes sidecar collector pattern. Sidecars provide pod-level isolation but require careful resource allocation and understanding of when to use sidecar vs. DaemonSet/Gateway patterns.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Defines collector container in pod specification",
+      "max_score": 20,
+      "description": "The pod template includes the collector as a container in spec.containers[], not as a separate pod. Score zero if collector is deployed separately."
+    },
+    {
+      "name": "Configures localhost networking between app and collector",
+      "max_score": 20,
+      "description": "The configuration uses localhost:port for app-to-collector communication. Both containers share the pod's network namespace enabling localhost access."
+    },
+    {
+      "name": "Allocates shared resources appropriately",
+      "max_score": 20,
+      "description": "Pod-level resources accommodate both app and collector. Collector requests should be 10-30% of app resources. Partial credit if only total pod resources are specified."
+    },
+    {
+      "name": "Includes logging and health checks for collector",
+      "max_score": 15,
+      "description": "The collector container includes readiness/liveness probes and logging configuration for troubleshooting failures. Score zero if health checks are omitted."
+    },
+    {
+      "name": "Explains sidecar trade-offs vs. DaemonSet/Gateway",
+      "max_score": 15,
+      "description": "The response discusses when to use sidecar: (1) per-pod isolation, (2) custom per-pod configuration, (3) cost vs. scaling trade-offs. Score zero if trade-offs are not mentioned."
+    },
+    {
+      "name": "Recommends sidecar for specific use cases only",
+      "max_score": 10,
+      "description": "The response recommends sidecar only for specific scenarios (high isolation needs, custom sampling per workload, strict resource constraints). Score zero if sidecar is suggested as default for all cases."
+    }
+  ]
+}
