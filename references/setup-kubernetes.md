@@ -226,12 +226,9 @@ metadata:
   namespace: observability
 spec:
   type: ClusterIP
+  clusterIP: None
   selector:
     app: otel-gateway
-  sessionAffinity: ClientIP  # STICKY ROUTING: Critical for tail sampling
-  sessionAffinityConfig:
-    clientIPConfig:
-      timeoutSeconds: 3600
   ports:
   - name: otlp-grpc
     port: 4317
@@ -244,10 +241,50 @@ spec:
 ```
 
 **Key gotchas:**
-- **Sticky routing mandatory**: Set `sessionAffinity: ClientIP` so traces from the same source consistently route to the same replica (required for tail sampling)
+- **TraceID routing for tail sampling**: Kubernetes `sessionAffinity: ClientIP` is still a valid option for ordinary gateway scale-out and for topologies where all spans for a trace arrive from the same client source. It is not trace-aware, so traces that include spans from multiple pods or services can still be split across gateway replicas. For tail sampling in multi-source traces, send traces through upstream agents that use the `loadbalancing` exporter with `routing_key: traceID` and resolve this headless service.
 - **Replica count strategy**: Use odd numbers (3, 5, 7) for better distribution; avoid 2 or 4
 - **Memory limiter**: Set aggressive `memory_limiter` in config to prevent OOM kills during traffic spikes
 - **Tracestate headers**: Tail sampling decisions rely on consistent routing; if sticky routing fails, sampling is non-deterministic
+
+ClientIP stickiness option for non-tail-sampling gateway scale-out:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-gateway
+  namespace: observability
+spec:
+  type: ClusterIP
+  selector:
+    app: otel-gateway
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIPConfig:
+      timeoutSeconds: 3600
+  ports:
+  - name: otlp-grpc
+    port: 4317
+    targetPort: 4317
+    protocol: TCP
+```
+
+Agent exporter for tail-sampling stickiness:
+
+```yaml
+exporters:
+  loadbalancing:
+    routing_key: traceID
+    protocol:
+      otlp:
+        endpoint: placeholder
+        tls:
+          insecure: true
+    resolver:
+      k8s:
+        service: otel-gateway
+        ports: [4317]
+```
 
 ### Sidecar Pattern
 
@@ -312,7 +349,7 @@ spec:
 
 **Solution:**
 ```yaml
-# Use nodePort instead of hostPort to avoid conflicts
+# Change the receiver and exposed host port to an explicit unused port.
 spec:
   template:
     spec:
@@ -320,11 +357,14 @@ spec:
       containers:
       - name: otel-collector
         ports:
-        - containerPort: 4317
-          hostPort: 0  # OS chooses available port; use pod IP directly
+        - containerPort: 14317
+          hostPort: 14317
+          name: otlp-grpc-alt
 ```
 
-Alternative: Use `hostNetwork: false` and ServiceIP if network layer allows pod-to-pod discovery.
+Update the collector OTLP receiver to bind to the same port, for example `0.0.0.0:14317`.
+
+Alternative: use `hostNetwork: false` and expose the DaemonSet behind a Service if your network layer allows pod-to-pod discovery.
 
 ### Gotcha 2: Node Affinity & Taint Tolerations
 

@@ -14,7 +14,7 @@ The OpenTelemetry Collector can run on virtually any platform—from Kubernetes 
 | Using AWS ECS on EC2 or Fargate | **ECS** | [setup-ecs.md](setup-ecs.md) | EC2 daemon mode, Fargate sidecar pattern, IAM roles, task metadata |
 | Running Docker containers or Docker Compose locally | **Docker** | [setup-docker.md](setup-docker.md) | Compose networking, volume mounts, bridge vs host mode |
 | Running on standalone VMs or EC2 instances | **VM/EC2** | [setup-vm.md](setup-vm.md) | Systemd services, binary installation, configuration management |
-| Serverless functions (Lambda, Cloud Functions, Azure Functions) | **Serverless** | [platforms.md](../platforms.md#aws-lambda-best-practices) | Lambda extensions, cold starts, async export patterns |
+| Serverless functions (Lambda, Cloud Functions, Azure Functions) | **Serverless** | [platforms.md](platforms.md#aws-lambda-best-practices) | Lambda extensions, cold starts, async export patterns |
 
 ## Deployment Patterns Quick Comparison
 
@@ -126,6 +126,6 @@ Instrumented Apps (SDKs)
 - [setup-docker.md](setup-docker.md) — Docker and Docker Compose
 - [setup-vm.md](setup-vm.md) — Standalone VM and EC2 deployments
 - [architecture.md](architecture.md) — Deep-dive on scaling, load balancing, and hybrid patterns
-- [platforms.md](../platforms.md) — Serverless and client-side platforms
+- [platforms.md](platforms.md) — Serverless and client-side platforms
 - [security.md](security.md) — Security hardening and TLS/mTLS
 - [collector.md](collector.md) — Collector configuration reference

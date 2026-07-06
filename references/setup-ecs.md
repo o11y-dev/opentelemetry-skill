@@ -144,19 +144,11 @@ Fargate Cluster Model:
   "cluster": "my-cluster",
   "serviceName": "otel-collector-daemon",
   "taskDefinition": "otel-collector-daemon:1",
-  "desiredCount": 0,
   "launchType": "EC2",
   "schedulingStrategy": "DAEMON",
   "deploymentConfiguration": {
     "maximumPercent": 200,
     "minimumHealthyPercent": 100
-  },
-  "networkConfiguration": {
-    "awsvpcConfiguration": {
-      "subnets": ["subnet-xxx", "subnet-yyy"],
-      "securityGroups": ["sg-xxx"],
-      "assignPublicIp": "DISABLED"
-    }
   }
 }
 ```
@@ -274,7 +266,7 @@ Fargate Cluster Model:
 - **Task metadata v3**: Use `http://169.254.170.2${AWS_CONTAINER_CREDENTIALS_FULL_URI}` to access task metadata
 - **Networking**: Only `awsvpc` mode supported; no hostPort mapping
 - **Memory sharing**: Total memory split between app + collector (careful with memory limits)
-- **Sidecar secret injection**: Use `secretsManager` or Secrets Manager integration; don't hardcode in env
+- **Sidecar secret injection**: Use the container definition's `secrets` array backed by Secrets Manager; don't hardcode credentials in env
 
 ### Health Check & Container Dependencies
 
@@ -341,17 +333,17 @@ In collector config, use `otel-gateway.sd:4317` as endpoint.
 
 ```yaml
 exporters:
-  otlp:
-    endpoint: https://api.example.com:4317
+  otlphttp:
+    endpoint: https://api.example.com:4318
     headers:
-      Authorization: "Bearer ${BACKEND_API_KEY}"
+      Authorization: "Bearer ${env:BACKEND_API_KEY}"
       X-Trace-Source: "ecs-fargate"
 ```
 
-Inject via environment:
+Inject the secret through the container definition's `secrets` array:
 
 ```json
-"environment": [
+"secrets": [
   {
     "name": "BACKEND_API_KEY",
     "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT:secret:backend-key:token::"

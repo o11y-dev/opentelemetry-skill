@@ -1269,8 +1269,6 @@ exporters:
       storage: file_storage/queue    # Persist to disk on overflow
       queue_size: 5000               # In-memory queue size
       num_consumers: 10              # Parallel exports
-      storage_client:
-        timeout: 30s
     retry_on_failure:
       enabled: true
       initial_interval: 5s

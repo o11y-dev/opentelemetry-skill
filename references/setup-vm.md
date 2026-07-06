@@ -200,19 +200,19 @@ receivers:
         endpoint: 0.0.0.0:4318
 
 processors:
-  batch:
-    send_batch_size: 512
-    timeout: 5s
   memory_limiter:
     check_interval: 1s
     limit_mib: 768
     spike_limit_mib: 256
+  batch:
+    send_batch_size: 512
+    timeout: 5s
 
 exporters:
   otlp:
     endpoint: backend.example.com:4317
     headers:
-      Authorization: "Bearer ${OTEL_EXPORTER_OTLP_HEADERS}"
+      Authorization: "Bearer ${env:BACKEND_API_KEY}"
 
 extensions:
   file_storage:
@@ -225,15 +225,15 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch, memory_limiter]
+      processors: [memory_limiter, batch]
       exporters: [otlp]
     metrics:
       receivers: [otlp]
-      processors: [batch, memory_limiter]
+      processors: [memory_limiter, batch]
       exporters: [otlp]
     logs:
       receivers: [otlp]
-      processors: [batch]
+      processors: [memory_limiter, batch]
       exporters: [otlp]
 ```
 

@@ -302,16 +302,15 @@ spec:
 
 Different deployment environments require different approaches to certificate management, storage, and rotation. This section provides platform-specific guidance for configuring TLS/mTLS in your OpenTelemetry collector setup.
 
-### Kubernetes: cert-manager & Secrets
+### Kubernetes: Secrets and Certificate Automation
 
-For Kubernetes deployments, use **cert-manager** for automated certificate provisioning and rotation:
+For Kubernetes deployments, mount collector certificates from Kubernetes Secrets and automate certificate issuance with your platform's PKI tooling:
 
-- **Certificate provisioning**: cert-manager automatically generates and rotates TLS certificates
-- **Storage**: Certificates stored in Kubernetes Secrets
-- **Renewal**: Automatic renewal before expiration
-- **Detailed setup**: See [setup-kubernetes.md](setup-kubernetes.md) for cert-manager integration, ClusterIssuer configuration, and multi-namespace strategies
+- **Storage**: Mount TLS certificates from Kubernetes Secrets
+- **Renewal**: Use cert-manager, an external secrets operator, or your managed Kubernetes certificate workflow for rotation
+- **Collector wiring**: See [setup-kubernetes.md](setup-kubernetes.md) for Kubernetes deployment patterns; use the Secret volume pattern shown above for TLS material
 
-**Quick reference**: The Kubernetes example above shows the recommended pattern using cert-manager with ClusterIssuer, where cert-manager handles all provisioning and the Deployment references the secret.
+**Quick reference**: The Kubernetes example above shows the Deployment referencing a Secret-backed certificate volume. Add cert-manager `Certificate`/`Issuer` resources only if your cluster already uses cert-manager.
 
 ### AWS ECS: Secrets Manager & IAM
 
