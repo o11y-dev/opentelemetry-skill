@@ -6,10 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- Add scaled `signal_to_metrics` correctness guidance and regression coverage for producer identity, backend resource mapping, temporality, and dashboard aggregation
+
 ### Changed
 - Replace upstream digest issue updates to overwrite issue body snapshots (instead of appending) while preserving idempotent no-op reruns on exact body matches
-- Add authoritative AI-agent eval coverage for the GenAI SemConv v1.41.0 tool-call span-naming requirement, alongside the skill/router guidance update
-- Bump published skill/package metadata versions for this update (`SKILL.md`, tile manifest, and marketplace plugin manifests)
+- Update GenAI guidance for the separate conventions repository, provider-versus-agent identity, histogram token usage, current content attributes, and execute-tool span naming
+- Migrate Collector examples and evaluations to canonical component IDs and raise the compatibility floor to v0.153.0
+- Document sparse exporter-helper failure metrics and expand upstream watcher coverage for GenAI conventions and exporter helpers
+- Bump aligned Tessl skill and tile metadata from `0.3.0` to `0.4.0`
 
 ## [1.3.0] - 2026-05-08
 

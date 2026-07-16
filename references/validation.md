@@ -36,4 +36,4 @@ curl -s http://localhost:8888/metrics | grep -E "otelcol_processor_dropped|otelc
 | `exporter queue is full` | Backend unreachable or slow | Verify endpoint reachability; increase `queue_size`; check `retry_on_failure` settings |
 | `pipeline drops data` on restart | No persistent queue | Add `file_storage` extension and set `storage: file_storage/queue` in exporter sending_queue |
 | OTTL statement silently skipped | Type mismatch or nil value | Add `error_mode: ignore`; guard with `where attributes["key"] != nil`; use `Int()` / `String()` converters |
-| Tail sampling misses spans | Spans split across collector instances | Use `loadbalancing` exporter with `routing_key: traceID` upstream |
+| Tail sampling misses spans | Spans split across collector instances | Use `load_balancing` exporter with `routing_key: traceID` upstream |

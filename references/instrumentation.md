@@ -464,7 +464,7 @@ log-based events back into span views, prefer that over adding new span events.
 
 ### Kubernetes Semantic Conventions (`release_candidate` in v1.30+)
 
-The `k8s.*` attribute namespace has been promoted to **`release_candidate`** stability ([semantic-conventions#3380](https://github.com/open-telemetry/semantic-conventions/issues/3380)), meaning attribute names are stable and backend support is expected. This makes it safe to rely on these names in production instrumentation and collector enrichment (via `k8sattributes` processor).
+The `k8s.*` attribute namespace has been promoted to **`release_candidate`** stability ([semantic-conventions#3380](https://github.com/open-telemetry/semantic-conventions/issues/3380)), meaning attribute names are stable and backend support is expected. This makes it safe to rely on these names in production instrumentation and collector enrichment (via `k8s_attributes` processor).
 
 **Cardinality guidance for k8s attributes as metric dimensions**:
 
@@ -481,10 +481,10 @@ The `k8s.*` attribute namespace has been promoted to **`release_candidate`** sta
 
 > ⚠️ **Node-level cardinality**: In clusters with >100 nodes, `k8s.node.name` exceeds the Rule of 100. Avoid using it as a metric dimension in large clusters; use it in traces/logs for per-node debugging instead.
 
-**Recommended attributes for k8s-enriched metrics** (via `k8sattributes` processor):
+**Recommended attributes for k8s-enriched metrics** (via `k8s_attributes` processor):
 ```yaml
 processors:
-  k8sattributes:
+  k8s_attributes:
     auth_type: "serviceAccount"
     extract:
       metadata:

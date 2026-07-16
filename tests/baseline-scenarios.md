@@ -105,21 +105,21 @@ I need to implement tail sampling in my OpenTelemetry Collector gateway to reduc
 
 ### Expected Baseline Behavior (WITHOUT skill)
 - Configures tail_sampling processor
-- **Likely SKIPS:** loadbalancing exporter with traceID routing
+- **Likely SKIPS:** load_balancing exporter with traceID routing
 - **Likely MISSES:** Warning that tail sampling requires all spans of a trace on same collector
 - **Rationalization:** "Here's the tail sampling config"
 
 ### Target Behavior (WITH skill)
 - Asks about deployment architecture (how many collector instances)
 - Explains requirement for sticky sessions (traceID routing)
-- Provides loadbalancing exporter configuration with `routing_key: traceID`
+- Provides load_balancing exporter configuration with `routing_key: traceID`
 - Includes Headless Service YAML for Kubernetes
 - Warns about tail_sampling stability level (Beta)
 - References sampling.md and architecture.md
 
 ### Success Criteria
 - [ ] Agent mentions load balancing requirement
-- [ ] Agent provides loadbalancing exporter config
+- [ ] Agent provides load_balancing exporter config
 - [ ] Agent explains why traceID routing is mandatory
 - [ ] Agent warns about stability level
 - [ ] Agent doesn't provide tail sampling without addressing load balancing
@@ -403,7 +403,7 @@ exporters:
 
 ### Target Behavior (WITH skill)
 - Flags that `memory_limiter.limit_mib` exceeds pod memory limit and should leave runtime headroom
-- Flags `tail_sampling` on a Deployment that can scale above one replica without sticky routing/loadbalancing exporter
+- Flags `tail_sampling` on a Deployment that can scale above one replica without sticky routing/load_balancing exporter
 - Flags `hostPort` as suspicious for a scaled gateway Deployment
 - Flags `retry_on_failure: false` with no durable queue as an explicit data-loss trade-off
 - Flags rollout inconsistency across `replicaCount`, HPA, and PodDisruptionBudget

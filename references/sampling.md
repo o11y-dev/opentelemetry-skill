@@ -350,14 +350,14 @@ Decision Time:
 Use a **two-tier architecture**:
 
 ```
-Agent (with loadbalancing exporter) → Gateway (with tail_sampling processor)
+Agent (with load_balancing exporter) → Gateway (with tail_sampling processor)
 ```
 
 **Agent Configuration**:
 
 ```yaml
 exporters:
-  loadbalancing:
+  load_balancing:
     protocol:
       otlp:
         endpoint: placeholder
@@ -375,7 +375,7 @@ service:
     traces:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [loadbalancing]
+      exporters: [load_balancing]
 ```
 
 **Gateway Configuration**:
@@ -553,8 +553,8 @@ The OpenTelemetry specification has an active proposal — [open-telemetry/opent
 ✅ Use **head sampling** (ParentBasedTraceIdRatio) for simple, distributed sampling
 ✅ Use **tail sampling** for intelligent, policy-based sampling (errors, latency)
 ✅ Always use **ParentBased** to ensure trace completeness across services
-✅ Use **loadbalancing exporter with routing_key: traceID** for tail sampling stickiness
-✅ Deploy **two-tier architecture** (Agent with loadbalancing → Gateway with tail_sampling)
+✅ Use **load_balancing exporter with routing_key: traceID** for tail sampling stickiness
+✅ Deploy **two-tier architecture** (Agent with load_balancing → Gateway with tail_sampling)
 ✅ Size tail_sampling memory: `num_traces = RPS × decision_wait × spans_per_trace`
 ✅ Monitor `otelcol_processor_tail_sampling_policy_decision` metrics
 

@@ -57,7 +57,7 @@ Set up tail sampling in Kubernetes to sample 10% of traces but keep all error tr
 
 ### Expected Response (Key Points)
 - Recommends **Gateway deployment** pattern for tail sampling
-- Configures `loadbalancing` exporter with `routing_key: traceID`
+- Configures `load_balancing` exporter with `routing_key: traceID`
 - Sets up Headless Service for consistent routing
 - Warns about Beta stability level
 - Includes proper tail sampling policies (error rate + probabilistic)

@@ -170,7 +170,7 @@ opentelemetry-skill/
 **AI Response** (leveraging the skill):
 - ✅ Asks about throughput to size replicas
 - ✅ Loads `references/architecture.md` and `references/sampling.md`
-- ✅ Generates Deployment with loadbalancing exporter (routing_key: traceID)
+- ✅ Generates Deployment with load_balancing exporter (routing_key: traceID)
 - ✅ Includes Headless Service for sticky sessions
 - ✅ Configures tail_sampling processor with error/latency policies
 - ✅ Warns about Beta stability level

@@ -261,7 +261,7 @@ A single OTel Collector instance can receive telemetry from all agents simultane
 ```yaml
 # otel-collector-ai-agents.yaml
 # Production-ready config for multi-agent AI coding observability
-# Tested with OTel Collector v0.151.0+
+# Tested with OTel Collector v0.153.0+
 
 extensions:
   health_check:
@@ -284,30 +284,12 @@ processors:
     limit_percentage: 80
     spike_limit_percentage: 20
 
-  # Normalize service.name across all agents
-  resource:
+  # Preserve each agent's service.name and add a common filter dimension
+  resource/enrich_agent_telemetry:
     attributes:
-      - key: service.name
-        action: upsert
-        from_attribute: service.name
-      # Tag all AI agent telemetry for easy filtering
       - key: telemetry.source.type
         value: ai-coding-agent
         action: insert
-
-  # Map custom claude_code.* prefixes to gen_ai.* where semantically equivalent
-  transform/normalize_agent_metrics:
-    metric_statements:
-      - context: datapoint
-        statements:
-          # Claude Code uses claude_code.* prefix — surface agent name for dashboards
-          - set(attributes["gen_ai.system"], "claude_code") where resource.attributes["service.name"] == "claude_code"
-          - set(attributes["gen_ai.system"], "gemini_cli") where resource.attributes["service.name"] == "gemini_cli"
-    log_statements:
-      - context: log
-        statements:
-          # Normalize agent identifier in log body for cross-agent queries
-          - set(attributes["gen_ai.system"], "claude_code") where resource.attributes["service.name"] == "claude_code"
 
   # Redact secrets from tool_parameters (reuse security.md pattern)
   transform/redact_secrets:
@@ -354,25 +336,27 @@ service:
     # Metrics pipeline — all agents
     metrics:
       receivers: [otlp]
-      processors: [memory_limiter, resource, transform/normalize_agent_metrics, batch]
+      processors: [memory_limiter, resource/enrich_agent_telemetry, batch]
       exporters: [prometheus]
 
     # Logs/Events pipeline — all agents
     logs:
       receivers: [otlp]
-      processors: [memory_limiter, resource, transform/normalize_agent_metrics, transform/redact_secrets, batch]
+      processors: [memory_limiter, resource/enrich_agent_telemetry, transform/redact_secrets, batch]
       exporters: [otlphttp/loki]
 
     # Traces pipeline — Gemini CLI, Copilot only (others emit nothing here)
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, resource, batch]
+      processors: [memory_limiter, resource/enrich_agent_telemetry, batch]
       exporters: [otlp/tempo]
 ```
 
 **Protocol choice**: Prefer OTLP gRPC on `4317` for both receivers and exporters. Keep OTLP HTTP on `4318` available for agents like GitHub Copilot and for backends, proxies, or managed ingest endpoints where gRPC is unavailable.
 
-> **Processor ordering**: `memory_limiter` is always first. The `resource` processor runs before `transform` so enriched attributes are available for OTTL statements. `batch` is always last before exporters.
+> **Processor ordering**: `memory_limiter` is always first. Resource enrichment runs before transforms so added attributes are available to OTTL statements. `batch` is always last before exporters.
+
+> **Identity boundary**: Keep the agent identity in `service.name` (or a natively emitted agent attribute). `gen_ai.provider.name` identifies the GenAI provider, not the coding-agent product; never set it to values such as `claude_code`, `gemini_cli`, or `copilot` merely to unify dashboards.
 
 ---
 
@@ -388,40 +372,35 @@ service:
 | Claude Code | `claude_code.api.request.duration` | Histogram | `ms` | `model`, `status` |
 | Claude Code | `claude_code.tool.call.count` | Counter | `{call}` | `tool.name`, `status` |
 | Claude Code | `claude_code.cache.read.tokens` | Counter | `{token}` | `model` |
-| Gemini CLI | `gen_ai.client.token.usage` | Counter | `{token}` | `gen_ai.system`, `gen_ai.token.type`, `gen_ai.operation.name` |
-| Gemini CLI | `gen_ai.client.operation.duration` | Histogram | `s` | `gen_ai.system`, `gen_ai.operation.name`, `gen_ai.response.finish_reason` |
-| GitHub Copilot | `gen_ai.client.token.usage` | Counter | `{token}` | `gen_ai.system`, `gen_ai.token.type` |
-| GitHub Copilot | `gen_ai.client.operation.duration` | Histogram | `s` | `gen_ai.system`, `gen_ai.operation.name` |
+| Gemini CLI | `gen_ai.client.token.usage` | Histogram | `{token}` | `gen_ai.provider.name`, `gen_ai.token.type`, `gen_ai.operation.name` |
+| Gemini CLI | `gen_ai.client.operation.duration` | Histogram | `s` | `gen_ai.provider.name`, `gen_ai.operation.name`, `error.type` |
+| GitHub Copilot | `gen_ai.client.token.usage` | Histogram | `{token}` | `gen_ai.provider.name`, `gen_ai.token.type`, `gen_ai.operation.name` |
+| GitHub Copilot | `gen_ai.client.operation.duration` | Histogram | `s` | `gen_ai.provider.name`, `gen_ai.operation.name`, `error.type` |
 | Codex CLI | `codex.tokens.used` | Counter | `{token}` | `model`, `direction` |
 | Codex CLI | `codex.request.latency` | Histogram | `ms` | `model`, `status` |
 
 > ⚠️ **Dashboard for evolving `gen_ai.token.type` values.** Do not assume GenAI token metrics are permanently limited to `input` and `output`. Newer semantic-convention work is adding finer-grained categories such as cache and reasoning tokens. Build charts and cost rollups so unknown token types are grouped, not discarded.
 
-**SemConv v1.40.0 review**: Preserve `gen_ai.agent.version`, `gen_ai.usage.cache_read.input_tokens`, and `gen_ai.usage.cache_creation.input_tokens` when agents emit them. These attributes help distinguish agent releases and cached-token behavior without collapsing everything back into a fixed `input`/`output` schema.
+**Current convention review**: GenAI conventions are now maintained in the separate [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai) repository and are still marked Development. Preserve `gen_ai.provider.name`, `gen_ai.agent.version`, `gen_ai.usage.cache_read.input_tokens`, and `gen_ai.usage.cache_creation.input_tokens` when emitted. `gen_ai.system` is deprecated; do not synthesize it in Collector transforms.
 
 ### 4.2 Events / Logs
 
-| Agent | Event Name | Key Attributes | Correlation ID Field |
-|-------|------------|----------------|---------------------|
-| Claude Code | `gen_ai.user.message` | `gen_ai.system`, `session.id`, `prompt.id` | `prompt.id` |
-| Claude Code | `gen_ai.assistant.message` | `gen_ai.system`, `session.id`, `prompt.id`, `model` | `prompt.id` |
-| Claude Code | `gen_ai.tool.message` | `tool.name`, `session.id`, `prompt.id` | `prompt.id` |
-| Claude Code | `claude_code.api.request` | `model`, `prompt.id`, `input_tokens`, `output_tokens`, `cost_usd` | `prompt.id` |
-| Gemini CLI | `gen_ai.user.message` | `gen_ai.system`, `gen_ai.conversation.id` | `gen_ai.conversation.id` |
-| Gemini CLI | `gen_ai.assistant.message` | `gen_ai.system`, `gen_ai.conversation.id`, `gen_ai.response.model` | `gen_ai.conversation.id` |
-| GitHub Copilot | `gen_ai.user.message` | `gen_ai.system`, `gen_ai.thread.id` | `gen_ai.thread.id` |
-| GitHub Copilot | `gen_ai.choice` | `gen_ai.system`, `gen_ai.response.finish_reason` | `gen_ai.thread.id` |
-| Codex CLI | `codex.session.start` | `session.id`, `model`, `working_dir` | `session.id` |
-| Codex CLI | `codex.session.end` | `session.id`, `total_tokens`, `total_cost_usd` | `session.id` |
+Current GenAI conventions model captured content with opt-in structured attributes on spans or events rather than the deprecated per-message event names:
+
+| Content | Current attribute | Notes |
+|---------|-------------------|-------|
+| System instructions | `gen_ai.system_instructions` | Opt-in; may contain secrets or PII |
+| Input/chat history | `gen_ai.input.messages` | Opt-in; preserve message order and structured schema |
+| Model output | `gen_ai.output.messages` | Opt-in; one message per output choice/candidate |
+
+Do not generate `gen_ai.user.message`, `gen_ai.assistant.message`, `gen_ai.tool.message`, or `gen_ai.choice`; those event names are deprecated. Preserve vendor-native event names from Claude Code and Codex instead of relabeling them as standard GenAI events. Correlate with the native `prompt.id` or `session.id`, and use `gen_ai.conversation.id` when a GenAI-compatible source emits it.
 
 ### 4.3 Traces (where supported)
 
 | Agent | Span Name | Kind | Key Attributes | Child Spans |
 |-------|-----------|------|----------------|-------------|
-| Gemini CLI | `gen_ai.chat` | `CLIENT` | `gen_ai.system`, `gen_ai.operation.name`, `gen_ai.request.model` | tool call spans |
-| Gemini CLI | tool name (for example `bash`) | `INTERNAL` | `gen_ai.tool.name`, `gen_ai.tool.call.id` | none |
-| GitHub Copilot | `gen_ai.chat` | `CLIENT` | `gen_ai.system`, `gen_ai.operation.name` | completion spans |
-| GitHub Copilot | `gen_ai.completion` | `INTERNAL` | `gen_ai.response.finish_reason`, `gen_ai.usage.input_tokens` | none |
+| GenAI inference | `{gen_ai.operation.name} {gen_ai.request.model}` | `CLIENT` (usually) | `gen_ai.provider.name`, `gen_ai.operation.name`, `gen_ai.request.model` | tool call spans |
+| GenAI tool execution | `execute_tool {gen_ai.tool.name}` | `INTERNAL` | `gen_ai.operation.name=execute_tool`, `gen_ai.tool.name`, `gen_ai.tool.call.id` | none |
 
 > **Note**: Claude Code emits **no traces**. Use `prompt.id` correlation across log events as a pseudo-trace (see [Known Gaps](#7-known-gaps--workarounds)).
 
@@ -444,12 +423,12 @@ Build these panels for a team-facing AI agent observability dashboard:
 
 1. **Token usage by agent/user/model over time**
    - Metric: `claude_code.tokens.input` + `claude_code.tokens.output` (Claude Code); `gen_ai.client.token.usage` (Gemini, Copilot)
-   - Dimensions: `model`, `gen_ai.system` (NOT `session.id` — high cardinality)
+   - Dimensions: `service.name` (agent), `gen_ai.provider.name`, and model (NOT `session.id` — high cardinality)
    - Chart type: Stacked bar, 1h buckets
 
 2. **Cost breakdown by agent and model**
    - Metric: `claude_code.cost.usd` (Claude Code); derived from token counts × model pricing for others
-   - Dimensions: `gen_ai.system`, `model`
+   - Dimensions: `service.name`, `gen_ai.provider.name`, and model
    - Chart type: Time series + running total stat panel
 
 3. **API request latency (p50/p95/p99)**
@@ -458,7 +437,7 @@ Build these panels for a team-facing AI agent observability dashboard:
 
 4. **Tool call success/failure rates**
    - Metric: `claude_code.tool.call.count` with `status` dimension
-   - Log query: filter `gen_ai.tool.message` events by `status`
+   - Trace query: filter spans where `gen_ai.operation.name = "execute_tool"`, grouped by `gen_ai.tool.name` and status; use the source's native event when traces are unavailable
    - Chart type: Success rate gauge + error rate alert
 
 5. **Active sessions / DAU/WAU/MAU**
@@ -481,7 +460,8 @@ Build these panels for a team-facing AI agent observability dashboard:
 | `session.id` | Unbounded | Use in **logs/events only**; keep `OTEL_METRICS_INCLUDE_SESSION_ID=false` |
 | `user.id` | Bounded by team size | Acceptable as metric dimension for small teams (<1000 users); use logs for larger orgs |
 | `model` | Low (~5–20 values) | Safe as metric dimension |
-| `gen_ai.system` | Low (~10 values) | Safe as metric dimension |
+| `gen_ai.provider.name` | Low (~10 values) | Safe provider dimension; do not use it for coding-agent identity |
+| `service.name` | Low for a controlled agent fleet | Preferred coding-agent dimension; enforce a bounded allowlist |
 | `tool.name` | Low–Medium | Acceptable as metric dimension if tools are bounded |
 
 > **Rule of 100**: Any attribute with >100 unique values should NOT be a metric dimension. Use logs or traces instead.
@@ -530,10 +510,10 @@ See `references/security.md` for comprehensive OTTL redaction patterns.
 prompt.id = "prompt_abc123"
 
 Log events sharing this prompt.id form a "trace":
-  → gen_ai.user.message   (prompt.id=prompt_abc123)
+  → <native user-prompt event>   (prompt.id=prompt_abc123)
   → claude_code.api.request (prompt.id=prompt_abc123)
-  → gen_ai.tool.message   (prompt.id=prompt_abc123, tool.name=bash)
-  → gen_ai.assistant.message (prompt.id=prompt_abc123)
+  → <native tool event>   (prompt.id=prompt_abc123, tool.name=bash)
+  → <native response event> (prompt.id=prompt_abc123)
 ```
 
 Query in Loki/OpenSearch: `{job="claude_code"} | json | prompt_id="prompt_abc123"` to reconstruct a session's event timeline.
@@ -568,17 +548,17 @@ Query in Loki/OpenSearch: `{job="claude_code"} | json | prompt_id="prompt_abc123
 
 ### 7.6 GenAI SemConv Coverage
 
-**⚠️ Breaking Change in Semantic Conventions v1.41.0**: The gen-ai conventions now require that tool call spans use the tool name for span naming. This affects agents using the `gen_ai.*` namespace for tool execution spans. Prefer span names like `bash`, `search_code`, or `read_file`, and still populate `gen_ai.tool.name`; do not emit a generic `execute_tool` span name.
+**Current execute-tool convention**: Set `gen_ai.operation.name` to `execute_tool`, populate `gen_ai.tool.name`, and name the span `execute_tool {gen_ai.tool.name}` (for example, `execute_tool bash`). A bare `execute_tool` span loses useful indexing context, while a span named only `bash` does not follow the current convention.
 
 | Agent | Uses `gen_ai.*` | Custom Prefix | Notes |
 |-------|----------------|---------------|-------|
-| Gemini CLI | ✅ Full | — | Follows `gen_ai.*` v1.40.0+ |
-| GitHub Copilot | ✅ Full | — | Follows `gen_ai.*` v1.40.0+ |
-| Claude Code | ❌ | `claude_code.*` | Uses OTTL `transform` to map (see §3) |
+| Gemini CLI | ✅ Full | — | Verify emitted fields against the agent version and Development GenAI conventions |
+| GitHub Copilot | ✅ Full | — | Verify emitted fields against the agent version and Development GenAI conventions |
+| Claude Code | ❌ | `claude_code.*` | Preserve the vendor schema and identify the agent with `service.name` |
 | Codex CLI | ❌ | `codex.*` | Custom event names, partial coverage |
 | Qwen Code | ⚠️ partial | `qwen-code.*` | v0.16.1 dual-emits selected `gen_ai.*` attributes (`gen_ai.request.model`, `gen_ai.usage.*`, `gen_ai.server.time_to_first_token`); private names remain authoritative |
 
-Use the `transform/normalize_agent_metrics` processor from [§3](#3-unified-collector-config-for-multi-agent-ingestion) to add `gen_ai.system` attributes to Claude Code and Codex telemetry for unified dashboard queries.
+For unified dashboards, group coding agents by `service.name` and providers by `gen_ai.provider.name`. Do not translate an agent product name into `gen_ai.provider.name`, and do not recreate deprecated `gen_ai.system` attributes.
 
 For dashboards and alerting, treat `gen_ai.token.type` as an **open set**. Keep normalizations additive (for example, mapping vendor-specific cache counters into a shared label) instead of rewriting unfamiliar values away.
 
@@ -590,7 +570,7 @@ There is also an active proposal for a dedicated **skill span** concept ([semant
 
 **Current guidance until conventions stabilize:**
 
-- Keep using stable `gen_ai.*`, core resource attributes, and vendor-specific fields that already exist.
+- Keep using the source's existing `gen_ai.*` fields, stable core resource attributes, and vendor-specific fields; treat the GenAI fields as Development rather than promising a stable schema.
 - If you must model agent identity, trust, or sandbox metadata today, place it under an **organization-controlled custom namespace** (for example, `company.agent.id`, `company.agent.trust_level`, `company.sandbox.runtime`) rather than betting on proposed upstream names.
 - Treat sandbox telemetry as a **deployment/runtime concern** first: make graceful flush, short-lived process export, and network-isolated delivery work before standardizing attribute names.
 - Do **not** use proposed agent or sandbox IDs as metric dimensions unless you have verified bounded cardinality; keep high-cardinality identifiers in traces/logs only.

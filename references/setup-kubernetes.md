@@ -241,7 +241,7 @@ spec:
 ```
 
 **Key gotchas:**
-- **TraceID routing for tail sampling**: Kubernetes `sessionAffinity: ClientIP` is still a valid option for ordinary gateway scale-out and for topologies where all spans for a trace arrive from the same client source. It is not trace-aware, so traces that include spans from multiple pods or services can still be split across gateway replicas. For tail sampling in multi-source traces, send traces through upstream agents that use the `loadbalancing` exporter with `routing_key: traceID` and resolve this headless service.
+- **TraceID routing for tail sampling**: Kubernetes `sessionAffinity: ClientIP` is still a valid option for ordinary gateway scale-out and for topologies where all spans for a trace arrive from the same client source. It is not trace-aware, so traces that include spans from multiple pods or services can still be split across gateway replicas. For tail sampling in multi-source traces, send traces through upstream agents that use the `load_balancing` exporter with `routing_key: traceID` and resolve this headless service.
 - **Replica count strategy**: Use odd numbers (3, 5, 7) for better distribution; avoid 2 or 4
 - **Memory limiter**: Set aggressive `memory_limiter` in config to prevent OOM kills during traffic spikes
 - **Tracestate headers**: Tail sampling decisions rely on consistent routing; if sticky routing fails, sampling is non-deterministic
@@ -273,7 +273,7 @@ Agent exporter for tail-sampling stickiness:
 
 ```yaml
 exporters:
-  loadbalancing:
+  load_balancing:
     routing_key: traceID
     protocol:
       otlp:

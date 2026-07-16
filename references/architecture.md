@@ -318,7 +318,7 @@ spec:
 
 ❌ **High resource overhead** - Every pod pays the memory/CPU cost
 ❌ **Deployment complexity** - Must update all pods to change collector config
-❌ **No RBAC** - Cannot use k8sattributes processor (no cluster access)
+❌ **No RBAC** - Cannot use k8s_attributes processor (no cluster access)
 
 ✅ **Strong isolation** - Tenant A's collector never sees Tenant B's data
 ✅ **Fargate compatible** - No DaemonSet support in serverless
@@ -354,7 +354,7 @@ service:
       exporters: [otlp]  # Forward to gateway
     logs:
       receivers: [filelog]
-      processors: [memory_limiter, k8sattributes, batch]
+      processors: [memory_limiter, k8s_attributes, batch]
       exporters: [otlp]  # Forward to gateway
 ```
 
@@ -427,10 +427,10 @@ Span B (trace_id: 123) → Gateway Pod 1  ✅ Same pod!
 ### Solution: Load Balancing Exporter
 
 Use a **two-tier architecture**:
-1. **Pre-Gateway (Agents)**: Use loadbalancing exporter with traceID routing
+1. **Pre-Gateway (Agents)**: Use load_balancing exporter with traceID routing
 2. **Gateway**: Runs tail_sampling processor
 
-**Best Practice**: Configure the `loadbalancing` exporter with deterministic, low-cardinality string routing keys such as `traceID`, `tenant_id`, or `cluster`. Avoid non-string or high-cardinality volatile attributes (e.g., timestamps, session IDs) to preserve stickiness for stateful pipelines. Always normalize attributes to strings before routing to prevent shard churn and ensure consistent load distribution.
+**Best Practice**: Configure the `load_balancing` exporter with deterministic, low-cardinality string routing keys such as `traceID`, `tenant_id`, or `cluster`. Avoid non-string or high-cardinality volatile attributes (e.g., timestamps, session IDs) to preserve stickiness for stateful pipelines. Always normalize attributes to strings before routing to prevent shard churn and ensure consistent load distribution.
 
 ### Architecture
 
@@ -443,7 +443,7 @@ Agent → LoadBalancing Exporter (routing_key: traceID) → Gateway (Headless Se
 ```yaml
 # In the Agent or Pre-Gateway tier
 exporters:
-  loadbalancing:
+  load_balancing:
     protocol:
       otlp:
         endpoint: placeholder  # Will be replaced by resolver
@@ -478,7 +478,7 @@ spec:
 ### How It Works
 
 1. **Resolver discovers pods**: The k8s resolver queries the Headless Service and gets individual pod IPs (e.g., `10.0.1.5`, `10.0.1.6`, `10.0.1.7`)
-2. **Consistent hashing**: The loadbalancing exporter uses `traceID` as the routing key and applies consistent hashing to select the target pod
+2. **Consistent hashing**: The load_balancing exporter uses `traceID` as the routing key and applies consistent hashing to select the target pod
 3. **Sticky routing**: All spans with the same `traceID` hash to the same pod IP
 
 ### Critical Requirements
@@ -621,7 +621,7 @@ Is otelcol_exporter_queue_size / queue_capacity > 0.8?
 
 ❌ **Scaling without sampling** — at >50k RPS, you should evaluate tail sampling or head sampling before adding replicas
 
-❌ **Scaling stateful collectors without sticky routing** — more `tail_sampling` replicas without loadbalancing exporter splits traces across instances, breaking sampling correctness
+❌ **Scaling stateful collectors without sticky routing** — more `tail_sampling` replicas without load_balancing exporter splits traces across instances, breaking sampling correctness
 
 ❌ **Scaling to compensate for cardinality explosion** — unbounded attributes cause exponential storage growth regardless of replica count
 
@@ -667,13 +667,13 @@ For initial platform selection (which pattern matches your use case), see [setup
 ## Summary
 
 ✅ Use **DaemonSet** for logs and host metrics (always)
-✅ Use **Gateway** for tail sampling with loadbalancing exporter (sticky sessions)
+✅ Use **Gateway** for tail sampling with load_balancing exporter (sticky sessions)
 ✅ Use **Sidecar** only for serverless or strict isolation
 ✅ Use **Hybrid** for production (Agent → Gateway → Backend)
 ✅ Use **Target Allocator** for Prometheus scraping at scale
 ✅ Always configure **HPA** on memory utilization for gateways
-✅ Always use **Headless Service** with loadbalancing exporter
+✅ Always use **Headless Service** with load_balancing exporter
 ✅ Before scaling, check if the problem is **downstream** (backend saturation, not collector)
-✅ Use `otel/opentelemetry-collector-contrib:0.147.0` for current stable image
+✅ Pin a tested `otel/opentelemetry-collector-contrib` release at or above the compatibility floor; do not use `latest`
 
 **Deployment is not just about running a binary—it's about building a resilient, scalable observability pipeline.**
