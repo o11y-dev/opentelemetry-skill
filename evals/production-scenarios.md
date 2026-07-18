@@ -58,10 +58,10 @@ Scale an OpenTelemetry Collector deployment to handle 50,000 spans per second in
 **Difficulty**: Basic  
 
 ### Prompt
-Use the k8sattributes processor to enrich traces with Kubernetes metadata.
+Use the k8s_attributes processor to enrich traces with Kubernetes metadata.
 
 ### Expected Response (Key Points)
-- **Warns about Beta stability level** of k8sattributes processor
+- **Warns about Beta stability level** of k8s_attributes processor
 - Recommends pinning to specific collector version
 - Explains rollback strategy if issues occur
 - Mentions alternative approaches (resourcedetection processor)

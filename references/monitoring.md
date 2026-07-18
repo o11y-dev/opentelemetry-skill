@@ -309,16 +309,18 @@ otelcol_exporter_queue_capacity
 
 **Metrics**:
 ```promql
-# Export latency
+# Failed metric points sent to the backend
 otelcol_exporter_send_failed_metric_points
 
-# Retry count
+# Spans rejected before enqueue
 otelcol_exporter_enqueue_failed_spans
 ```
 
+> **Sparse zero-value series in recent Collectors:** In Collector v0.156, exporter-helper failure counters may not be recorded until a failure occurs. Their absence can therefore mean "zero failures so far" rather than a broken scrape. Do not use `absent(otelcol_exporter_send_failed_*)` as a collector-liveness or data-loss alert. Pair failure-rate alerts with an independent scrape `up`, health-check, or heartbeat signal.
+
 **Query** (export failure rate):
 ```promql
-rate(otelcol_exporter_send_failed_spans[1m])
+sum(rate(otelcol_exporter_send_failed_spans[5m]))
 ```
 
 **Alert threshold**: > 0 (any failures)
@@ -710,7 +712,7 @@ otelcol_exporter_queue_size
 **Symptoms**: Traces missing spans, incorrect sampling decisions
 
 **Check**:
-- Verify loadbalancing exporter is using `routing_key: traceID`
+- Verify load_balancing exporter is using `routing_key: traceID`
 - Check Headless Service is returning pod IPs, not VIP
 - Verify `decision_wait` is long enough for trace completion
 

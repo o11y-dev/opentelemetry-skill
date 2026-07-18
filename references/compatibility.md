@@ -4,8 +4,9 @@ Use this document for version-sensitive guidance that changes more frequently th
 
 ## Baseline version floors
 
-- **OpenTelemetry Collector**: v0.151.0+
-- **Semantic Conventions**: v1.40.0+
+- **OpenTelemetry Collector**: v0.153.0+ (the first release that supports every canonical component ID used by this skill, including `load_balancing`)
+- **Core Semantic Conventions**: v1.40.0+
+- **GenAI Semantic Conventions**: follow the separate `open-telemetry/semantic-conventions-genai` repository; the signal definitions are Development and do not currently have a stable release floor
 - **Kubernetes**: v1.24+ for native sidecar support
 - **Go SDK**: v1.24.0+
 - **Python SDK**: v1.41.0+
@@ -21,5 +22,6 @@ Use this document for version-sensitive guidance that changes more frequently th
 ## Maintenance guidance
 
 - Treat these version floors as fast-moving compatibility notes rather than hard-coded architectural rules.
+- Pin GenAI dashboards and transforms to the fields actually emitted by the agent/instrumentation version; do not infer current GenAI behavior from the core Semantic Conventions version alone.
 - Pin collector components to released versions and verify stability levels before using non-stable features in production.
 - Re-check upstream release notes whenever updating examples that depend on AI agent telemetry support or evolving semantic conventions.

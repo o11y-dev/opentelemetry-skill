@@ -511,7 +511,7 @@ go tool pprof http://localhost:1777/debug/pprof/heap
 
 ### Kubernetes ServiceAccount
 
-The collector requires specific RBAC permissions for k8sattributes processor:
+The collector requires specific RBAC permissions for k8s_attributes processor:
 
 ```yaml
 apiVersion: v1

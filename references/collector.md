@@ -60,11 +60,11 @@ Common receivers:
 Critical processors:
 - `memory_limiter`: **Must be first** - Prevents OOM
 - `batch`: **Should be near end** - Reduces network calls
-- `k8sattributes`: Enriches with K8s metadata
+- `k8s_attributes`: Enriches with K8s metadata
 - `transform`: Applies OTTL transformations
 - `filter`: Drops spans/metrics based on conditions
 - `tail_sampling`: Intelligent sampling decisions (stateful)
-  - **⚠️ Stateful Processor Note**: Stateful processors like `tail_sampling` and `spanmetrics` require sticky routing (routing all spans of a trace to the same collector instance). Pair with `loadbalancing` exporter using deterministic routing keys (e.g., `traceID`) to preserve stickiness.
+  - **⚠️ Stateful Processor Note**: Stateful processors like `tail_sampling` and `span_metrics` require sticky routing (routing all spans of a trace to the same collector instance). Pair with `load_balancing` exporter using deterministic routing keys (e.g., `traceID`) to preserve stickiness.
 - `attributes`: Adds/removes/hashes attributes
 - `resource`: Modifies resource attributes
 
@@ -76,7 +76,7 @@ Common exporters:
 - `otlp`: Exports to OTLP-compatible backends
 - `prometheus`: Exposes metrics for Prometheus scraping
 - `jaeger`: Exports to Jaeger (legacy)
-- `loadbalancing`: Routes to multiple backends with consistent hashing
+- `load_balancing`: Routes to multiple backends with consistent hashing
   - **⚠️ Routing Key Requirement**: The `routing_key` must be a stable, deterministic string (e.g., `traceID`, `tenant_id`, `cluster`). Convert non-string routing attributes to normalized strings before hashing to avoid shard churn and ensure even load distribution.
 - `logging`: Outputs to stdout (debug only)
 - `file`: Writes to disk (debug only)
@@ -86,12 +86,14 @@ Common exporters:
 **Connectors** bridge two pipelines by acting simultaneously as an exporter on the source pipeline and a receiver on the destination pipeline. They enable cross-pipeline signal routing and aggregation (e.g., generating metrics from traces) without external tools.
 
 Key connectors:
-- `spanmetrics`: Generates R.E.D. metrics (Rate, Errors, Duration) from trace spans — **Beta**
-- `servicegraph`: Builds service dependency graph metrics from traces — **Beta**
+- `span_metrics`: Generates R.E.D. metrics (Rate, Errors, Duration) from trace spans — **Beta**
+- `service_graph`: Builds service dependency graph metrics from traces — **Beta**
 - `routing`: Routes signals to different pipelines based on attribute values — **Alpha**
 - `failover`: Automatic failover between pipelines on errors — **Alpha**
 - `count`: Counts signals as metrics — **Alpha**
-- `signaltometrics`: Converts any signal to metrics via OTTL expressions — **Alpha**
+- `signal_to_metrics`: Converts any signal to metrics via OTTL expressions — **Alpha**
+
+> **Use canonical component IDs in new configuration.** Collector Contrib renamed the standalone IDs to `k8s_attributes` and `signal_to_metrics` in v0.147, `span_metrics` and `service_graph` in v0.151, and `load_balancing` in v0.153. The compact spellings remain deprecated aliases for compatibility, but examples in this skill use the canonical IDs.
 
 See [connectors.md](connectors.md) for full configuration examples and patterns.
 
@@ -112,7 +114,7 @@ service:
     
     logs:
       receivers: [otlp, filelog]
-      processors: [memory_limiter, k8sattributes, batch]
+      processors: [memory_limiter, k8s_attributes, batch]
       exporters: [otlp]
 ```
 
@@ -134,7 +136,7 @@ The `opentelemetry-collector` (core) contains **stable, vendor-neutral** compone
 ### Contrib Distribution
 
 The `opentelemetry-collector-contrib` contains **extended** components:
-- Advanced processors: `tail_sampling`, `transform`, `k8sattributes`
+- Advanced processors: `tail_sampling`, `transform`, `k8s_attributes`
 - Cloud-specific exporters: `awsxray`, `googlecloud`, `azuremonitor`
 - Specialized receivers: `filelog`, `kafkareceiver`, `sqlquery`
 
@@ -250,7 +252,7 @@ service:
 | **1** | `memory_limiter` | Prevents OOM | **Critical** | Must be first. If placed later, data has already consumed heap space before the limiter checks. Placing it first enables backpressure to receivers. |
 | **2** | `extensions` (auth) | Validates access | **High** | Reject unauthorized traffic immediately, before spending CPU on processing. |
 | **3** | `sampling` (head) | Reduces volume | **High** | If using probabilistic sampling, do it early. Dropping 90% of traces saves CPU on subsequent processors. |
-| **4** | `k8sattributes` | Enriches metadata | **Medium** | Adds context (Pod, Namespace, Node) needed for filtering and routing in later steps. Requires RBAC permissions. |
+| **4** | `k8s_attributes` | Enriches metadata | **Medium** | Adds context (Pod, Namespace, Node) needed for filtering and routing in later steps. Requires RBAC permissions. |
 | **5** | `transform` / `filter` | Modifies/drops data | **Medium** | Apply OTTL transformations to scrub, rename, or drop specific spans/metrics. |
 | **6** | `redaction` / `attributes` | Sanitizes PII | **Critical (Compliance)** | Must happen before batching or exporting to ensure sensitive data never leaves the collector. |
 | **7** | `batch` | Optimizes network | **High** | Compresses data into chunks. Must be near the end. If placed before filtering, the batcher processes data that is eventually discarded. |
@@ -264,7 +266,7 @@ processors:
     limit_percentage: 80
     spike_limit_percentage: 20
   
-  k8sattributes:
+  k8s_attributes:
     auth_type: "serviceAccount"
     extract:
       metadata:
@@ -290,7 +292,7 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, k8sattributes, filter, attributes, batch]
+      processors: [memory_limiter, k8s_attributes, filter, attributes, batch]
       exporters: [otlp]
 ```
 
@@ -332,7 +334,7 @@ Each component directory contains a README with configuration examples, stabilit
 
 > ⚠️ **Prometheus Remote Write — InstrumentationScope attributes not exported**: The `prometheusremotewriteexporter` does **not** include `otel.scope.name` / `otel.scope.version` as Prometheus labels by default ([#45266](https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/45266)). If downstream consumers need to distinguish metrics by instrumentation scope, use the native `otlpexporter` instead, or enrich the metric resource/data-point attributes before export using a `transform` processor.
 >
-> ⚠️ **Profiles signal is public Alpha**: OpenTelemetry Profiles entered public Alpha in Collector `v0.148.0+`. Use it for evaluation and early integration work, not critical production commitments yet. The current practical path is the `pprofreceiver` plus normal collector enrichment/transform processors (for example, `k8sattributes` and OTTL), and you should verify that your backend can ingest OTLP Profiles before standardizing on it.
+> ⚠️ **Profiles signal is public Alpha**: OpenTelemetry Profiles entered public Alpha in Collector `v0.148.0+`. Use it for evaluation and early integration work, not critical production commitments yet. The current practical path is the `pprofreceiver` plus normal collector enrichment/transform processors (for example, `k8s_attributes` and OTTL), and you should verify that your backend can ingest OTLP Profiles before standardizing on it.
 
 ### Example Configurations
 
@@ -344,10 +346,10 @@ Browse the [examples/ directory](https://github.com/open-telemetry/opentelemetry
 
 | Use Case | Example Type | Description |
 |----------|-------------|-------------|
-| **Gateway with tail sampling** | Gateway deployment | Stateful sampling across traces, requires consistent routing (e.g., via loadbalancing exporter) |
+| **Gateway with tail sampling** | Gateway deployment | Stateful sampling across traces, requires consistent routing (e.g., via load_balancing exporter) |
 | **Kubernetes node agents** | Agent/DaemonSet | Lightweight per-node collectors, hostmetrics, log collection |
 | **Log collection from files** | Filelog receiver | Parse and enrich logs from disk, multiline support |
-| **K8s metadata enrichment** | k8sattributes processor | Add pod/namespace/node attributes to telemetry |
+| **K8s metadata enrichment** | k8s_attributes processor | Add pod/namespace/node attributes to telemetry |
 | **Basic debugging** | Logging exporter | Output telemetry to stdout for troubleshooting |
 
 **Best Practice**: Pin to released tags (e.g., `v0.100.0+`) matching your collector version instead of using `main` branch. This ensures production stability and avoids unexpected breaking changes.
@@ -375,7 +377,7 @@ When reviewing an existing collector config or Helm values file, do more than sy
 |-------|-----------------|----------------|
 | **Processor chain** | `memory_limiter` first, `batch` near the end, every declared processor referenced by a pipeline | Correct ordering prevents OOMs and wasted work; unreferenced processors create dead config that misleads reviewers |
 | **Memory envelope** | `memory_limiter.limit_mib` / `limit_percentage` vs container memory limit | A limiter above the pod limit cannot protect the collector from cgroup OOM kills |
-| **Stateful processing** | `tail_sampling`, `spanmetrics`, `servicegraph` vs replica count/HPA and routing | Stateful processors break when traces/related spans are split across replicas |
+| **Stateful processing** | `tail_sampling`, `span_metrics`, `service_graph` vs replica count/HPA and routing | Stateful processors break when traces/related spans are split across replicas |
 | **Metric temporality/state** | `deltatocumulative`, `cumulativetodelta`, source temporality, backend expectation, and replica/restart behavior | Temporality conversion is stateful; restarts or non-sticky routing can create resets or incorrect cumulative series |
 | **Exporter durability** | `retry_on_failure`, `sending_queue`, `file_storage`, and stated outage tolerance | No retry + no queue means guaranteed loss during backend or network faults |
 | **Queue storage backend** | `file_storage` access mode, storage class, and whether the filesystem is local vs RWX/networked | Persistent queues need locking-safe local block storage; EFS/NFS/RWX can corrupt or stall queue state |
@@ -414,7 +416,7 @@ processors:
 
 #### 2. Tail sampling on scaled gateways without sticky routing
 
-If a Deployment can scale above one replica, a regular ClusterIP Service is **not enough** for `tail_sampling`. You need an upstream `loadbalancing` exporter with `routing_key: traceID` and a Headless Service for the gateway tier. Otherwise traces fragment across pods and sampling decisions are wrong.
+If a Deployment can scale above one replica, a regular ClusterIP Service is **not enough** for `tail_sampling`. You need an upstream `load_balancing` exporter with `routing_key: traceID` and a Headless Service for the gateway tier. Otherwise traces fragment across pods and sampling decisions are wrong.
 
 #### 3. Retry disabled and no durable queue
 
@@ -886,7 +888,7 @@ service:
   pipelines:
     traces:
       receivers: [kafka]
-      processors: [memory_limiter, k8sattributes, tail_sampling, batch]
+      processors: [memory_limiter, k8s_attributes, tail_sampling, batch]
       exporters: [otlp]
 ```
 
@@ -1322,7 +1324,7 @@ For stateful processors like `tail_sampling`, use load-balancing exporter to ens
 
 ```yaml
 exporters:
-  loadbalancing:
+  load_balancing:
     protocol:
       otlp:
         tls:
@@ -1339,7 +1341,7 @@ exporters:
 **Critical Rules**:
 1. **`routing_key: traceID`**: Must hash on trace ID (not random) to ensure all spans of a trace reach the same backend instance.
 2. **Headless Service** (Kubernetes): Use `clusterIP: None` for DNS resolution to all backend pods.
-3. **Pair with stateful processors**: Use this exporter when you have `tail_sampling`, `spanmetrics`, or `servicegraph` on the backend tier.
+3. **Pair with stateful processors**: Use this exporter when you have `tail_sampling`, `span_metrics`, or `service_graph` on the backend tier.
 
 ### Load-Balancing Exporter: Multi-Backend with Failover
 
@@ -1347,7 +1349,7 @@ For resilience without statefulness:
 
 ```yaml
 exporters:
-  loadbalancing:
+  load_balancing:
     protocol:
       otlp:
         tls:

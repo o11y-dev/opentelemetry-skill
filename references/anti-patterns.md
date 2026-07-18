@@ -32,9 +32,9 @@ Without batching, each span/metric/log is exported individually, producing thous
 
 ### Using `tail_sampling` without sticky session load balancing
 
-`tail_sampling` keeps per-trace state in memory. When multiple collector replicas compete for the same traffic without a `loadbalancing` exporter routing upstream, spans from the same trace are split across instances and sampling decisions diverge.
+`tail_sampling` keeps per-trace state in memory. When multiple collector replicas compete for the same traffic without a `load_balancing` exporter routing upstream, spans from the same trace are split across instances and sampling decisions diverge.
 
-**Fix:** Place a `loadbalancing` exporter (with `routing_key: traceID`) upstream of all `tail_sampling` replicas.
+**Fix:** Place a `load_balancing` exporter (with `routing_key: traceID`) upstream of all `tail_sampling` replicas.
 
 ---
 

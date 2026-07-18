@@ -23,9 +23,9 @@
       "description": "The collector configuration includes file_storage extension and persistence queue settings to survive pod restarts. Must include volume mounts for persistence. Score zero if queues are in-memory only."
     },
     {
-      "name": "Implements loadbalancing exporter with trace ID routing",
+      "name": "Implements load_balancing exporter with trace ID routing",
       "max_score": 20,
-      "description": "For backend systems that require consistent trace routing, the configuration includes a loadbalancing exporter with routing_key: traceID. This enables tail sampling across replicas. Score zero if routing is not addressed."
+      "description": "For backend systems that require consistent trace routing, the configuration includes a load_balancing exporter with routing_key: traceID. This enables tail sampling across replicas. Score zero if routing is not addressed."
     },
     {
       "name": "Includes PodDisruptionBudget for high availability",

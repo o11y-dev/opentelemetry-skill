@@ -122,21 +122,21 @@ Look for agent:
 ### Expected Improvements
 
 **Baseline → Compliance Changes:**
-- Agent NOW requires loadbalancing exporter for tail sampling
+- Agent NOW requires load_balancing exporter for tail sampling
 - Agent explains sticky session requirement
 - Agent provides traceID routing configuration
 
 ### Success Criteria Verification
 
 - [ ] Agent mentions load balancing requirement
-- [ ] Agent provides loadbalancing exporter config
+- [ ] Agent provides load_balancing exporter config
 - [ ] Agent explains traceID routing requirement
 - [ ] Agent warns about stability level
 
 ### Evidence Checklist
 
 Look for agent:
-- Mentioning "loadbalancing exporter"
+- Mentioning "load_balancing exporter"
 - Explaining "routing_key: traceID"
 - Warning "all spans of a trace must reach same collector"
 - Referencing sampling.md and architecture.md
@@ -338,6 +338,36 @@ Look for agent:
 - Explaining that `deltatocumulative` keeps per-timeseries state and can reset on restart/scale events
 - Saying `ReadWriteMany` + `efs` is unsafe for bbolt-backed `file_storage`
 - Identifying `groupbyattrs/keep_stable_labels` as unused
+
+---
+
+## Focused Regression Check: Scaled `signal_to_metrics` Histogram Direct Export
+
+### Test Prompt
+
+```text
+Review this design for metric correctness. A logs collector runs with three replicas. Each replica uses the current signal_to_metrics connector to generate a log.processing.duration histogram with an outcome attribute and exports it directly over OTLP to a backend. In the backend, the stored histogram is cumulative and has the same metric/outcome label set from every replica; inspection shows that signal_to_metrics.service.instance.id is not retained as series identity. The destination metrics pipeline also carries application metrics. The dashboard needs latency and event rate. Is this safe, and what should change?
+```
+
+### Expected Improvements
+
+- Agent explains that current `signal_to_metrics` emits delta histograms and automatically adds `signal_to_metrics.service.instance.id`.
+- Agent identifies the backend's loss of that resource identity, followed by a cumulative representation, as creating competing metric streams with the same stored label set.
+- Agent first recommends preserving or mapping the built-in producer identity. For an older/custom path that emits no identity, it recommends `service.instance.id` only when the metric resource represents the Collector, or a scoped `collector_instance` fallback otherwise.
+- Agent scopes the identity to a dedicated connector-generated metrics pipeline rather than adding pod labels to all metrics.
+- Agent requires dashboards to aggregate the producer identity away with `sum by (...)`, retaining histogram bucket dimensions where applicable.
+- Agent contrasts direct export with Prometheus scraping, where the scrape path usually adds an `instance` identity.
+- Agent uses the histogram `_count` for event rate instead of recommending a duplicate counter.
+
+### Success Criteria Verification
+
+- [ ] Agent checks replica count, direct export mode, connector delta temporality, backend cumulative conversion, producer identity, and query aggregation together.
+- [ ] Agent flags the dropped per-replica identity before approving the design.
+- [ ] Agent recognizes the current connector's built-in `signal_to_metrics.service.instance.id` instead of blindly adding a duplicate identity.
+- [ ] Agent limits producer enrichment to the generated metric stream.
+- [ ] Agent recommends aggregation across producers in dashboards and alerts.
+- [ ] Agent does not recommend adding pod labels to all application metrics.
+- [ ] Agent does not recommend a separate event counter when the histogram `_count` is sufficient.
 
 ---
 

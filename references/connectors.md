@@ -45,10 +45,10 @@ service:
     traces:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [spanmetrics]          # connector as exporter
+      exporters: [span_metrics]          # connector as exporter
 
     metrics:
-      receivers: [spanmetrics]          # same connector as receiver
+      receivers: [span_metrics]          # same connector as receiver
       processors: [memory_limiter, batch]
       exporters: [otlp]
 ```
@@ -56,6 +56,8 @@ service:
 ---
 
 ## Production-Relevant Connectors
+
+Configuration examples use the canonical component IDs `span_metrics`, `service_graph`, and `signal_to_metrics`. Collector Contrib still accepts the older compact IDs as deprecated aliases. Package/component names such as `spanmetricsconnector` and `signaltometricsconnector` are unchanged.
 
 | Connector | Purpose | Source Signal | Output Signal | Stability |
 |-----------|---------|---------------|---------------|-----------|
@@ -81,7 +83,7 @@ Generates **R.E.D. metrics** (Rate, Errors, Duration) from trace spans without r
 
 ```yaml
 connectors:
-  spanmetrics:
+  span_metrics:
     histogram:
       explicit:
         buckets: [5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000]  # milliseconds
@@ -99,10 +101,10 @@ service:
     traces:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlp, spanmetrics]    # forward traces AND generate metrics
+      exporters: [otlp, span_metrics]    # forward traces AND generate metrics
 
     metrics:
-      receivers: [otlp, spanmetrics]    # receive both OTLP metrics and generated metrics
+      receivers: [otlp, span_metrics]    # receive both OTLP metrics and generated metrics
       processors: [memory_limiter, batch]
       exporters: [otlp]
 ```
@@ -112,9 +114,9 @@ service:
 `spanmetricsconnector` is **stateful** — it aggregates metrics in-memory across spans. In a multi-replica gateway deployment, all spans for the same service or trace must route to the **same collector instance**.
 
 ```yaml
-# Agent-tier: use loadbalancing exporter to stick spans to a gateway replica
+# Agent-tier: use load_balancing exporter to stick spans to a gateway replica
 exporters:
-  loadbalancing:
+  load_balancing:
     routing_key: traceID              # deterministic routing to gateway
     protocol:
       otlp:
@@ -146,7 +148,7 @@ Generates **service dependency graph metrics** showing request rates and error r
 
 ```yaml
 connectors:
-  servicegraph:
+  service_graph:
     latency_histogram_buckets: [1, 2, 6, 10, 100, 250]  # milliseconds
     dimensions:
       - http.request.method
@@ -159,17 +161,17 @@ service:
     traces:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlp, servicegraph]   # forward traces AND generate graph metrics
+      exporters: [otlp, service_graph]   # forward traces AND generate graph metrics
 
     metrics:
-      receivers: [otlp, servicegraph]
+      receivers: [otlp, service_graph]
       processors: [memory_limiter, batch]
       exporters: [otlp]
 ```
 
 ### ⚠️ Stickiness Requirement
 
-Like `spanmetricsconnector`, the `servicegraphconnector` is **stateful**. It must see both the client span and the server span for a given request to compute the edge. Use the `loadbalancing` exporter with `routing_key: traceID` to route all spans of a trace to the same gateway replica.
+Like `spanmetricsconnector`, the `servicegraphconnector` is **stateful**. It must see both the client span and the server span for a given request to compute the edge. Use the `load_balancing` exporter with `routing_key: traceID` to route all spans of a trace to the same gateway replica.
 
 ---
 
@@ -311,7 +313,7 @@ Converts any signal type (traces, logs, or metrics) into metrics using OTTL expr
 
 ```yaml
 connectors:
-  signaltometrics:
+  signal_to_metrics:
     spans:
       - name: http.server.request.duration
         description: HTTP server request duration from spans
@@ -337,13 +339,25 @@ service:
     traces:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlp, signaltometrics]    # connector as exporter
+      exporters: [otlp, signal_to_metrics]    # connector as exporter
 
     metrics:
-      receivers: [otlp, signaltometrics]    # connector as receiver
+      receivers: [otlp, signal_to_metrics]    # connector as receiver
       processors: [memory_limiter, batch]
       exporters: [otlp]
 ```
+
+### ⚠️ Generated Metrics in Scaled Collectors
+
+Each collector replica is a separate metric producer. Current `signal_to_metrics` releases emit sums, histograms, and exponential histograms with **delta temporality** and automatically add the resource attribute `signal_to_metrics.service.instance.id`, using the Collector's instance identity. That built-in attribute protects the generated streams only when the exporter and backend preserve or map it into the stored metric identity.
+
+Review the backend's stored series, not only the Collector config. If `signal_to_metrics.service.instance.id` is dropped during resource-to-label translation, multiple replicas can collapse into the same histogram label set; a downstream delta-to-cumulative conversion can then create competing cumulative streams, resets, spikes, or incorrect totals. Preserve or map the built-in attribute. For an older/custom connector or another log/span-to-metric path that emits no producer identity, add a unique identity that is stable for the replica's lifetime. Use `service.instance.id` only when the generated metric resource intentionally represents the Collector; otherwise use a scoped attribute such as `collector_instance`.
+
+Apply any fallback identity only to the connector-generated metric stream. If its destination pipeline also carries application metrics, split the generated metrics into a dedicated pipeline before enrichment rather than adding pod labels to every metric.
+
+Dashboards and alerts must aggregate the producer identity away, for example with `sum by (<business dimensions>) (...)`. Retain histogram-specific grouping such as `le` when querying classic histogram buckets. A histogram's `_count` already supplies the event count (and event rate after `rate()`), so do not add a separate counter solely for that purpose.
+
+Prometheus scraping usually adds target identity such as the `instance` label on the scrape path. Direct OTLP/backend export does not guarantee that resource identity becomes part of the backend's stored series, so verify it explicitly when reviewing replica count, effective temporality, and query aggregation.
 
 ---
 
@@ -353,18 +367,18 @@ service:
 
 ```yaml
 connectors:
-  spanmetrics: {}
-  servicegraph: {}
+  span_metrics: {}
+  service_graph: {}
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, k8sattributes, batch]
-      exporters: [otlp, spanmetrics, servicegraph]
+      processors: [memory_limiter, k8s_attributes, batch]
+      exporters: [otlp, span_metrics, service_graph]
 
     metrics:
-      receivers: [otlp, spanmetrics, servicegraph]
+      receivers: [otlp, span_metrics, service_graph]
       processors: [memory_limiter, batch]
       exporters: [otlp]
 ```
@@ -435,8 +449,8 @@ All connectors are in the [opentelemetry-collector-contrib](https://github.com/o
 ✅ Use **servicegraphconnector** to build service dependency maps from trace data
 ✅ Use **routingconnector** for attribute-based multi-tenant or multi-environment pipeline routing
 ✅ Use **failoverconnector** for automatic cross-region or cross-backend failover
-✅ Always pair **stateful connectors** (spanmetrics, servicegraph) with the `loadbalancing` exporter and `routing_key: traceID`
+✅ Always pair **stateful connectors** (span_metrics, service_graph) with the `load_balancing` exporter and `routing_key: traceID`
 ✅ Check **stability levels** — only `spanmetricsconnector` and `servicegraphconnector` are Beta; others are Alpha
-⚠️ Avoid **high-cardinality dimensions** in spanmetrics/servicegraph to prevent time series explosion
+⚠️ Avoid **high-cardinality dimensions** in span_metrics/service_graph to prevent time series explosion
 
 **Connectors are the bridge between pipeline stages — use them to turn trace data into metrics and to route signals across pipelines without external tooling.**

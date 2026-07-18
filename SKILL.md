@@ -30,8 +30,8 @@ tags:
   - ai-agent
 metadata:
   author: o11y.dev
-  version: 0.3.0
-  tessl_version: 0.3.0
+  version: 0.4.0
+  tessl_version: 0.4.0
   signals:
     - traces
     - metrics
@@ -105,7 +105,9 @@ metadata:
       - processor
       - exporter
       - connector
-      - spanmetrics
+      - span_metrics
+      - service_graph
+      - signal_to_metrics
       - tail sampling
       - memory limiter
       - batch processor
@@ -158,9 +160,10 @@ When user requests match these patterns, include these points explicitly:
 
 - **Collector setup**: include `memory_limiter`; keep it first in each pipeline `processors` list; explain OOM-prevention rationale.
 - **Metric dimension request for `user_id`**: refuse; explain time-series explosion risk; suggest traces and bounded metric dimensions.
-- **Kubernetes tail sampling**: Gateway (Deployment) tier, `loadbalancing` with `routing_key: traceID`, Headless Service (`clusterIP: None`), error+10% policies, Beta stability caution.
+- **Kubernetes tail sampling**: Gateway (Deployment) tier, `load_balancing` with `routing_key: traceID`, Headless Service (`clusterIP: None`), error+10% policies, Beta stability caution.
 - **Claude Code telemetry**: include `CLAUDE_CODE_ENABLE_TELEMETRY=1`, `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative`, `~/.claude/settings.json` persistence; `OTEL_LOG_USER_PROMPTS`/`OTEL_LOG_TOOL_DETAILS` default to `false` — warn against enabling in shared/production environments without PII controls; avoid `session.id` as a metric dimension.
-- **AI agent tool-call tracing**: for agents using `gen_ai.*` traces, name execute-tool spans with the actual tool name (for example `bash` or `search_code`) and preserve `gen_ai.tool.name`; do not use a generic `execute_tool` span name.
+- **AI agent tool-call tracing**: for agents using current `gen_ai.*` conventions, set `gen_ai.operation.name: execute_tool`, preserve `gen_ai.tool.name`, and name the span `execute_tool {gen_ai.tool.name}` (for example, `execute_tool bash`).
+- **GenAI provider vs agent identity**: preserve `gen_ai.provider.name` for the model/provider (for example, `openai` or `gcp.gen_ai`); use `service.name` or a natively emitted agent attribute for the coding-agent identity rather than writing the agent name into the provider field.
 
 ## Existing Configuration Review Mode
 
@@ -169,13 +172,14 @@ When the user provides an existing collector config, Helm values file, or Kubern
 Check these interactions together:
 
 1. **Memory vs pod limit** — `limit_mib` must leave headroom for the Go runtime and buffers.
-2. **Stateful processing vs scaling** — `tail_sampling`, `spanmetrics`, and `servicegraph` need sticky routing above one replica.
+2. **Stateful processing vs scaling** — `tail_sampling`, `span_metrics`, and `service_graph` need sticky routing above one replica.
 3. **Durability vs outage tolerance** — disabled retries and no persistent queue mean data loss on backend failure.
 4. **Deployment mode vs exposure** — `hostPort` fits DaemonSet/node-local patterns, not scaled gateway Deployments.
 5. **Rollout settings** — review `replicaCount`, HPA `minReplicas`, PodDisruptionBudget, and rolling updates together.
 6. **OTTL/filter correctness** — keep attribute types consistent and prefer current semantic convention keys.
 7. **Metric temporality and state** — `deltatocumulative` / `cumulativetodelta` need source/backend/restart checks.
 8. **Queue storage backend** — `file_storage` needs local locking-safe storage; RWX, EFS, and NFS are unsafe defaults.
+9. **Generated metric identity** — for log/span-to-metric connectors, verify replica count, export mode, actual temporality, whether the emitted producer identity survives backend mapping, and the aggregation query shape together.
 
 ## Progressive Disclosure: Context Triggers
 
@@ -191,7 +195,7 @@ Load detailed reference documentation only when the user's request matches a tri
 | Monitor the collector, Health, Alerts, Self-monitoring, Collector metrics | [monitoring.md](references/monitoring.md) | otelcol_* metrics, dashboards, alert rules |
 | Lambda, Azure Functions, GCP Functions, Serverless, FaaS, Mobile, Browser | [platforms.md](references/platforms.md) | FaaS patterns, Lambda extension layer, client-side apps |
 | OTTL, Transform, Transformation, Modify, Filter attributes, Parse, Extract | [ottl.md](references/ottl.md) | OTTL syntax, context types, built-in functions, error handling |
-| Connector, spanmetrics, servicegraph, routing connector, failover connector | [connectors.md](references/connectors.md) | R.E.D. metrics, service graph, routing, failover, stickiness |
+| Connector, span_metrics, service_graph, signal_to_metrics, log-to-metric, span-to-metric, routing connector, failover connector | [connectors.md](references/connectors.md) | R.E.D. metrics, service graph, routing, failover, stickiness, generated-metric producer identity |
 | Claude Code, Codex, Gemini CLI, Copilot, AI agent, coding agent, MCP | [ai-agents.md](references/ai-agents.md) | Agent OTel support matrix, unified collector config, GenAI SemConv |
 | validate, dry-run, startup error, pipeline error, dropped data, queue full, recovery | [validation.md](references/validation.md) | Config validation commands, live checks, symptom→cause→fix recovery guidance |
 | playbook, production playbook, blog, 2025 blog, 2026 blog, real world | [playbooks.md](references/playbooks.md) | Production patterns from opentelemetry.io blogs |
@@ -281,7 +285,7 @@ For container dry-run commands, live pipeline checks, and symptom→cause→fix 
 ❌ Placing `memory_limiter` anywhere except first in the processor chain
 ❌ Using high-cardinality attributes (user_id, trace_id) as metric dimensions
 ❌ Exposing pprof (1777), zpages (55679) on `0.0.0.0` in production
-❌ Using `tail_sampling` without sticky session load balancing (loadbalancing exporter)
+❌ Using `tail_sampling` without sticky session load balancing (load_balancing exporter)
 ❌ Omitting `batch` processor (causes excessive network calls)
 ❌ Calling a config "fine" because it parses, without checking memory limits, sticky routing, exporter durability, and rollout settings together
 

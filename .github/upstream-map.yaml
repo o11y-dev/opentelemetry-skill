@@ -75,10 +75,17 @@ mappings:
     priority: critical
     topics: [gen_ai, agents, llm]
     watches:
+      - repo: open-telemetry/semantic-conventions-genai
+        paths:
+          - "model/**"
+          - "docs/**"
+          - "README.md"
+          - "CHANGELOG.md"
       - repo: open-telemetry/semantic-conventions
         paths:
           - "model/gen-ai/**"
           - "docs/gen-ai/**"
+          - "CHANGELOG.md"
       - repo: open-telemetry/community
         paths:
           - "projects/gen-ai/**"
@@ -286,6 +293,7 @@ mappings:
         paths:
           - "service/telemetry/**"
           - "internal/memorylimiter/**"
+          - "exporter/exporterhelper/**"
       - repo: open-telemetry/opentelemetry-collector-contrib
         paths:
           - "processor/memorylimiterprocessor/**"
