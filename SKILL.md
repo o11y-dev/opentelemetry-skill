@@ -106,10 +106,8 @@ metadata:
       - exporter
       - connector
       - span_metrics
-      - spanmetrics
       - service_graph
       - signal_to_metrics
-      - signaltometrics
       - tail sampling
       - memory limiter
       - batch processor
@@ -197,7 +195,7 @@ Load detailed reference documentation only when the user's request matches a tri
 | Monitor the collector, Health, Alerts, Self-monitoring, Collector metrics | [monitoring.md](references/monitoring.md) | otelcol_* metrics, dashboards, alert rules |
 | Lambda, Azure Functions, GCP Functions, Serverless, FaaS, Mobile, Browser | [platforms.md](references/platforms.md) | FaaS patterns, Lambda extension layer, client-side apps |
 | OTTL, Transform, Transformation, Modify, Filter attributes, Parse, Extract | [ottl.md](references/ottl.md) | OTTL syntax, context types, built-in functions, error handling |
-| Connector, span_metrics, spanmetrics, service_graph, servicegraph, signal_to_metrics, signaltometrics, log-to-metric, span-to-metric, routing connector, failover connector | [connectors.md](references/connectors.md) | R.E.D. metrics, service graph, routing, failover, stickiness, generated-metric producer identity |
+| Connector, span_metrics, service_graph, signal_to_metrics, log-to-metric, span-to-metric, routing connector, failover connector | [connectors.md](references/connectors.md) | R.E.D. metrics, service graph, routing, failover, stickiness, generated-metric producer identity |
 | Claude Code, Codex, Gemini CLI, Copilot, AI agent, coding agent, MCP | [ai-agents.md](references/ai-agents.md) | Agent OTel support matrix, unified collector config, GenAI SemConv |
 | validate, dry-run, startup error, pipeline error, dropped data, queue full, recovery | [validation.md](references/validation.md) | Config validation commands, live checks, symptom→cause→fix recovery guidance |
 | playbook, production playbook, blog, 2025 blog, 2026 blog, real world | [playbooks.md](references/playbooks.md) | Production patterns from opentelemetry.io blogs |

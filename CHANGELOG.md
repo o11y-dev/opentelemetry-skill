@@ -45,7 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [1.1.0] - 2026-03-11
 
 ### Added
-- Connectors reference (`references/connectors.md`): spanmetrics, servicegraph, routing, failover with stickiness requirements
+- Connectors reference (`references/connectors.md`): `span_metrics`, `service_graph`, routing, and failover with stickiness requirements
 - Kafka resiliency patterns, semconv v1.30+ guidance, config management, scaling guidance (Collector v0.147.0)
 - Upstream maintenance digest workflow (weekly automated scan of OTel issues, releases, and blog posts)
 - Cursor Marketplace plugin manifests
