@@ -355,7 +355,7 @@ service:
 **Protocol choice**: Prefer OTLP gRPC on `4317` for both receivers and exporters. Keep OTLP HTTP on `4318` available for agents like GitHub Copilot and for backends, proxies, or managed ingest endpoints where gRPC is unavailable.
 
 > **Processor ordering**: `memory_limiter` is always first. Resource enrichment runs before transforms so added attributes are available to OTTL statements. `batch` is always last before exporters.
-
+>
 > **Identity boundary**: Keep the agent identity in `service.name` (or a natively emitted agent attribute). `gen_ai.provider.name` identifies the GenAI provider, not the coding-agent product; never set it to values such as `claude_code`, `gemini_cli`, or `copilot` merely to unify dashboards.
 
 ---
