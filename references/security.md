@@ -28,6 +28,8 @@ Telemetry data frequently captures sensitive information:
 
 **Regulation**: GDPR, CCPA, PCI-DSS, HIPAA mandate PII protection.
 
+> ⚠️ **Java auto-instrumentation logging capture (v2.30.0+)**: `opentelemetry-java-instrumentation` added `captureTemplate` and `captureArguments` options for additional logging libraries, which can export raw log message templates and parameters (`log.body.template`, `log.body.parameters`). Keep these disabled unless you have explicit redaction controls and data-governance approval.
+
 ### Redaction Strategies
 
 | Strategy | Pros | Cons | Use Case |

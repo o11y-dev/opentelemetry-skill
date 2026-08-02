@@ -6,6 +6,7 @@ A comprehensive guide to monitoring AI coding agents (Claude Code, Gemini CLI, G
 This file is automatically flagged for review when changes occur in:
 - GitHub repositories: github/copilot-cli, Aider-AI/aider, openai/codex, google-gemini/gemini-cli, anthropics/claude-code, anthropics/skills, QwenLM/qwen-code, microsoft/vscode-copilot-chat, anysphere/cursor-wiki, anomalyco/opencode, DEVtheOPS/opencode-plugin-otel, badlogic/pi-mono
 - OpenTelemetry semantic conventions: open-telemetry/semantic-conventions (gen-ai model)
+- OpenTelemetry project governance tracker: open-telemetry/community (`projects/gen-ai.md`)
 - Manual monitoring recommended for official docs: docs.github.com/copilot/, aider.chat/docs/, developers.openai.com/codex/, google-gemini.github.io/gemini-cli/, claude.ai/code/, qwenlm.github.io/qwen-code-docs/, cursor.com, pi.dev
 -->
 
@@ -92,7 +93,6 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 | `OTEL_METRICS_INCLUDE_ENTRYPOINT` | `false` | Adds bounded `app.entrypoint` as a metric dimension for dashboard slicing |
 
 > ⚠️ **Temporality**: Claude Code emits cumulative metrics. Set `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative` to match. VictoriaMetrics and some Prometheus backends will silently drop delta-converted metrics from cumulative sources.
-
 > ✅ **Bounded metric dimension**: Prefer `OTEL_METRICS_INCLUDE_ENTRYPOINT=true` over `OTEL_METRICS_INCLUDE_SESSION_ID=true` when you need a stable breakdown of CLI vs IDE/SDK launches. `app.entrypoint` stays bounded and is safe for dashboards; `session.id` is still high-cardinality.
 
 ---
@@ -567,6 +567,8 @@ For dashboards and alerting, treat `gen_ai.token.type` as an **open set**. Keep 
 OpenTelemetry upstream is discussing new semantic conventions for **AI agent identity/trust** and **AI sandbox execution** ([semantic-conventions#3582](https://github.com/open-telemetry/semantic-conventions/issues/3582), [semantic-conventions#3583](https://github.com/open-telemetry/semantic-conventions/issues/3583)). These are proposals only; this skill should not present `agent.*` or `sandbox.*` as stable OpenTelemetry fields yet.
 
 There is also an active proposal for a dedicated **skill span** concept ([semantic-conventions#3540](https://github.com/open-telemetry/semantic-conventions/issues/3540)). Do not assume `gen_ai.skill.*` naming is finalized; keep skill/tool execution modeling behind collector transforms or dashboard aliasing until conventions stabilize.
+
+Track the OpenTelemetry Community GenAI project page ([community/projects/gen-ai.md](https://github.com/open-telemetry/community/blob/main/projects/gen-ai.md)) for governance updates, ownership changes, and handoffs that can affect where canonical guidance is published.
 
 **Current guidance until conventions stabilize:**
 

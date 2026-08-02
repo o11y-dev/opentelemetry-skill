@@ -88,6 +88,7 @@ mappings:
           - "CHANGELOG.md"
       - repo: open-telemetry/community
         paths:
+          - "projects/gen-ai.md"
           - "projects/gen-ai/**"
       - repo: github/copilot-cli
         paths:
