@@ -241,6 +241,13 @@ mappings:
         paths:
           - "internal/pkg/instrumentation/**"
           - "CHANGELOG.md"
+      - repo: open-telemetry/opentelemetry-go-compile-instrumentation
+        paths:
+          - "README.md"
+          - "CHANGELOG.md"
+          - "docs/**"
+          - "rules/**"
+          - "instrumentation/**"
       - repo: open-telemetry/opentelemetry-rust
         paths:
           - "CHANGELOG.md"

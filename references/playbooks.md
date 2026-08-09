@@ -94,6 +94,9 @@ document.
 | [Exposing OTel Collector in Kubernetes with Gateway API & mTLS](https://opentelemetry.io/blog/2025/expose-otel-collector-gateway-api/) | Gateway API, mTLS, external OTLP ingress, multi-cluster collector, hybrid cloud | Practical security and ingress pattern for centralized collector deployments | [security][security-ref], [architecture][architecture-ref], [collector][collector-ref] |
 | [How Mastodon Runs OpenTelemetry Collectors in Production](https://opentelemetry.io/blog/2026/devex-mastodon/) | small team, one collector per namespace, OpenTelemetry Operator, Argo CD, tail sampling, vendor-neutral observability | Strong operating model for keeping collector deployments simple, declarative, and reliable while preserving backend choice at production scale | [architecture][architecture-ref], [collector][collector-ref], [monitoring][monitoring-ref] |
 | [OpenTelemetry Profiles Enters Public Alpha](https://opentelemetry.io/blog/2026/profiles-alpha/) | profiles, profiling, OTLP Profiles, eBPF profiler, `pprof` receiver, profile correlation | Good routing target when users ask how continuous profiling fits into OpenTelemetry, especially around collector support and cross-signal correlation | [collector][collector-ref], [platforms][platforms-ref], [monitoring][monitoring-ref] |
+| [Announcing v1 of OpenTelemetry Go Compile-Time Instrumentation](https://opentelemetry.io/blog/2026/go-compile-time-instrumentation-v1/) | Go zero-code, `otelc`, `-toolexec`, build-time instrumentation, supported libraries | Gives Go teams a stable build-time option between manual SDK work and eBPF; compare rebuild requirements, library coverage, and runtime trade-offs | [instrumentation][instrumentation-ref], [platforms][platforms-ref] |
+| [Inside the LLM Call: GenAI Observability with OpenTelemetry](https://opentelemetry.io/blog/2026/genai-observability/) | GenAI traces, `invoke_agent`, `chat`, `execute_tool`, token usage, prompt capture, Copilot, Codex, Claude Code | Routes agent-observability questions to current signal shapes, content-capture controls, and the distinction between stable span names and tool-name attributes | [ai-agents][ai-agents-ref], [instrumentation][instrumentation-ref], [security][security-ref] |
+| [Introducing OTel Blueprints and Reference Implementations](https://opentelemetry.io/blog/2026/blueprints-intro/) | blueprints, reference implementations, prescriptive deployment, end-user adoption, holistic strategy | Encourages scoped deployment strategies that connect SDK, Collector, semantic conventions, and operations instead of isolated snippets | [architecture][architecture-ref], [collector][collector-ref], [instrumentation][instrumentation-ref] |
 | [Demystifying Automatic Instrumentation: How the Magic Actually Works](https://opentelemetry.io/blog/2025/demystifying-auto-instrumentation/) | auto-instrumentation, zero-code, bytecode instrumentation, eBPF, runtime hooks | Helps the skill explain *which* automatic instrumentation mechanism fits a runtime | [instrumentation][instrumentation-ref], [platforms][platforms-ref] |
 | [OpenTelemetry Logging and You](https://opentelemetry.io/blog/2025/opentelemetry-logging-and-you/) | logs, events, Logs API, log bridges, signal correlation | Useful when users ask how logs relate to traces and metrics in OTel's model | [instrumentation][instrumentation-ref], [collector][collector-ref] |
 | [How to Name Your Spans](https://opentelemetry.io/blog/2025/how-to-name-your-spans/) | span naming, low cardinality, semantic conventions, business spans | Good routing target for custom instrumentation and naming guidance | [instrumentation][instrumentation-ref] |
@@ -215,6 +218,9 @@ explanations.
 - **Gateway API + mTLS playbook source**: https://opentelemetry.io/blog/2025/expose-otel-collector-gateway-api/
 - **Mastodon production collectors source**: https://opentelemetry.io/blog/2026/devex-mastodon/
 - **Profiles alpha source**: https://opentelemetry.io/blog/2026/profiles-alpha/
+- **Go compile-time instrumentation v1 source**: https://opentelemetry.io/blog/2026/go-compile-time-instrumentation-v1/
+- **GenAI observability source**: https://opentelemetry.io/blog/2026/genai-observability/
+- **OTel blueprints source**: https://opentelemetry.io/blog/2026/blueprints-intro/
 - **Lambda extension playbook source**: https://opentelemetry.io/blog/2025/observing-lambdas/
 - **Auto-instrumentation strategy source**: https://opentelemetry.io/blog/2025/demystifying-auto-instrumentation/
 - **Logging source**: https://opentelemetry.io/blog/2025/opentelemetry-logging-and-you/
@@ -242,6 +248,7 @@ explanations.
 [platforms-ref]: platforms.md
 [sampling-ref]: sampling.md
 [security-ref]: security.md
+[ai-agents-ref]: ai-agents.md
 
 ---
 

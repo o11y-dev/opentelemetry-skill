@@ -40,6 +40,28 @@ Instrumentation is the process of adding observability to application code. This
 - `fraud_detection` spans with risk scores
 - `inventory_check` spans with SKU and quantity
 
+### Go compile-time instrumentation
+
+For Go services that can be rebuilt, the stable Go Compile-Time Instrumentation
+v1 project provides a third option between manual SDK work and out-of-process
+eBPF instrumentation:
+
+- Run `otelc go build` instead of `go build`; the tool injects instrumentation
+  through the Go toolchain's `-toolexec` mechanism.
+- It can cover supported standard-library and dependency packages without source
+  changes, including `net/http`, `database/sql`, gRPC, Redis, and Go runtime
+  metrics.
+- Prefer compile-time instrumentation when the fleet can rebuild binaries and
+  needs repeatable CI/CD rollout. Prefer eBPF when binaries cannot be rebuilt,
+  and manual instrumentation when domain-specific spans or unsupported
+  libraries are required.
+- Confirm the supported-library list and emitted semantic conventions for the
+  installed release; coverage is intentionally narrower than the whole Go
+  ecosystem and expands over time.
+
+See the [Go compile-time instrumentation v1 announcement](https://opentelemetry.io/blog/2026/go-compile-time-instrumentation-v1/)
+and the [supported libraries](https://opentelemetry.io/docs/zero-code/go/compile-time/supported-libraries/).
+
 ### Auto-Instrumentation Setup
 
 #### Java (OpenTelemetry Java Agent)
@@ -211,7 +233,7 @@ public class PaymentService {
 | **Messaging** | `messaging.system`, `messaging.destination`, `messaging.operation` | `messaging.system = "kafka"` |
 | **Network** | `network.protocol.name`, `network.protocol.version` | `network.protocol.name = "http"` |
 | **Cloud** | `cloud.provider`, `cloud.platform`, `cloud.region` | `cloud.provider = "aws"` |
-| **GenAI** | `gen_ai.system`, `gen_ai.operation.name`, `gen_ai.request.model` | `gen_ai.system = "openai"` |
+| **GenAI** | `gen_ai.provider.name`, `gen_ai.operation.name`, `gen_ai.request.model` | `gen_ai.provider.name = "openai"` |
 | **Events** | `event.name`, structured log body | `event.name = "user.login"` |
 
 ### HTTP Semantic Conventions
@@ -246,14 +268,14 @@ span.set_attribute(SpanAttributes.SERVER_ADDRESS, "db.example.com")
 span.set_attribute(SpanAttributes.SERVER_PORT, 5432)
 ```
 
-### GenAI Semantic Conventions (v1.27.0+)
+### GenAI Semantic Conventions
 
 The `gen_ai/` namespace covers Generative AI operations (LLM calls, embeddings, etc.):
 
 ```python
 # Instrumenting an LLM API call (e.g., OpenAI Chat Completions)
 with tracer.start_as_current_span("chat.completion") as span:
-    span.set_attribute("gen_ai.system", "openai")           # ai system identifier
+    span.set_attribute("gen_ai.provider.name", "openai")     # model/provider identity
     span.set_attribute("gen_ai.operation.name", "chat")     # "chat", "text_completion", "embeddings"
     span.set_attribute("gen_ai.request.model", "gpt-4o")    # requested model
     span.set_attribute("gen_ai.request.max_tokens", 1024)
@@ -271,7 +293,7 @@ with tracer.start_as_current_span("chat.completion") as span:
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
-| `gen_ai.system` | string | AI provider (`openai`, `anthropic`, `vertex_ai`, `aws_bedrock`) |
+| `gen_ai.provider.name` | string | Model/provider identity (`openai`, `anthropic`, `gcp.gen_ai`, `aws.bedrock`) |
 | `gen_ai.operation.name` | string | Operation type (`chat`, `text_completion`, `embeddings`) |
 | `gen_ai.request.model` | string | Requested model name |
 | `gen_ai.response.model` | string | Actual model used (may differ from request) |
@@ -302,7 +324,7 @@ token_counter = meter.create_counter(
 token_counter.add(
     response.usage.total_tokens,
     {
-        "gen_ai.system": "openai",
+        "gen_ai.provider.name": "openai",
         "gen_ai.operation.name": "chat",
         "gen_ai.token.type": "total",  # Common values include total/input/output; cache/reasoning buckets may appear as semantic conventions evolve
     }
@@ -319,6 +341,7 @@ When an SDK is initialized from **declarative configuration**, there is not yet 
 - Keep critical resource attributes (`service.name`, `deployment.environment.name`, ownership tags) explicit in config instead of relying on implicit detector merge order.
 - Verify the effective `Resource` through emitted telemetry, collector debug output, or integration tests — not by assuming the SDK exposes a post-merge resource object.
 - If you need downstream routing or access control based on resource attributes, test the serialized OTLP output end to end before promoting a declarative config change.
+- For OpenTelemetry Java agent 2.30+, prefer the current `ConfigProvider`/`DeclarativeConfigBridge` path for experimental declarative configuration; older `ConfigProperties` bridge APIs are compatibility layers and are being removed in a future major release.
 
 ### Events Semantic Conventions (v1.32.0+)
 

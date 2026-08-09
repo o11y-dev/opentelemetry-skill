@@ -161,8 +161,8 @@ When user requests match these patterns, include these points explicitly:
 - **Collector setup**: include `memory_limiter`; keep it first in each pipeline `processors` list; explain OOM-prevention rationale.
 - **Metric dimension request for `user_id`**: refuse; explain time-series explosion risk; suggest traces and bounded metric dimensions.
 - **Kubernetes tail sampling**: Gateway (Deployment) tier, `load_balancing` with `routing_key: traceID`, Headless Service (`clusterIP: None`), error+10% policies, Beta stability caution.
-- **Claude Code telemetry**: include `CLAUDE_CODE_ENABLE_TELEMETRY=1`, `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative`, `~/.claude/settings.json` persistence; `OTEL_LOG_USER_PROMPTS`/`OTEL_LOG_TOOL_DETAILS` default to `false` — warn against enabling in shared/production environments without PII controls; avoid `session.id` as a metric dimension.
-- **AI agent tool-call tracing**: for agents using current `gen_ai.*` conventions, set `gen_ai.operation.name: execute_tool`, preserve `gen_ai.tool.name`, and name the span `execute_tool {gen_ai.tool.name}` (for example, `execute_tool bash`).
+- **Claude Code telemetry**: include `CLAUDE_CODE_ENABLE_TELEMETRY=1`, `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative`, and managed-settings persistence; traces are beta, while metrics and logs/events remain the broadly documented signals. Keep prompt/tool-content capture disabled unless PII controls are explicit, and avoid `session.id` as a metric dimension.
+- **AI agent tool-call tracing**: for agents using current `gen_ai.*` conventions, set `gen_ai.operation.name: execute_tool`, preserve `gen_ai.tool.name`, and use the stable span name `execute_tool`; keep the actual tool name in the attribute.
 - **GenAI provider vs agent identity**: preserve `gen_ai.provider.name` for the model/provider (for example, `openai` or `gcp.gen_ai`); use `service.name` or a natively emitted agent attribute for the coding-agent identity rather than writing the agent name into the provider field.
 
 ## Existing Configuration Review Mode

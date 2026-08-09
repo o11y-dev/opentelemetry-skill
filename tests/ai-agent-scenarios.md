@@ -36,7 +36,7 @@
 - ✅ Sets `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative`
 - ✅ Warns about `OTEL_METRICS_INCLUDE_SESSION_ID` and cardinality risk
 - ✅ Mentions privacy controls are off by default
-- ✅ Notes Claude Code emits metrics + logs, NOT traces
+- ✅ Notes Claude Code emits metrics + logs and that traces are beta
 
 ### Compliance Check
 
@@ -44,7 +44,7 @@
 - [ ] Response includes `settings.json` persistent config example
 - [ ] Response mentions cumulative temporality preference
 - [ ] Response warns about session.id as metric dimension
-- [ ] Response notes no traces are emitted
+- [ ] Response notes traces are beta
 
 ---
 
@@ -68,9 +68,9 @@
 - ✅ Prefers OTLP gRPC by default, but explains when OTLP HTTP is the right fallback
 - ✅ `memory_limiter` as first processor in every pipeline
 - ✅ `resource` processor to tag `telemetry.source.type: ai-coding-agent`
-- ✅ `transform` processor adding `gen_ai.system` attribute to Claude Code data
+- ✅ Preserves vendor-native Claude Code fields and does not synthesize deprecated `gen_ai.system`
 - ✅ Separate pipelines for metrics, logs, traces
-- ✅ Notes Claude Code emits no traces (traces pipeline still useful for Gemini CLI)
+- ✅ Notes Claude Code traces are beta (traces pipeline remains useful for Gemini CLI)
 - ✅ `batch` processor last before exporters
 
 ### Compliance Check
@@ -80,7 +80,7 @@
 - [ ] `memory_limiter` is first processor
 - [ ] `resource` processor normalizes agent identity
 - [ ] Separate metrics/logs/traces pipelines
-- [ ] Notes Claude Code has no traces
+- [ ] Notes Claude Code trace support is beta
 
 ---
 
@@ -102,8 +102,8 @@
 
 - ✅ Gemini CLI: full traces ✅, follows `gen_ai.*` SemConv, v0.34.0+
 - ✅ GitHub Copilot (VS Code + CLI): full traces ✅, follows `gen_ai.*` SemConv
-- ✅ Claude Code: NO traces ❌ — metrics + logs only; use `prompt.id` as pseudo-trace correlation
-- ✅ Codex CLI: traces ⚠️ in interactive mode only; `codex exec` drops metrics
+- ✅ Claude Code: beta traces plus metrics/logs; use `prompt.id` correlation when traces are unavailable
+- ✅ Codex CLI: documented OTel surface is metrics/log events; verify trace support and mode-specific behavior
 - ✅ Qwen Code: partial native OTel ⚠️ with partial `gen_ai.*` dual-emit as of v0.16.1
 - ✅ OpenCode, Cursor, Windsurf, Aider: no native OTel ❌
 - ✅ Recommends Gemini CLI or Copilot if traces are a hard requirement
@@ -111,8 +111,8 @@
 ### Compliance Check
 
 - [ ] Correctly identifies Gemini CLI and Copilot as trace-capable
-- [ ] Correctly states Claude Code has NO traces
-- [ ] Mentions Codex CLI partial support limitation
+- [ ] Correctly states Claude Code traces are beta
+- [ ] Mentions Codex CLI's documented metrics/log-event surface and mode-specific limitation
 - [ ] Notes Qwen Code has partial native OTel and partial `gen_ai.*` dual-emit in v0.16.1
 - [ ] Suggests GenAI SemConv coverage as selection criterion
 
@@ -197,21 +197,21 @@
 
 - May use a generic `execute_tool` span name for every tool call
 - May omit `gen_ai.tool.name`
-- Likely misses the Semantic Conventions v1.41.0 span-naming requirement
+- Likely misses the stable `execute_tool` span name and `gen_ai.tool.name` attribute
 
 ### Expected WITH skill (GREEN target)
 
-- ✅ Uses the actual tool name as the execute-tool span name (for example `bash`, `search_code`)
+- ✅ Uses the stable `execute_tool` span name
 - ✅ Preserves `gen_ai.tool.name` on each tool span
-- ✅ Mentions the v1.41.0 GenAI SemConv breaking change for tool-call span naming
-- ✅ Avoids collapsing all tool calls into a generic `execute_tool` span name
+- ✅ Keeps the actual tool name in `gen_ai.tool.name`
+- ✅ Avoids encoding unbounded or vendor-specific tool names into span names
 
 ### Compliance Check
 
-- [ ] Response names execute-tool spans with the actual tool name
+- [ ] Response uses the stable `execute_tool` span name
 - [ ] Response includes `gen_ai.tool.name`
-- [ ] Response mentions the v1.41.0 tool-call span-naming requirement
-- [ ] Response avoids a generic `execute_tool` span name
+- [ ] Response keeps the actual tool name in `gen_ai.tool.name`
+- [ ] Response avoids encoding unbounded tool names into span names
 
 ---
 
@@ -221,8 +221,8 @@ Document observed agent rationalizations and counter-guidance here as they are d
 
 | Rationalization | Counter |
 |----------------|---------|
-| "Claude Code supports traces via the OTEL_TRACES_EXPORTER env var" | Claude Code explicitly does NOT emit traces. `OTEL_TRACES_EXPORTER` is ignored. Only metrics and logs are emitted. |
+| "Claude Code traces are production-stable" | Claude Code trace export is beta; validate signal shape and keep a metrics/log fallback. |
 | "You can use session.id as a metric label to track per-user costs" | session.id is unbounded cardinality. Use log queries with distinct count instead. |
 | "Qwen Code telemetry is still planned but not shipped" | Qwen Code ships native OTel. As of v0.16.1 it also dual-emits selected `gen_ai.*` attributes, but the private `qwen-code.*` fields remain authoritative while the schema settles. |
-| "Codex CLI telemetry works the same in exec mode" | `codex exec` drops ALL metrics. Interactive mode only for full telemetry. |
-| "Use a generic `execute_tool` span name for all agent tool calls" | GenAI SemConv v1.41.0 requires execute-tool spans to use the actual tool name while still populating `gen_ai.tool.name`. |
+| "Codex CLI telemetry works the same in every mode" | The documented OTel surface and mode coverage must be verified independently for the installed release. |
+| "Put every tool name into the span name" | Use the stable `execute_tool` span name and put the actual tool name in `gen_ai.tool.name`. |
