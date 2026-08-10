@@ -1,6 +1,6 @@
 {
   "name": "o11y-dev/opentelemetry-skill",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": false,
   "summary": "Expert OpenTelemetry guidance for collector configuration, pipeline design, and production telemetry instrumentation across Kubernetes, ECS, serverless, and standalone deployments. Use when configuring collectors, designing pipelines, instrumenting applications, implementing sampling, managing cardinality, securing telemetry, writing OTTL transformations, or setting up AI coding agent observability (Claude Code, Codex, Gemini CLI, GitHub Copilot).",
   "docs": "docs/index.md",

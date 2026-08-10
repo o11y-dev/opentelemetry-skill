@@ -5,6 +5,7 @@ on:
     branches: [master, main]
     paths:
       - 'SKILL.md'
+      - 'tile.json'
       - 'references/**/*.md'
       - '.claude-plugin/**'
       - '.cursor-plugin/**'
@@ -37,7 +38,7 @@ jobs:
 
       - name: Publish tile
         if: ${{ env.TESSL_API_TOKEN != '' }}
-        run: tessl tile publish
+        run: tessl tile publish --bump patch
 
       - name: Skip publish when token is missing
         if: ${{ env.TESSL_API_TOKEN == '' }}
