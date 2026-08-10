@@ -32,7 +32,7 @@
 
 - ✅ Includes `CLAUDE_CODE_ENABLE_TELEMETRY=1` as prerequisite
 - ✅ Provides exact env vars: `OTEL_METRICS_EXPORTER=otlp`, `OTEL_LOGS_EXPORTER=otlp`
-- ✅ Shows `~/.claude/settings.json` persistent config format
+- ✅ Shows managed-settings persistence, with `~/.claude/settings.json` as a concrete example
 - ✅ Sets `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative`
 - ✅ Warns about `OTEL_METRICS_INCLUDE_SESSION_ID` and cardinality risk
 - ✅ Mentions privacy controls are off by default
@@ -41,7 +41,7 @@
 ### Compliance Check
 
 - [ ] Response includes `CLAUDE_CODE_ENABLE_TELEMETRY=1`
-- [ ] Response includes `settings.json` persistent config example
+- [ ] Response includes managed-settings persistence, optionally with a `settings.json` example
 - [ ] Response mentions cumulative temporality preference
 - [ ] Response warns about session.id as metric dimension
 - [ ] Response notes traces are beta
@@ -195,9 +195,9 @@
 
 ### Expected WITHOUT skill (RED baseline)
 
-- May use a generic `execute_tool` span name for every tool call
+- May use tool-specific span names or `execute_tool {tool}`
 - May omit `gen_ai.tool.name`
-- Likely misses the stable `execute_tool` span name and `gen_ai.tool.name` attribute
+- Likely misses the stable `execute_tool` span name or fails to preserve the tool name in `gen_ai.tool.name`
 
 ### Expected WITH skill (GREEN target)
 
