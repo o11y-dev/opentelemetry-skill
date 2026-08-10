@@ -5,19 +5,21 @@ on:
     branches: [master, main]
     paths:
       - 'SKILL.md'
+      - 'tile.json'
       - 'references/**/*.md'
       - '.claude-plugin/**'
       - '.cursor-plugin/**'
       - '.github/workflows/publish.yml'
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   publish:
     name: Publish tile to Tessl registry
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
     env:
       TESSL_API_TOKEN: ${{ secrets.TESSL_API_TOKEN }}
 
@@ -25,19 +27,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Tessl CLI
+      - name: Publish with automatic patch versioning
         if: ${{ env.TESSL_API_TOKEN != '' }}
-        uses: tesslio/setup-tessl@v2
+        uses: tesslio/patch-version-publish@v1
         with:
           token: ${{ env.TESSL_API_TOKEN }}
-
-      - name: Lint tile
-        if: ${{ env.TESSL_API_TOKEN != '' }}
-        run: tessl tile lint
-
-      - name: Publish tile
-        if: ${{ env.TESSL_API_TOKEN != '' }}
-        run: tessl tile publish
 
       - name: Skip publish when token is missing
         if: ${{ env.TESSL_API_TOKEN == '' }}
