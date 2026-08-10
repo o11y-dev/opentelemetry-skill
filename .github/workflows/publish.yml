@@ -11,6 +11,17 @@ on:
       - '.cursor-plugin/**'
       - '.github/workflows/publish.yml'
   workflow_dispatch:
+    inputs:
+      bump:
+        description: Version bump level for a manual release
+        required: true
+        type: choice
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+        default: auto
 
 permissions:
   contents: read
@@ -38,7 +49,16 @@ jobs:
 
       - name: Publish tile
         if: ${{ env.TESSL_API_TOKEN != '' }}
-        run: tessl tile publish --bump patch
+        env:
+          TESSL_BUMP: ${{ inputs.bump || 'auto' }}
+        run: |
+          if [ "$TESSL_BUMP" = "auto" ]; then
+            echo "Using the safe automatic patch bump."
+            tessl tile publish --bump patch
+          else
+            echo "Using the requested $TESSL_BUMP bump."
+            tessl tile publish --bump "$TESSL_BUMP"
+          fi
 
       - name: Skip publish when token is missing
         if: ${{ env.TESSL_API_TOKEN == '' }}
