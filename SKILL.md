@@ -30,8 +30,8 @@ tags:
   - ai-agent
 metadata:
   author: o11y.dev
-  version: 0.4.0
-  tessl_version: 0.4.0
+  version: 0.5.0
+  tessl_version: 0.5.0
   signals:
     - traces
     - metrics

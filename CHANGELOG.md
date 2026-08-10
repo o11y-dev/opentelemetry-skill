@@ -17,7 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Update instrumentation guidance from deprecated `gen_ai.system` to `gen_ai.provider.name` and document stable Go compile-time instrumentation as an alternative to eBPF and manual SDK work
 - Migrate Collector examples and evaluations to canonical component IDs and raise the compatibility floor to v0.153.0
 - Document sparse exporter-helper failure metrics and expand upstream watcher coverage for GenAI conventions and exporter helpers
-- Bump aligned Tessl skill and tile metadata from `0.3.0` to `0.4.0`
+- Bump aligned Tessl skill and tile metadata from `0.4.0` to `0.5.0`
 
 ## [1.3.0] - 2026-05-08
 
