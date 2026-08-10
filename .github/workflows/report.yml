@@ -20,5 +20,5 @@ jobs:
       - name: Run Tessl skill review
         uses: tesslio/skill-review-and-optimize@90e919d50ecb2dd11e07d69ef1440e7b2716189b
         with:
-          optimize: true
+          optimize: false
           tessl-token: ${{ secrets.TESSL_API_TOKEN }}

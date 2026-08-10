@@ -28,11 +28,11 @@ This file is automatically flagged for review when changes occur in:
 
 | Agent | Vendor | Native OTel | Traces | Metrics | Logs/Events | GenAI SemConv | Hooks Support | Config Method | Config File / Env Vars | Protocol | Official Docs |
 |-------|--------|-------------|--------|---------|-------------|---------------|---------------|---------------|------------------------|----------|---------------|
-| **Claude Code** | Anthropic | ⚠️ metrics/logs only | ❌ | ✅ | ✅ | ❌ (custom `claude_code.*`) | ✅ governance wrapper | Env vars or `~/.claude/settings.json` | `CLAUDE_CODE_ENABLE_TELEMETRY`, `OTEL_*` | OTLP gRPC/HTTP | [docs](https://code.claude.com/docs/en/monitoring-usage) |
+| **Claude Code** | Anthropic | ⚠️ metrics/logs + traces beta | ⚠️ beta | ✅ | ✅ | ❌ (custom `claude_code.*`) | ✅ governance wrapper | Env vars or managed settings | `CLAUDE_CODE_ENABLE_TELEMETRY`, `OTEL_*` | OTLP gRPC/HTTP | [docs](https://code.claude.com/docs/en/monitoring-usage) |
 | **Gemini CLI** | Google | ✅ full | ✅ | ✅ | ✅ | ✅ (`gen_ai.*`) | ✅ governance wrapper | `.gemini/settings.json` or env vars | `GEMINI_TELEMETRY_*` | OTLP gRPC | [docs](https://geminicli.com/docs/cli/telemetry/) |
 | **GitHub Copilot VS Code** | Microsoft | ✅ full | ✅ | ✅ | ✅ | ✅ (`gen_ai.*`) | ⚠️ launcher wrapper only | VS Code `settings.json` or env var | `COPILOT_OTEL_ENABLED` | OTLP HTTP | [docs](https://code.visualstudio.com/docs/copilot/guides/monitoring-agents) |
 | **GitHub Copilot CLI** | Microsoft | ✅ full | ✅ | ✅ | ✅ | ✅ (`gen_ai.*`) | ✅ governance wrapper | Same span model as VS Code | `COPILOT_OTEL_ENABLED` | OTLP HTTP | [docs](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference) |
-| **OpenAI Codex CLI** | OpenAI | ⚠️ partial | ⚠️ interactive only | ⚠️ interactive only | ✅ | ❌ (custom event names) | ✅ gap-filler + governance | `~/.codex/config.toml` `[otel]` section | `~/.codex/config.toml` | OTLP gRPC | [docs](https://developers.openai.com/codex/config-advanced) |
+| **OpenAI Codex CLI** | OpenAI | ⚠️ partial | ⚠️ verify per release/mode | ✅ | ✅ | ❌ (custom event names) | ✅ gap-filler + governance | `~/.codex/config.toml` `[otel]` section | `~/.codex/config.toml` | OTLP gRPC | [docs](https://developers.openai.com/codex/config-advanced) |
 | **Qwen Code** | Alibaba | ⚠️ partial | ⚠️ partial | ⚠️ partial | ⚠️ partial | ⚠️ partial | ✅ interim bridge | `.qwen/settings.json`, env vars, CLI flags | `.qwen/settings.json`, `QWEN_TELEMETRY_*`, `OTEL_*` | OTLP gRPC/HTTP | [docs](https://qwenlm.github.io/qwen-code-docs/en/developers/development/telemetry/) |
 | **OpenCode** | Anomaly | ❌ none | ❌ | ❌ | ❌ | ❌ | ✅ primary | Community plugin only | n/a | n/a | [plugin](https://github.com/DEVtheOPS/opencode-plugin-otel) |
 | **Pi Agent** | open-source | ❌ none | ❌ | ❌ | ⚠️ install telemetry only | ❌ | ✅ primary | `~/.pi/agent/settings.json` or `.pi/settings.json` | `PI_TELEMETRY`, `enableInstallTelemetry` | n/a | [docs](https://pi.dev) |
@@ -56,7 +56,7 @@ This file is automatically flagged for review when changes occur in:
 
 ### 2.1 Claude Code
 
-Claude Code emits **metrics** and **logs/events** only — no traces. Telemetry is opt-in.
+Claude Code emits **metrics** and **logs/events**, with **traces available as a beta feature**. Telemetry is opt-in.
 
 **Minimum config (env vars):**
 
@@ -64,6 +64,7 @@ Claude Code emits **metrics** and **logs/events** only — no traces. Telemetry 
 export CLAUDE_CODE_ENABLE_TELEMETRY=1
 export OTEL_METRICS_EXPORTER=otlp
 export OTEL_LOGS_EXPORTER=otlp
+export OTEL_TRACES_EXPORTER=otlp # beta
 export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 ```
@@ -76,6 +77,7 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
     "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
     "OTEL_METRICS_EXPORTER": "otlp",
     "OTEL_LOGS_EXPORTER": "otlp",
+    "OTEL_TRACES_EXPORTER": "otlp",
     "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
     "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
     "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "cumulative"
@@ -94,6 +96,7 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 
 > ⚠️ **Temporality**: Claude Code emits cumulative metrics. Set `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative` to match. VictoriaMetrics and some Prometheus backends will silently drop delta-converted metrics from cumulative sources.
 > ✅ **Bounded metric dimension**: Prefer `OTEL_METRICS_INCLUDE_ENTRYPOINT=true` over `OTEL_METRICS_INCLUDE_SESSION_ID=true` when you need a stable breakdown of CLI vs IDE/SDK launches. `app.entrypoint` stays bounded and is safe for dashboards; `session.id` is still high-cardinality.
+> ⚠️ **Trace maturity**: Claude Code traces are beta. Validate signal shape, exporter behavior, and privacy controls before making them a production dependency.
 
 ---
 
@@ -107,9 +110,12 @@ Gemini CLI emits full **traces + metrics + logs** using GenAI semantic conventio
 {
   "telemetry": {
     "enabled": true,
+    "traces": true,
+    "target": "local",
     "otlpEndpoint": "http://localhost:4317",
     "otlpProtocol": "grpc",
-    "logPrompts": false
+    "logPrompts": false,
+    "useCollector": true
   }
 }
 ```
@@ -119,9 +125,11 @@ Gemini CLI emits full **traces + metrics + logs** using GenAI semantic conventio
 ```bash
 export GEMINI_TELEMETRY_ENABLED=true
 export GEMINI_TELEMETRY_OTLP_ENDPOINT=http://localhost:4317
+export GEMINI_TELEMETRY_TRACES_ENABLED=true
+export GEMINI_TELEMETRY_LOG_PROMPTS=false
 ```
 
-> ✅ Gemini CLI v0.34.0+ follows `gen_ai.*` GenAI semantic conventions. Traces include full span hierarchy for multi-step agent operations.
+> ✅ Gemini CLI v0.34.0+ supports traces, metrics, and logs. Explicitly disable prompt logging (`logPrompts: false`) for shared or production environments, because the current official default is `true`.
 
 ---
 
@@ -147,6 +155,13 @@ export COPILOT_OTEL_OTLP_ENDPOINT=http://localhost:4318
 
 > ⚠️ `captureContent: true` captures **full prompts and responses**. Keep this `false` in shared or production environments. See [Privacy section](#6-privacy--cardinality-considerations).
 
+Copilot now emits three attribute namespaces: `gen_ai.*` for standard fields,
+`github.copilot.*` as the preferred Copilot-specific namespace, and legacy
+`copilot_chat.*` fields for compatibility. New dashboards and transforms should
+prefer `github.copilot.*` while retaining legacy aliases when existing
+consumers depend on them. Tool spans use the stable span name `execute_tool`;
+the actual tool name belongs in `gen_ai.tool.name`.
+
 ---
 
 ### 2.4 GitHub Copilot CLI
@@ -164,7 +179,7 @@ export COPILOT_OTEL_OTLP_ENDPOINT=http://localhost:4318
 
 ### 2.5 OpenAI Codex CLI
 
-Codex CLI supports telemetry in **interactive mode only**. `codex exec` and `codex mcp-server` have known gaps (see [Known Gaps](#7-known-gaps--workarounds)).
+Codex CLI's documented telemetry is mode-sensitive. Verify the installed release before assuming parity between interactive, `exec`, and `mcp-server` modes.
 
 **Config file (`~/.codex/config.toml`):**
 
@@ -181,7 +196,7 @@ log_user_prompt = false
 exporter = { otlp-grpc = { endpoint = "http://localhost:4317" } }
 ```
 
-> ⚠️ Codex v0.105.0+ is required. `codex exec` drops metrics entirely. `codex mcp-server` has zero OTel support. See [open issue #12913](https://github.com/openai/codex/issues/12913). As of rust-v0.130.0, Codex CLI added configurable OpenTelemetry trace metadata fields.
+> ⚠️ Codex's documented OTel surface is structured log events and metrics for API requests, tool calls, and sessions; do not promise distributed traces without verifying the installed release. `codex exec` and `codex mcp-server` remain separate coverage paths and should be validated independently.
 
 ---
 
@@ -234,7 +249,7 @@ otel-hooks --service-name cursor --otlp-endpoint http://localhost:4317 -- cursor
 
 | Agent | Native OTel | Hooks Role | Recommended Usage |
 |-------|-------------|------------|-------------------|
-| **Claude Code** | ⚠️ metrics/logs only | Governance wrapper | Keep native metrics/logs enabled; add hooks when you need standardized start/stop audit events, resource attributes, or launch-time controls across agents. |
+| **Claude Code** | ⚠️ metrics/logs + traces beta | Governance wrapper | Prefer native metrics/logs; evaluate beta traces separately, and add hooks when you need standardized start/stop audit events, resource attributes, or launch-time controls across agents. |
 | **Gemini CLI** | ✅ full | Governance wrapper | Prefer native telemetry for traces and GenAI semantics; add hooks only for organization-wide process-boundary controls or uniform invocation audit events. |
 | **GitHub Copilot CLI** | ✅ full | Governance wrapper | Use native telemetry for primary observability; add hooks when you need consistent launch policies, ownership tags, or process-boundary audit signals across multiple CLI agents. |
 | **GitHub Copilot VS Code** | ✅ full | Limited launcher wrapper | Prefer native telemetry. Hooks can wrap the editor launch, but they provide only outer-process coverage because most agent activity occurs inside the desktop process after startup. |
@@ -400,9 +415,9 @@ Do not generate `gen_ai.user.message`, `gen_ai.assistant.message`, `gen_ai.tool.
 | Agent | Span Name | Kind | Key Attributes | Child Spans |
 |-------|-----------|------|----------------|-------------|
 | GenAI inference | `{gen_ai.operation.name} {gen_ai.request.model}` | `CLIENT` (usually) | `gen_ai.provider.name`, `gen_ai.operation.name`, `gen_ai.request.model` | tool call spans |
-| GenAI tool execution | `execute_tool {gen_ai.tool.name}` | `INTERNAL` | `gen_ai.operation.name=execute_tool`, `gen_ai.tool.name`, `gen_ai.tool.call.id` | none |
+| GenAI tool execution | `execute_tool` | `INTERNAL` | `gen_ai.operation.name=execute_tool`, `gen_ai.tool.name`, `gen_ai.tool.call.id` | none |
 
-> **Note**: Claude Code emits **no traces**. Use `prompt.id` correlation across log events as a pseudo-trace (see [Known Gaps](#7-known-gaps--workarounds)).
+> **Note**: Claude Code traces are beta. If traces are disabled or unavailable, use native `prompt.id` correlation across log events as a fallback.
 
 ---
 
@@ -500,9 +515,9 @@ See `references/security.md` for comprehensive OTTL redaction patterns.
 
 ## 7. Known Gaps & Workarounds
 
-### 7.1 Claude Code: No Traces
+### 7.1 Claude Code: Beta Traces
 
-**Gap**: Claude Code emits metrics and logs/events, but **no distributed traces**. There is no W3C `traceparent` propagation.
+**Gap**: Claude Code's trace export is beta and should not be treated as a stable cross-agent tracing contract. There may still be deployments where only metrics and logs/events are enabled.
 
 **Workaround — Pseudo-trace via `prompt.id` correlation**:
 
@@ -520,11 +535,11 @@ Query in Loki/OpenSearch: `{job="claude_code"} | json | prompt_id="prompt_abc123
 
 ### 7.2 Codex CLI: Exec and MCP-Server Gaps
 
-**Gap**: `codex exec` (non-interactive batch mode) drops **all metrics**. `codex mcp-server` has **zero OTel instrumentation**.
+**Gap**: Codex telemetry is mode-sensitive, and the documented OTel surface does
+not establish uniform distributed-trace coverage across interactive, `exec`, and
+`mcp-server` modes.
 
-**Status**: Open issue — [github.com/openai/codex/issues/12913](https://github.com/openai/codex/issues/12913)
-
-**Workaround**: Use interactive `codex` mode for telemetry. For `codex exec` pipelines, instrument the calling shell script with timing/exit code metrics via a Prometheus Pushgateway or write structured JSON logs that a filelog receiver can ingest.
+**Workaround**: Verify the installed Codex release and mode independently. For `codex exec` pipelines, instrument the calling shell script with timing/exit code metrics via a Prometheus Pushgateway or write structured JSON logs that a filelog receiver can ingest.
 
 ### 7.3 Qwen Code: Runtime Active, Partial GenAI Dual-Emit
 
@@ -548,14 +563,14 @@ Query in Loki/OpenSearch: `{job="claude_code"} | json | prompt_id="prompt_abc123
 
 ### 7.6 GenAI SemConv Coverage
 
-**Current execute-tool convention**: Set `gen_ai.operation.name` to `execute_tool`, populate `gen_ai.tool.name`, and name the span `execute_tool {gen_ai.tool.name}` (for example, `execute_tool bash`). A bare `execute_tool` span loses useful indexing context, while a span named only `bash` does not follow the current convention.
+**Current execute-tool convention**: Set `gen_ai.operation.name` to `execute_tool`, populate `gen_ai.tool.name`, and use the stable span name `execute_tool`. Keep the actual tool name in `gen_ai.tool.name`; do not encode unbounded or vendor-specific tool names into span names.
 
 | Agent | Uses `gen_ai.*` | Custom Prefix | Notes |
 |-------|----------------|---------------|-------|
 | Gemini CLI | ✅ Full | — | Verify emitted fields against the agent version and Development GenAI conventions |
 | GitHub Copilot | ✅ Full | — | Verify emitted fields against the agent version and Development GenAI conventions |
 | Claude Code | ❌ | `claude_code.*` | Preserve the vendor schema and identify the agent with `service.name` |
-| Codex CLI | ❌ | `codex.*` | Custom event names, partial coverage |
+| Codex CLI | ❌ | `codex.*` | Custom event names, metrics/log events, and partial mode coverage |
 | Qwen Code | ⚠️ partial | `qwen-code.*` | v0.16.1 dual-emits selected `gen_ai.*` attributes (`gen_ai.request.model`, `gen_ai.usage.*`, `gen_ai.server.time_to_first_token`); private names remain authoritative |
 
 For unified dashboards, group coding agents by `service.name` and providers by `gen_ai.provider.name`. Do not translate an agent product name into `gen_ai.provider.name`, and do not recreate deprecated `gen_ai.system` attributes.
