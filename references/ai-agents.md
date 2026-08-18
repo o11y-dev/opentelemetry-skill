@@ -555,6 +555,13 @@ not establish uniform distributed-trace coverage across interactive, `exec`, and
 
 > ⚠️ opentelemetry-hooks captures process-level signals only (invocation duration, exit code, stdout/stderr). It complements native telemetry, but it cannot observe LLM token usage, model names, or tool calls made inside the agent. For full GenAI observability, advocate for native instrumentation via the agents' issue trackers.
 
+**OpenCode in-process plugin:** Because process-level hooks cannot see OpenCode's internal token usage, model metadata, or tool calls, the community plugin [opencode-plugin-otel](https://github.com/DEVtheOPS/opencode-plugin-otel) instruments OpenCode from inside the process to capture those signals. As of **v1.2.0**, set `OPENCODE_SPAN_ATTRIBUTES` to a comma-separated list of `key=value` pairs that the plugin attaches to every emitted span, log event, and metric data point — useful for filtering or grouping by team or environment in your backend. It is independent of `OPENCODE_RESOURCE_ATTRIBUTES`, which sets producer metadata on the OTel Resource.
+
+```bash
+# Tag every OpenCode span, log event, and metric point for filtering
+export OPENCODE_SPAN_ATTRIBUTES="team=platform,deployment.environment=production"
+```
+
 ### 7.5 Cross-Agent Trace Correlation
 
 **Gap**: No W3C `traceparent` propagation exists between AI coding agents. If Claude Code calls a tool that triggers Gemini CLI (or vice versa via MCP), there is no automatic trace linkage.
