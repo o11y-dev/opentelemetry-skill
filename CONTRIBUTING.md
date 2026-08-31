@@ -55,17 +55,20 @@ To add a test:
 
 ### Updating playbooks
 
-`references/playbooks.md` routes upstream OpenTelemetry blog posts by technical problem.
+`references/playbooks.md` routes relevant OpenTelemetry and CNCF blog posts by technical problem.
 
-1. Find a new blog post on [opentelemetry.io/blog](https://opentelemetry.io/blog)
+1. Review posts surfaced by the weekly digest from [opentelemetry.io/blog](https://opentelemetry.io/blog) and the OTel-filtered [CNCF blog](https://www.cncf.io/blog/)
 2. Identify which technical problem it addresses
 3. Add it to the routing table with: title, URL, technical intent, and related triggers
-4. The weekly upstream maintenance workflow (`otel-upstream-maintenance.yml`) will flag new posts automatically
+4. If it introduces a fast-moving third-party tool, add that repository to the appropriate tier in `.github/scripts/repos.json` and map it in `.github/upstream-map.yaml`
+
+The weekly workflow (`.github/workflows/upstream-tier2.yml`) reports feed failures and recent matching posts. Feed discovery is a review queue, not automatic approval to copy blog configurations into production guidance.
 
 ## CI validation
 
 `.github/workflows/validate.yml` runs on a subset of paths for pushes and PRs (it may not run on every push/PR):
 
+- Upstream feed parsing, topic filtering, and configured source coverage are tested with Node's built-in test runner
 - `SKILL.md` has required frontmatter (`name`, `description`)
 - `.claude-plugin/marketplace.json` structure is valid
 - Referenced files between `SKILL.md` and `references/` exist (basic internal link check; anchors are not validated)

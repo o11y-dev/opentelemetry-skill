@@ -7,9 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- Restore weekly RSS monitoring for OpenTelemetry posts and OTel-related CNCF posts, with bounded parsing, visible feed failures, and regression tests
+- Add developer-local observability routing for OTel Desktop Viewer, `otel-tui`, and OTel Front
 - Add scaled `signal_to_metrics` correctness guidance and regression coverage for producer identity, backend resource mapping, temporality, and dashboard aggregation
 
 ### Changed
+- Add the three developer-viewer repositories to monthly upstream monitoring and map them to the playbook reference
 - Replace upstream digest issue updates to overwrite issue body snapshots (instead of appending) while preserving idempotent no-op reruns on exact body matches
 - Update GenAI guidance for the separate conventions repository, provider-versus-agent identity, histogram token usage, current content attributes, and execute-tool span naming
 - Refresh AI-agent telemetry guidance from current upstream documentation: Claude Code beta traces, Gemini prompt/traces controls, Copilot namespace migration, and Codex mode-specific verification

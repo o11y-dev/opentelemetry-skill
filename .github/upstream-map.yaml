@@ -322,13 +322,28 @@ mappings:
           - "exporter/awsemfexporter/**"
 
   - skill: references/playbooks.md
-    topics: [incident-response, operations]
+    topics: [incident-response, operations, developer-observability, local-tooling]
     watches:
+      - repo: open-telemetry/opentelemetry.io
+        paths:
+          - "content/en/blog/**"
       - repo: open-telemetry/opentelemetry-collector
         paths:
           - "CHANGELOG.md"
       - repo: open-telemetry/opentelemetry-collector-contrib
         paths:
+          - "CHANGELOG.md"
+      - repo: CtrlSpice/otel-desktop-viewer
+        paths:
+          - "README.md"
+          - "CHANGELOG.md"
+      - repo: ymtdzzz/otel-tui
+        paths:
+          - "README.md"
+          - "CHANGELOG.md"
+      - repo: mesaglio/otel-front
+        paths:
+          - "README.md"
           - "CHANGELOG.md"
 
   - skill: references/setup-kubernetes.md

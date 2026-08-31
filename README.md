@@ -23,7 +23,7 @@ This repository contains the source code for the **OpenTelemetry Skill** tile re
 
 **Progressive Loading**: Context-aware reference loading prevents information overload
 
-**Continuous Updates**: Automated upstream monitoring tracks OpenTelemetry releases and AI agent repositories
+**Continuous Updates**: Automated upstream monitoring tracks OpenTelemetry and CNCF blog posts, OpenTelemetry releases, AI agents, and developer tooling
 
 ## 📋 Table of Contents
 
@@ -137,7 +137,7 @@ opentelemetry-skill/
 │   ├── monitoring.md         # Self-monitoring patterns
 │   ├── ottl.md               # OpenTelemetry Transformation Language
 │   ├── platforms.md          # Serverless & FaaS patterns
-│   ├── playbooks.md          # Production incident response playbooks
+│   ├── playbooks.md          # Blog-derived production and developer workflows
 │   ├── sampling.md           # Sampling strategies
 │   ├── security.md           # PII redaction, TLS & authentication
 │   ├── setup-index.md        # Platform deployment decision tree
@@ -232,7 +232,7 @@ Deep-dive guides are available in the `references/` directory:
 - **[sampling.md](references/sampling.md)**: Head vs tail, probabilistic strategies, sticky sessions
 - **[security.md](references/security.md)**: PII redaction, TLS/mTLS configuration, platform-specific security guidance
 - **[monitoring.md](references/monitoring.md)**: Collector metrics, dashboards, alerts
-- **[playbooks.md](references/playbooks.md)**: Reusable production playbooks distilled from OpenTelemetry blog posts and real-world deployment stories
+- **[playbooks.md](references/playbooks.md)**: Reusable production and developer playbooks distilled from OpenTelemetry and CNCF posts
 
 ## Contrib Components & Example Configs
 
@@ -274,7 +274,7 @@ This skill includes a comprehensive test and validation framework following TDD 
 
 The testing framework validates that the skill actually changes AI behavior and doesn't allow common anti-patterns. GitHub Actions automatically validates skill structure and content on every change, and the Tessl report workflow posts best-practice review feedback on every pull request.
 
-An additional GitHub Agentic Workflow (`.github/workflows/otel-upstream-maintenance.yml`) runs weekly to create an upstream maintenance digest issue with recent OpenTelemetry GitHub issues, releases, and blog/community updates for practical repository refreshes.
+The tiered upstream workflows run daily, weekly, and monthly. The weekly digest (`.github/workflows/upstream-tier2.yml`) reads the OpenTelemetry blog feed and OTel-related CNCF posts; the repository tiers track releases and recent issues for OpenTelemetry, AI-agent, and developer-viewer projects. Feed failures remain visible in the digest for follow-up.
 
 ## Contributing
 
