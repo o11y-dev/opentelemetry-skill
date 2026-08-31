@@ -1,7 +1,7 @@
 name: monthly-upstream-digest
 
-# Monthly digest of the specification, OTEPs, helm charts, demo, and
-# long-tail SDK/contrib repos.
+# Monthly digest of the specification, OTEPs, helm charts, demo, long-tail
+# SDK/contrib repos, and developer-local OpenTelemetry viewers.
 
 on:
   schedule:

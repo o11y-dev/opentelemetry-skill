@@ -81,14 +81,15 @@ problem space, not by a specific company name.
 
 ## Relevant 2025-2026 Blogs for This Skill
 
-These are the most relevant recent 2025 and early-2026 `opentelemetry.io` blog
-posts to route through this skill today. The list is intentionally
+These are the most relevant recent 2025-2026 OpenTelemetry and CNCF blog posts
+to route through this skill today. The list is intentionally
 **topic-driven** and **open-ended** so future entries can be added without
 restructuring the
 document.
 
 | Blog | Primary routing signals | Why it matters for the skill | Load next |
 | :--- | :--- | :--- | :--- |
+| [The lazy developer's guide to observing your own code](https://www.cncf.io/blog/2026/08/25/the-lazy-developers-guide-to-observing-your-own-code/) | developer observability, local debugging, observability-driven development, zero-code plus manual instrumentation, OTel Desktop Viewer, `otel-tui`, OTel Front | Adds a practical local feedback loop for application instrumentation; keep its processor-free debug Collector and third-party viewers scoped to development, and verify current tool capabilities before use | [instrumentation][instrumentation-ref], [connectors][connectors-ref], [setup-docker][setup-docker-ref] |
 | [Kubernetes annotation-based discovery for the OpenTelemetry Collector](https://opentelemetry.io/blog/2025/otel-collector-k8s-discovery/) | `receiver_creator`, annotation-based discovery, Kubernetes self-service scraping, pod annotations | Strong playbook for self-service Collector onboarding with platform safety rails | [collector][collector-ref], [platforms][platforms-ref] |
 | [Observing Lambdas using the OpenTelemetry Collector Extension Layer](https://opentelemetry.io/blog/2025/observing-lambdas/) | Lambda, serverless, extension layer, `decouple` processor, delayed export | Covers ephemeral runtime constraints and decoupled export patterns | [platforms][platforms-ref], [collector][collector-ref], [monitoring][monitoring-ref] |
 | [Exposing OTel Collector in Kubernetes with Gateway API & mTLS](https://opentelemetry.io/blog/2025/expose-otel-collector-gateway-api/) | Gateway API, mTLS, external OTLP ingress, multi-cluster collector, hybrid cloud | Practical security and ingress pattern for centralized collector deployments | [security][security-ref], [architecture][architecture-ref], [collector][collector-ref] |
@@ -162,6 +163,25 @@ long-running Kubernetes workloads.
 mechanism depends on runtime behavior, deployment model, and operational
 constraints.
 
+### Keep local viewers in the developer feedback loop
+
+Developer-local viewers shorten the instrumentation feedback loop, but they are
+not production telemetry backends:
+
+- [OTel Desktop Viewer](https://github.com/CtrlSpice/otel-desktop-viewer),
+  [otel-tui](https://github.com/ymtdzzz/otel-tui), and
+  [OTel Front](https://github.com/mesaglio/otel-front) are third-party projects;
+  pin a release and verify current signal and protocol support in each upstream
+  README before recommending one.
+- Choose one viewer for the developer's workflow instead of fanning out every
+  signal to all of them unless the goal is an explicit comparison.
+- A Collector using only OTLP receivers, the `debug` exporter, and
+  `span_metrics` can be appropriate on a trusted local machine. Do not promote
+  that topology to production without the normal memory, batching, security,
+  durability, and backend controls.
+- Keep the canonical protocol mapping clear: OTLP gRPC uses port `4317`; OTLP
+  HTTP uses port `4318`.
+
 ### Prefer declarative and portable configuration where possible
 
 As OTel setups grow, YAML-first or schema-driven configuration becomes easier to
@@ -202,6 +222,12 @@ Serverless systems need export paths that respect execution and billing limits.
 As environments scale, declarative and shared configuration becomes more
 maintainable.
 
+### ❌ Treating a local viewer example as a production baseline
+
+Local examples intentionally trade durability, authentication, and operational
+guardrails for a fast feedback loop. Rebuild the pipeline against the
+production baseline instead of copying the local debug topology unchanged.
+
 ### ❌ Answering advanced sampling questions with only basic head-vs-tail advice
 
 Some user questions require consistent probability sampling and TraceState-aware
@@ -212,6 +238,7 @@ explanations.
 ## Reference Links
 
 - **OTel blog**: https://opentelemetry.io/blog/
+- **CNCF developer observability source**: https://www.cncf.io/blog/2026/08/25/the-lazy-developers-guide-to-observing-your-own-code/
 - **Developer Experience survey**: https://opentelemetry.io/blog/2025/devex-survey/
 - **Adobe source link**: https://opentelemetry.io/blog/2026/devex-adobe/
 - **K8s discovery playbook source**: https://opentelemetry.io/blog/2025/otel-collector-k8s-discovery/
@@ -249,6 +276,7 @@ explanations.
 [sampling-ref]: sampling.md
 [security-ref]: security.md
 [ai-agents-ref]: ai-agents.md
+[setup-docker-ref]: setup-docker.md
 
 ---
 
@@ -259,6 +287,8 @@ explanations.
 document on one org
 ✅ Route by **technical problem space** such as serverless, ingress, logs,
 metrics, naming, transforms, and sampling
+✅ Treat developer-local viewers as a fast feedback loop, not a production
+backend
 ✅ Treat blog posts as **entry points** and local references as the detailed
 implementation guides
 ⚠️ Avoid coupling the skill to **company-specific narratives** when the same
