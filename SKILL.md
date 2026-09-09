@@ -3,8 +3,8 @@ name: opentelemetry-skill
 description: "Expert OpenTelemetry guidance for collector configuration, pipeline design, and production telemetry instrumentation. Use when configuring collectors, designing pipelines, instrumenting applications, implementing sampling, managing cardinality, securing telemetry, writing OTTL transformations, or setting up AI coding agent observability (Claude Code, Codex, Gemini CLI, GitHub Copilot)."
 metadata:
   author: o11y.dev
-  version: 0.5.1
-  tessl_version: 0.5.1
+  version: 0.5.3
+  tessl_version: 0.5.3
   license: Apache-2.0
   tags: "opentelemetry, otel, observability, telemetry, monitoring, tracing, metrics, logs, collector, otelcol, pipeline, instrumentation, kubernetes, ecs, docker, serverless, deployment, architecture, sampling, cardinality, security, ottl, transform, codex, ai-agent"
   signals: "traces, metrics, logs, profiles"
