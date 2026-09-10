@@ -1,0 +1,26 @@
+{
+  "context": "Review an upgrade to Collector Contrib 0.160. Current Kafka exporter uses auth.tls, top-level topic and encoding, and producer.required_acks: wait_for_all. k8s_attributes has deployment_name_from_replicaset: false. The Prometheus exporter promotes every resource attribute, including session.id. Explain required edits and what to validate before rollout.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Identifies startup-breaking Kafka settings",
+      "max_score": 30,
+      "description": "Moves tls to component level, topic/encoding under traces (or the selected signal), and uses numeric required_acks -1 for all in-sync replicas. Does not propose Kafka as a required new dependency."
+    },
+    {
+      "name": "Removes rejected Kubernetes setting",
+      "max_score": 25,
+      "description": "Removes deployment_name_from_replicaset entirely, including false, and explains that unknown keys prevent startup."
+    },
+    {
+      "name": "Restricts resource labels",
+      "max_score": 25,
+      "description": "Uses resource_constant_labels.included with explicit bounded attributes for 0.160, excludes session/user identifiers, and checks preexisting datapoint dimensions and producer identity."
+    },
+    {
+      "name": "Validates release-specific behavior",
+      "max_score": 20,
+      "description": "Validates rendered config with the target binary and checks changed Kubernetes metrics/alerts, storage and network reachability. Distinguishes config validation from end-to-end delivery; Go 1.26 applies to custom builds."
+    }
+  ]
+}

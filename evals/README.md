@@ -8,20 +8,41 @@ This directory contains evaluation scenarios for the OpenTelemetry skill, design
 - **`ai-agent-scenarios.md`**: AI coding agent observability
 - **`production-scenarios.md`**: Production deployment and security
 
+## Maintenance scenarios
+
+- `python-instrumentation/`: SDK 1.44 events, declarative initialization, and framework ownership.
+- `python-genai-streaming/`: async parentage, complete stream lifetimes, privacy, and unknown usage.
+- `collector-0160-upgrade/`: removed settings, selective labels, and release-specific validation.
+
+These task/criteria pairs assess generated answers. They are separate from the
+executable Python and Collector checks run by CI; passing those checks does not
+establish an agent evaluation score.
+
 ## Running Evals
 
 From the repository root:
 
 ```bash
-# Run all evals
-tessl eval run .
+# Run all task/criteria scenarios with the local skill and a baseline
+tessl eval run evals --context . --wait
 
-# Run specific category
-tessl eval run evals/core-scenarios.md
+# Run one scenario
+tessl eval run evals/python-genai-streaming --context . --wait
 
-# Run with multiple agents
-tessl eval run . --agent claude:sonnet --agent gpt:4o
+# Discover supported agents and models
+tessl eval run --list-agents
 ```
+
+Authenticate with `tessl login` and link the repository with `tessl project link
+--workspace o11y-dev` first. The Markdown category files are planning references;
+the executable scenarios are the subdirectories containing `task.md` and
+`criteria.json`.
+
+The `Tessl Behavioral Evaluations` workflow runs on same-repository pull requests
+and manual dispatches, using the checked-out skill and the `TESSL_API_TOKEN`
+secret. It waits for completion and saves the CLI output as an artifact. A
+completed run is not a minimum-score guarantee; inspect the scenario scores in
+Tessl. The separate `Tessl Skill Report` workflow reviews skill quality.
 
 ## Expected Behavior
 

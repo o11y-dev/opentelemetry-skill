@@ -7,13 +7,15 @@ Use this document for version-sensitive guidance that changes more frequently th
 - **OpenTelemetry Collector**: v0.153.0+ (the first release that supports every canonical component ID used by this skill, including `load_balancing`)
 - **Core Semantic Conventions**: v1.40.0+
 - **GenAI Semantic Conventions**: follow the separate `open-telemetry/semantic-conventions-genai` repository; the signal definitions are Development and do not currently have a stable release floor
-- **Kubernetes**: v1.24+ for native sidecar support
+- **Kubernetes**: native restartable sidecars are enabled by default from v1.29; ordinary multi-container Pods are a separate pattern
 - **Go SDK**: v1.24.0+
-- **Python SDK**: v1.41.0+
+- **Python SDK**: v1.41.0+ for unchanged examples; the new event/GenAI examples target v1.44.0 (instrumentation release train 0.65b0). See [Python guidance](python-instrumentation.md).
+- **Collector 0.160 examples**: selective Prometheus `resource_constant_labels` requires v0.160.0; custom builds require Go 1.26. The general canonical-ID floor remains v0.153.0.
+- **Python GenAI packages**: migrated to `open-telemetry/opentelemetry-python-genai`; released beta versions and supported libraries are listed in [the Python reference](python-instrumentation.md#python-ai-instrumentation-packages). Do not substitute unreleased skeletons.
 
 ## AI agent telemetry compatibility
 
-- **Claude Code**: current release emits metrics plus logs/events and beta traces; `OTEL_METRICS_INCLUDE_ENTRYPOINT=true` adds optional bounded `app.entrypoint`
+- **Claude Code**: current release emits metrics plus logs/events and beta traces with selected GenAI attributes (for example `gen_ai.tool.call.id`), not full schema alignment; `OTEL_METRICS_INCLUDE_ENTRYPOINT=true` adds optional bounded `app.entrypoint`
 - **Gemini CLI**: v0.34.0+ emits traces, metrics, and logs with GenAI semantic conventions
 - **GitHub Copilot**: latest stable / Insiders builds expose traces, metrics, and events with GenAI semantic conventions
 - **Codex CLI**: current documentation describes structured log events and metrics for API requests, tool calls, `exec`, and sessions; verify trace support and mode-specific behavior in the installed release
