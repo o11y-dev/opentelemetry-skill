@@ -1,6 +1,7 @@
 name: weekly-upstream-digest
 
-# Weekly digest of collector core, operator, proto, and primary SDKs.
+# Weekly digest of collector core, operator, proto, primary SDKs, and recent
+# OpenTelemetry-related blog posts.
 
 on:
   schedule:

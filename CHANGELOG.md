@@ -7,9 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- Restore weekly RSS monitoring for OpenTelemetry posts and OTel-related CNCF posts, with bounded parsing, visible feed failures, and regression tests
+- Add developer-local observability routing for OTel Desktop Viewer, `otel-tui`, and OTel Front
 - Add scaled `signal_to_metrics` correctness guidance and regression coverage for producer identity, backend resource mapping, temporality, and dashboard aggregation
 
 ### Changed
+- Add the three developer-viewer repositories to monthly upstream monitoring and map them to the playbook reference
 - Replace upstream digest issue updates to overwrite issue body snapshots (instead of appending) while preserving idempotent no-op reruns on exact body matches
 - Update GenAI guidance for the separate conventions repository, provider-versus-agent identity, histogram token usage, current content attributes, and execute-tool span naming
 - Refresh AI-agent telemetry guidance from current upstream documentation: Claude Code beta traces, Gemini prompt/traces controls, Copilot namespace migration, and Codex mode-specific verification
@@ -17,7 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Update instrumentation guidance from deprecated `gen_ai.system` to `gen_ai.provider.name` and document stable Go compile-time instrumentation as an alternative to eBPF and manual SDK work
 - Migrate Collector examples and evaluations to canonical component IDs and raise the compatibility floor to v0.153.0
 - Document sparse exporter-helper failure metrics and expand upstream watcher coverage for GenAI conventions and exporter helpers
-- Bump aligned Tessl skill and tile metadata from `0.4.0` to `0.5.1`
+- Align Tessl skill and tile metadata at `0.5.3` for the next published release
 
 ## [1.3.0] - 2026-05-08
 

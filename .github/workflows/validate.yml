@@ -5,15 +5,27 @@ on:
     paths:
       - 'SKILL.md'
       - 'references/**/*.md'
+      - '.github/scripts/**'
+      - '.github/upstream-map.yaml'
+      - '.github/workflows/upstream-tier*.yml'
+      - '.github/workflows/validate.yml'
       - '.claude-plugin/**'
       - '.cursor-plugin/**'
+      - 'README.md'
+      - 'CONTRIBUTING.md'
   push:
     branches: [master, main]
     paths:
       - 'SKILL.md'
       - 'references/**/*.md'
+      - '.github/scripts/**'
+      - '.github/upstream-map.yaml'
+      - '.github/workflows/upstream-tier*.yml'
+      - '.github/workflows/validate.yml'
       - '.claude-plugin/**'
       - '.cursor-plugin/**'
+      - 'README.md'
+      - 'CONTRIBUTING.md'
   workflow_dispatch:
 
 jobs:
@@ -30,8 +42,16 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Install Dependencies
         run: pip install pyyaml
+
+      - name: Test upstream watcher
+        run: node --test .github/scripts/*.test.mjs
 
       - name: Check SKILL.md Frontmatter
         run: |

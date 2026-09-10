@@ -483,7 +483,7 @@ log-based events back into span views, prefer that over adding new span events.
 - **Official announcement stream**: watch the OpenTelemetry blog feed at `https://opentelemetry.io/blog/index.xml` for blog posts like the March 2026 deprecation announcement.
 - **Specification change stream**: watch the `open-telemetry/opentelemetry-specification` repository for OTEPs, release notes, and deprecation PRs affecting tracing, logs, and semantic conventions.
 - **Community migration feedback**: watch `open-telemetry/community` for follow-up discussions such as [community#3312](https://github.com/open-telemetry/community/issues/3312).
-- **Repository automation**: this repository's weekly maintenance workflow (`.github/workflows/otel-upstream-maintenance.yml`) already fetches the OpenTelemetry blog RSS feed and upstream risk signals; use its digest issue as the first place to review deprecations that may require doc updates.
+- **Repository automation**: `.github/workflows/upstream-tier2.yml` runs the weekly digest, including the OpenTelemetry RSS feed, OTel-filtered CNCF posts, and upstream GitHub releases/issues. Feed failures are surfaced in the digest instead of hiding the gap; use that issue as the first place to review deprecations that may require doc updates.
 
 ### Kubernetes Semantic Conventions (`release_candidate` in v1.30+)
 

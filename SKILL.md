@@ -3,8 +3,8 @@ name: opentelemetry-skill
 description: "Expert OpenTelemetry guidance for collector configuration, pipeline design, and production telemetry instrumentation. Use when configuring collectors, designing pipelines, instrumenting applications, implementing sampling, managing cardinality, securing telemetry, writing OTTL transformations, or setting up AI coding agent observability (Claude Code, Codex, Gemini CLI, GitHub Copilot)."
 metadata:
   author: o11y.dev
-  version: 0.5.1
-  tessl_version: 0.5.1
+  version: 0.5.3
+  tessl_version: 0.5.3
   license: Apache-2.0
   tags: "opentelemetry, otel, observability, telemetry, monitoring, tracing, metrics, logs, collector, otelcol, pipeline, instrumentation, kubernetes, ecs, docker, serverless, deployment, architecture, sampling, cardinality, security, ottl, transform, codex, ai-agent"
   signals: "traces, metrics, logs, profiles"
@@ -102,7 +102,7 @@ Load detailed reference documentation only when the user's request matches a tri
 | Connector, span_metrics, service_graph, signal_to_metrics, log-to-metric, span-to-metric, routing connector, failover connector | [connectors.md](references/connectors.md) | R.E.D. metrics, service graph, routing, failover, stickiness, generated-metric producer identity |
 | Claude Code, Codex, Gemini CLI, Copilot, AI agent, coding agent, MCP | [ai-agents.md](references/ai-agents.md) | Agent OTel support matrix, unified collector config, GenAI SemConv |
 | validate, dry-run, startup error, pipeline error, dropped data, queue full, recovery | [validation.md](references/validation.md) | Config validation commands, live checks, symptom→cause→fix recovery guidance |
-| playbook, production playbook, blog, 2025 blog, 2026 blog, real world | [playbooks.md](references/playbooks.md) | Production patterns from opentelemetry.io blogs |
+| playbook, production playbook, blog, developer observability, local OTel viewer, real world | [playbooks.md](references/playbooks.md) | Production and developer patterns from OpenTelemetry and CNCF blogs |
 | anti-pattern, common mistake, what to avoid, pitfall | [anti-patterns.md](references/anti-patterns.md) | Full annotated anti-pattern catalogue: pipeline, metrics, Kubernetes, AI agents, OTTL |
 
 ## Production Baseline Configuration

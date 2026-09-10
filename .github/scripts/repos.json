@@ -1,6 +1,6 @@
 {
-  "comment": "Frequency-based membership for the upstream watcher. Daily polls daily, Weekly polls weekly, Monthly polls monthly. 'critical' repos are included in daily regardless of their nominal frequency.",
-  "version": 1,
+  "comment": "Frequency-based repository and feed membership for the upstream watcher. Daily polls daily, Weekly polls weekly, Monthly polls monthly. 'critical' repos are included in daily regardless of their nominal frequency.",
+  "version": 2,
   "frequencies": {
     "daily": [
       "open-telemetry/semantic-conventions",
@@ -48,7 +48,31 @@
       "open-telemetry/opentelemetry-php",
       "open-telemetry/opentelemetry-swift",
       "open-telemetry/opentelemetry-erlang",
-      "open-telemetry/community"
+      "open-telemetry/community",
+      "CtrlSpice/otel-desktop-viewer",
+      "ymtdzzz/otel-tui",
+      "mesaglio/otel-front"
+    ]
+  },
+  "feeds": {
+    "weekly": [
+      {
+        "name": "OpenTelemetry blog",
+        "url": "https://opentelemetry.io/blog/index.xml",
+        "homepage": "https://opentelemetry.io/blog/",
+        "lookback_days": 14,
+        "max_posts": 8,
+        "skills": ["references/playbooks.md"]
+      },
+      {
+        "name": "CNCF blog — OpenTelemetry",
+        "url": "https://www.cncf.io/feed/",
+        "homepage": "https://www.cncf.io/blog/",
+        "include_any": ["OpenTelemetry", "Open Telemetry", "OTel"],
+        "lookback_days": 14,
+        "max_posts": 8,
+        "skills": ["references/playbooks.md"]
+      }
     ]
   }
 }
