@@ -108,9 +108,9 @@ Ensure proper resource attribution when multiple AI agents run in the same devel
 I'm instrumenting an AI coding agent that calls `bash` and `search_code`. Show me how the OpenTelemetry spans should be named.
 
 ### Expected Response (Key Points)
-- Uses the stable `execute_tool` span name for each tool invocation
+- Uses the Development-convention `execute_tool {gen_ai.tool.name}` span name for each tool invocation
 - Preserves the actual tool name in `gen_ai.tool.name`
-- Avoids encoding unbounded or vendor-specific tool names into span names
+- Uses registered tool names without arguments, paths, or request IDs
 
 ### Failure Modes
 - Encodes unbounded tool names into span names

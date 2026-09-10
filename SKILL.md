@@ -66,7 +66,7 @@ When user requests match these patterns, include these points explicitly:
 - **Metric dimension request for `user_id`**: refuse; explain time-series explosion risk; suggest traces and bounded metric dimensions.
 - **Kubernetes tail sampling**: Gateway (Deployment) tier, `load_balancing` with `routing_key: traceID`, Headless Service (`clusterIP: None`), error+10% policies, Beta stability caution.
 - **Claude Code telemetry**: include `CLAUDE_CODE_ENABLE_TELEMETRY=1`, `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative`, and managed-settings persistence; traces are beta, while metrics and logs/events remain the broadly documented signals. Keep prompt/tool-content capture disabled unless PII controls are explicit, and avoid `session.id` as a metric dimension.
-- **AI agent tool-call tracing**: for agents using current `gen_ai.*` conventions, set `gen_ai.operation.name: execute_tool`, preserve `gen_ai.tool.name`, and use the stable span name `execute_tool`; keep the actual tool name in the attribute.
+- **AI agent tool-call tracing**: for agents using current `gen_ai.*` conventions, set `gen_ai.operation.name: execute_tool`, preserve `gen_ai.tool.name`, and use `execute_tool {gen_ai.tool.name}` for manually generated tool spans; keep the registered tool name in the attribute as well. These GenAI conventions are Development; preserve vendor-native spans.
 - **GenAI provider vs agent identity**: preserve `gen_ai.provider.name` for the model/provider (for example, `openai` or `gcp.gen_ai`); use `service.name` or a natively emitted agent attribute for the coding-agent identity rather than writing the agent name into the provider field.
 
 ## Existing Configuration Review Mode
@@ -93,6 +93,7 @@ Load detailed reference documentation only when the user's request matches a tri
 |---|---|---|
 | Kubernetes, Helm, values.yaml, audit, review, DaemonSet, Sidecar, Gateway, Scaling, Load Balancing | [architecture.md](references/architecture.md) | DaemonSet vs Gateway vs Sidecar, Target Allocator, HPA, rollout consistency |
 | Pipeline, Receiver, Processor, Exporter, Queue, Batch, Memory, Extensions, existing config | [collector.md](references/collector.md) | Processor ordering, memory_limiter, file_storage, config audit heuristics, temporality/state audits, stability levels |
+| Python, FastAPI, Starlette, asyncio, Python GenAI, Python SDK events | [python-instrumentation.md](references/python-instrumentation.md) | Initialization ownership, duplicate instrumentation, SDK 1.44 migration, streaming, GenAI packages |
 | SDK, Instrumentation, Spans, Attributes, Semantic Conventions, Cardinality | [instrumentation.md](references/instrumentation.md) | Auto vs manual, SemConv, cardinality Rule of 100 |
 | Sampling, Cost, Volume, Head Sampling, Tail Sampling, Probabilistic | [sampling.md](references/sampling.md) | Head/tail sampling, sticky sessions, sampling math |
 | Security, PII, GDPR, Redaction, TLS, Authentication, Credentials | [security.md](references/security.md) | PII redaction, mTLS, RBAC, extension exposure risks |

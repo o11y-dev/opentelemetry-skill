@@ -226,6 +226,7 @@ Deep-dive guides are available in the `references/` directory:
 - **[ai-agents.md](references/ai-agents.md)**: AI agent observability patterns, per-agent setup guidance, dashboards, and operational caveats
 - **[architecture.md](references/architecture.md)**: Deployment patterns, load balancing, Target Allocator, and platform setup guide cross-links
 - **[collector.md](references/collector.md)**: Pipeline anatomy, processor ordering, memory management, and exporter configuration patterns
+- **[python-instrumentation.md](references/python-instrumentation.md)**: Python SDK 1.44 migration, framework ownership, GenAI package migration, async/streaming patterns, and executable telemetry examples
 - **[instrumentation.md](references/instrumentation.md)**: SDKs, semantic conventions, cardinality management, and collector deployment guidance
 - **[ottl.md](references/ottl.md)**: OpenTelemetry Transformation Language syntax, functions, patterns, and best practices
 - **[platforms.md](references/platforms.md)**: FaaS (Lambda, Azure, GCP), client-side apps, serverless best practices
@@ -276,6 +277,21 @@ The testing framework validates that the skill actually changes AI behavior and 
 
 The tiered upstream workflows run daily, weekly, and monthly. The weekly digest (`.github/workflows/upstream-tier2.yml`) reads the OpenTelemetry blog feed and OTel-related CNCF posts; the repository tiers track releases and recent issues for OpenTelemetry, AI-agent, and developer-viewer projects. Feed failures remain visible in the digest for follow-up.
 
+Daily selection also includes critical watches, including the separate GenAI
+conventions and Python GenAI instrumentation repositories. Python SDK/contrib
+are checked weekly. Python contrib/GenAI package releases are listed separately,
+including beta releases; the latest repository release is not treated as every
+package's version. Daily/weekly repository lookback is 14 days; monthly is 35.
+Coding-agent issues are filtered by telemetry terms in titles/labels. Digests
+show issue state, source commit/run, retrieval failures, and coverage limits.
+The watcher is stateless and uses repository-level ownership hints, not path diffs.
+Use `node --test .github/scripts/*.test.mjs` for watcher tests and the
+[Python test command](references/python-instrumentation.md#events-export-and-shutdown)
+for isolated example validation. Per-repository selectors live in `repos.json`:
+`package_release_repos` selects recent package releases and
+`telemetry_issue_repos` enables the title/label filter; omitted selectors retain
+latest-release and unfiltered issue behavior.
+
 ## Contributing
 
 This skill is designed to evolve with the OpenTelemetry ecosystem. Contributions are welcome:
@@ -287,11 +303,11 @@ This skill is designed to evolve with the OpenTelemetry ecosystem. Contributions
 
 ## Known Limitations
 
-- **AI agent trace coverage varies**: Claude Code does not emit traces natively; observability relies on [opentelemetry-hooks](https://github.com/o11y-dev/opentelemetry-hooks) or native logs/metrics. Each agent has different signal coverage.
+- **AI agent trace coverage varies**: Claude Code emits native logs/metrics plus beta traces with selected GenAI attributes; validate the installed release and content controls. [opentelemetry-hooks](https://github.com/o11y-dev/opentelemetry-hooks) provides complementary process-level coverage. Each agent has different signal coverage.
 - **Tail sampling memory**: Scales with in-flight trace count. Beyond 10k RPS, consider tiered architecture (Agent -> Gateway -> Analysis) rather than single-collector tail sampling.
 - **OTTL regex transforms**: Can impact p99 latency at high span volume. Profile with production traffic before deploying regex-heavy transformations.
 - **Semantic conventions are evolving**: The `gen_ai.*` namespace is experimental. Attribute names may change in future OpenTelemetry releases.
-- **Kubernetes version requirements**: Native sidecar container support requires v1.24+. Earlier versions need traditional sidecar patterns.
+- **Kubernetes version requirements**: Native restartable sidecars are enabled by default from Kubernetes v1.29; ordinary multi-container Pods are a separate pattern.
 
 ## Roadmap
 
