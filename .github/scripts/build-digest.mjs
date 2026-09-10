@@ -108,7 +108,7 @@ async function readTextLimited(response, maxBytes) {
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let bytesRead = 0;
-  let text = '';
+  const textChunks = [];
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -117,9 +117,10 @@ async function readTextLimited(response, maxBytes) {
       await reader.cancel();
       throw new Error(`feed exceeds ${maxBytes} byte limit`);
     }
-    text += decoder.decode(value, { stream: true });
+    textChunks.push(decoder.decode(value, { stream: true }));
   }
-  return text + decoder.decode();
+  textChunks.push(decoder.decode());
+  return textChunks.join('');
 }
 
 async function fetchFeed(source) {

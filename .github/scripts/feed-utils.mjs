@@ -90,6 +90,10 @@ function matchesSourceFilter(post, source) {
   return patterns.some((pattern) => pattern.test(post.searchable_text));
 }
 
+function nonNegativeIntegerOrDefault(value, fallback) {
+  return Number.isInteger(value) && value >= 0 ? value : fallback;
+}
+
 export function parseFeed(xml) {
   if (typeof xml !== 'string') throw new TypeError('feed must be a string');
   if (/<!DOCTYPE|<!ENTITY/i.test(xml.slice(0, 4096))) {
@@ -126,8 +130,8 @@ export function selectRecentFeedPosts(xml, source = {}, now = new Date()) {
   const nowMillis = new Date(now).getTime();
   if (!Number.isFinite(nowMillis)) throw new TypeError('now must be a valid date');
 
-  const lookbackDays = Number.isFinite(source.lookback_days) ? source.lookback_days : DEFAULT_LOOKBACK_DAYS;
-  const maxPosts = Number.isFinite(source.max_posts) ? source.max_posts : DEFAULT_MAX_POSTS;
+  const lookbackDays = nonNegativeIntegerOrDefault(source.lookback_days, DEFAULT_LOOKBACK_DAYS);
+  const maxPosts = nonNegativeIntegerOrDefault(source.max_posts, DEFAULT_MAX_POSTS);
   const cutoffMillis = nowMillis - lookbackDays * 86400 * 1000;
   const seen = new Set();
 
@@ -156,7 +160,7 @@ export function renderFeedDigest(feedResults) {
     const source = result.source ?? {};
     const homepage = normalizeHttpUrl(source.homepage ?? '');
     const sourceName = escapeMarkdown(source.name ?? source.url ?? 'Feed');
-    lines.push(homepage ? `### [${sourceName}](${homepage})` : `### ${sourceName}`);
+    lines.push(homepage ? `### [${sourceName}](<${homepage}>)` : `### ${sourceName}`);
 
     const skills = (source.skills ?? []).map((skill) => `\`${String(skill).replace(/`/g, '')}\``);
     if (skills.length > 0) lines.push('', `_Skills to review: ${skills.join(', ')}_`);
@@ -174,7 +178,7 @@ export function renderFeedDigest(feedResults) {
 
     for (const post of result.posts) {
       const published = post.published_at ? ` — published ${post.published_at.slice(0, 10)}` : '';
-      lines.push(`- [${escapeMarkdown(post.title)}](${post.url})${published}`);
+      lines.push(`- [${escapeMarkdown(post.title)}](<${post.url}>)${published}`);
     }
     lines.push('');
   }

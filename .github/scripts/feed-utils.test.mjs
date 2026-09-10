@@ -42,6 +42,20 @@ test('filters the CNCF feed by whole OTel terms and publication window', () => {
   ]);
 });
 
+test('falls back to safe defaults for invalid feed bounds', () => {
+  for (const invalidValue of [-1, 1.5]) {
+    const posts = selectRecentFeedPosts(CNCF_FIXTURE, {
+      include_any: ['OpenTelemetry', 'OTel'],
+      lookback_days: invalidValue,
+      max_posts: invalidValue,
+    }, NOW);
+
+    assert.deepEqual(posts.map((post) => post.title), [
+      'The lazy developer’s guide to observing your own code',
+    ]);
+  }
+});
+
 test('parses Atom alternate links as a supported fallback', () => {
   const posts = parseFeed(`<?xml version="1.0"?>
     <feed xmlns="http://www.w3.org/2005/Atom">
@@ -79,6 +93,16 @@ test('renders selected posts and the owning skill reference in the digest', () =
 
   assert(lines.some((line) => line.includes('references/playbooks.md')));
   assert(lines.some((line) => line.includes('the-lazy-developers-guide-to-observing-your-own-code')));
+});
+
+test('wraps Markdown link destinations that contain parentheses', () => {
+  const lines = renderFeedDigest([{
+    source: { name: 'Example feed', homepage: 'https://example.com/feed_(otel)' },
+    posts: [{ title: 'Example post', url: 'https://example.com/posts/otel_(guide)', published_at: null }],
+  }]);
+
+  assert(lines.includes('### [Example feed](<https://example.com/feed_(otel)>)'));
+  assert(lines.includes('- [Example post](<https://example.com/posts/otel_(guide)>)'));
 });
 
 test('keeps a feed outage visible without throwing away the digest', () => {
