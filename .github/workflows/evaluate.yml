@@ -10,10 +10,10 @@ on:
       - 'tile.json'
       - 'tessl.json'
       - '.github/workflows/evaluate.yml'
-  workflow_dispatch:
 
 permissions:
   contents: read
+  pull-requests: write
 
 concurrency:
   group: tessl-eval-${{ github.event.pull_request.number || github.ref }}
@@ -21,46 +21,21 @@ concurrency:
 
 jobs:
   evaluate:
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    env:
-      TESSL_WORKSPACE: o11y-dev
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
 
-      - name: Set up Tessl
-        uses: tesslio/setup-tessl@25ec223fc0da33b41b8044ff5ab2b85235f4f91e # v2
+      - name: Evaluate skill against baseline
+        uses: tesslio/skill-eval@056ba23695c6f443ce13ad4e3772683b0d641a33
         with:
-          version: '0.107.0'
-          token: ${{ secrets.TESSL_API_TOKEN }}
-
-      - name: Link evaluation project
-        shell: bash
-        run: |
-          set -euo pipefail
-          tessl project list --workspace "$TESSL_WORKSPACE" --json > /tmp/tessl-projects.json
-          if jq -e '.projects | length == 0' /tmp/tessl-projects.json > /dev/null; then
-            tessl project create opentelemetry-skill --workspace "$TESSL_WORKSPACE"
-          else
-            tessl project link --workspace "$TESSL_WORKSPACE"
-          fi
-
-      - name: Evaluate local skill against baseline
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p eval-results
-          tessl eval run evals --context . --wait --json --yes \
-            --label "GitHub Actions $GITHUB_RUN_ID at $GITHUB_SHA" \
-            | tee eval-results/run.json
-
-      - name: Save evaluation output
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: tessl-evaluation-${{ github.run_id }}
-          path: eval-results/
-          if-no-files-found: warn
+          eval-workspace: o11y-dev
+          cli-version: '0.107.0'
+          tessl-token: ${{ secrets.TESSL_API_TOKEN }}
+          eval-runs: '1'
+          eval-timeout: '45'
+          eval-fail-on-regression: 'true'
