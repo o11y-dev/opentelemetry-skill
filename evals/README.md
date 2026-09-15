@@ -38,12 +38,14 @@ Authenticate with `tessl login` and link the repository with `tessl project link
 the executable scenarios are the subdirectories containing `task.md` and
 `criteria.json`.
 
-The `Tessl Behavioral Evaluations` workflow uses the pinned official
-`tesslio/skill-eval` action on same-repository pull requests. It evaluates the
-checked-out skill with the existing `TESSL_API_TOKEN` secret, reports scenario
-scores on the PR, and fails on regressions against the baseline. The project is
-created once outside CI and its generated `tessl.json` is committed; CI links to
-that existing project. The separate `Tessl Skill Report` reviews skill quality.
+The `Tessl Behavioral Evaluations` workflow runs committed scenarios using the
+Tessl CLI on same-repository pull requests. It evaluates the checked-out skill
+against a baseline and waits for completion, retaining JSON output as an artifact.
+A successful job means execution completed; inspect scores separately. The
+project is created once outside CI and its generated `tessl.json` is committed.
+The official `skill-eval` action currently skips committed scenarios on PR events
+and requests a comment trigger, so this workflow explicitly invokes the CLI.
+The separate `Tessl Skill Report` reviews skill quality.
 
 ## Expected Behavior
 

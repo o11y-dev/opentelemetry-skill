@@ -30,12 +30,24 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Evaluate skill against baseline
-        uses: tesslio/skill-eval@056ba23695c6f443ce13ad4e3772683b0d641a33
+      - name: Set up Tessl
+        uses: tesslio/setup-tessl@25ec223fc0da33b41b8044ff5ab2b85235f4f91e
         with:
-          eval-workspace: o11y-dev
-          cli-version: '0.107.0'
-          tessl-token: ${{ secrets.TESSL_API_TOKEN }}
-          eval-runs: '1'
-          eval-timeout: '45'
-          eval-fail-on-regression: 'true'
+          version: '0.107.0'
+          token: ${{ secrets.TESSL_API_TOKEN }}
+
+      - name: Evaluate committed scenarios
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p eval-results
+          tessl eval run evals --context . --agent claude --model claude-sonnet-4-6 \
+            --wait --json --yes | tee eval-results/run.json
+
+      - name: Save evaluation results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tessl-evaluation-results
+          path: eval-results/
+          if-no-files-found: warn
