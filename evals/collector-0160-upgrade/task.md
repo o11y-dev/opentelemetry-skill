@@ -1,0 +1,1 @@
+Review an upgrade to Collector Contrib 0.160. Current Kafka exporter uses auth.tls, top-level topic and encoding, and producer.required_acks: wait_for_all. k8s_attributes has deployment_name_from_replicaset: false. The Prometheus exporter promotes every resource attribute, including session.id. Explain required edits and what to validate before rollout.

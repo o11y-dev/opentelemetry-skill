@@ -288,6 +288,13 @@ exporters:
 
 ### Sidecar Pattern
 
+Native restartable sidecars use `initContainers` with `restartPolicy: Always`;
+`SidecarContainers` is enabled by default from Kubernetes 1.29. Ordinary
+multi-container Pods also support a Collector beside the application on older
+clusters, but do not provide the same ordered startup/shutdown semantics. The
+config-copy init container below is not a native restartable sidecar.
+See [Kubernetes sidecar documentation](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/).
+
 **When to use:**
 - Strict pod isolation (compliance, multi-tenant)
 - Fargate deployments (no DaemonSet access)
@@ -338,6 +345,26 @@ spec:
   - name: shared-config
     emptyDir: {}
 ```
+
+## Operator 0.158 networking changes
+
+Operator 0.158 enables `operator.networkpolicy` and `operand.networkpolicy` by
+default, creating policies for the Operator, Collector, and Target Allocator.
+Before rollout, inspect the generated policies and confirm API-server egress,
+webhook access, Collector OTLP ingress, and Prometheus/Target Allocator traffic
+for your topology. Policy objects alone do not prove reachability.
+
+An [upstream report](https://github.com/open-telemetry/opentelemetry-operator/issues/5558)
+reproduced stale API-server IP allowlists on OpenShift with Operator 0.152.0-1
+and the network-policy gate enabled. After control-plane IP rotation, inspect
+EndpointSlices and policy `ipBlock` entries if API access fails. This report is
+not proof that every 0.158 deployment is affected or that a fix has shipped.
+Avoid blanket policy disablement; use an environment-specific, reviewed network
+correction and verify API/scrape/OTLP traffic afterward.
+
+Also review [telemetry naming changes](monitoring.md#kubernetes-processor-and-operator-upgrades)
+and Operator-managed `GOMEMLIMIT`/`GOMAXPROCS` when comparing generated pod settings.
+Source: [Operator 0.158 release](https://github.com/open-telemetry/opentelemetry-operator/releases/tag/v0.158.0).
 
 ## Common Gotchas & Solutions
 

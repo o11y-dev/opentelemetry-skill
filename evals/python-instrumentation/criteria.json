@@ -1,0 +1,26 @@
+{
+  "context": "A Python 3.12 FastAPI service already creates an OTel SDK provider and may have native telemetry middleware enabled. Plan its instrumentation upgrade to SDK 1.44, show how to emit a trace-correlated user.login event, and explain how to verify that requests are not instrumented twice. Deployment uses OTEL_CONFIG_FILE plus existing OTEL_PYTHON_* variables.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Selects one initialization and server instrumentation owner",
+      "max_score": 30,
+      "description": "Inspects installed framework/native middleware and existing bootstrap. Does not stack native middleware, contrib server instrumentation, and zero-code setup. Verifies one SERVER span per request without confusing ASGI child spans with duplicates."
+    },
+    {
+      "name": "Uses an actual named LogRecord with context",
+      "max_score": 30,
+      "description": "Uses Python 1.44 LogRecord.event_name and the active span context. Does not claim that an event.name attribute alone populates the event-name field or use the removed Events API."
+    },
+    {
+      "name": "Explains declarative initialization",
+      "max_score": 20,
+      "description": "Explains the experimental configuration package and that OTEL_CONFIG_FILE bypasses OTEL_PYTHON_* initialization. Checks emitted resource/export destination rather than inventing universal env precedence."
+    },
+    {
+      "name": "Validates application lifecycle",
+      "max_score": 20,
+      "description": "Owns providers once per worker, uses compatible package versions and graceful shutdown/flush, and verifies exported trace/log correlation."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "context": "Instrument a Python async AI assistant that streams model output and then executes a lookup tool. Sometimes the user cancels halfway through and the provider omits token usage. We already have framework instrumentation in some deployments. Show the tracing design and a concise Python pattern without recording prompts, responses, tool arguments, or results.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses correct Development conventions and parentage",
+      "max_score": 25,
+      "description": "Models agent invocation, inference, and tool execution separately. Uses inference operation/model naming and execute_tool {registered tool name}; preserves gen_ai.tool.name and provider identity, and labels GenAI conventions Development."
+    },
+    {
+      "name": "Owns the full streaming lifecycle",
+      "max_score": 30,
+      "description": "Keeps inference span active through consumption; closes stream and span on normal completion, early exit, cancellation, and errors; restores parent context. Does not end span when returning the iterator."
+    },
+    {
+      "name": "Preserves unknown usage and content boundaries",
+      "max_score": 25,
+      "description": "Does not fabricate zero token usage, attach token usage to tools, double-count subtotals, or capture content/exception messages by default."
+    },
+    {
+      "name": "Avoids duplicate instrumentation",
+      "max_score": 20,
+      "description": "Checks existing framework/provider coverage and chooses automatic instrumentation or manual gap filling per operation. Does not wrap an already instrumented model call with another equivalent inference span."
+    }
+  ]
+}
