@@ -13,7 +13,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 concurrency:
   group: tessl-eval-${{ github.event.pull_request.number || github.ref }}
@@ -41,7 +40,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p eval-results
-          tessl eval run evals --context . --agent claude --model claude-sonnet-4-6 \
+          # Use the workspace default; explicit model selection requires a paid plan.
+          tessl eval run evals --context . \
             --wait --json --yes | tee eval-results/run.json
 
       - name: Save evaluation results
