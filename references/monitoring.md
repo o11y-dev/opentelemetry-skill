@@ -198,11 +198,37 @@ service:
 
 ---
 
+## Kubernetes processor and Operator upgrades
+
+Collector Contrib 0.160 enables
+`processor.k8sattributes.telemetry.enableNewFormatMetrics` and
+`processor.k8sattributes.telemetry.disableOldFormatMetrics` by default. Expect
+new internal telemetry such as the OTel instrument `otelcol.k8s.pod.association`
+with bounded `status`, `pod_identifier`, and `otelcol.signal` attributes. Verify
+its exported Prometheus name, suffix, and labels before changing queries; the
+old-format series may disappear on upgrade.
+
+Operator 0.158 makes `operator.collector.usedefaulttelemetryshape` stable and
+no longer disableable. To explicitly retain the pre-0.154 shape, configure
+`without_type_suffix`, `without_units`, and `without_scope_info` as false in the
+Collector's Prometheus telemetry reader. Otherwise use the Collector defaults
+and update dashboards after inspecting `/metrics`. Do not infer query compatibility
+from successful pod startup alone.
+
+Compare representative metrics before/after rollout: throughput, refusals, queue
+failures, pod association success/error, and scrape reachability. Operator 0.158
+also creates NetworkPolicies by default, so a missing scrape may be a network
+change rather than a renamed metric.
+
+Sources: [processor metadata at 0.160](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.160.0/processor/k8sattributesprocessor/metadata.yaml),
+[Operator 0.158](https://github.com/open-telemetry/opentelemetry-operator/releases/tag/v0.158.0).
+
 ## Critical Metrics
 
 ### Metric Naming Convention
 
-All collector metrics follow the pattern:
+Many exported Prometheus Collector metrics follow this pattern; actual names
+depend on component version and telemetry reader translation settings:
 ```
 otelcol_{component}_{signal}_{metric}
 ```

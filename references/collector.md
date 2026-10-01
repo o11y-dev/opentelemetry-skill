@@ -184,9 +184,43 @@ exporters:
 
 ### ⚠️ Minimum Go Version: Go 1.25 (Breaking Change in v0.146.0)
 
-Starting with Collector **v0.146.0** (released February 2025), the minimum required Go version is **Go 1.25**. This is a breaking change for any custom collector builds or OCB-based distributions compiled with an older Go toolchain. Upgrade your Go toolchain to 1.25+ before building or upgrading to v0.146.0+.
+Collector **v0.146.0** raised the build requirement to **Go 1.25**.
+Collector **v0.160.0** raises it again to **Go 1.26**. Match the Go
+toolchain and OCB component/module versions to the release being built; the older
+1.25 guidance is not sufficient for 0.160. Prebuilt images do not require a local
+Go installation.
 
 Reference: [Collector v0.146.0 release notes](https://github.com/open-telemetry/opentelemetry-collector/releases/tag/v0.146.0)
+
+### Collector 0.160 upgrade checks
+
+Before upgrading, validate the rendered configuration with the target binary:
+
+- **Rejected settings:** Kafka `auth.tls` and `auth.plain_text` are removed.
+  Put `tls` at the component level; retain supported SASL settings under `auth.sasl`.
+  Remove `auth.sasl.version`, `resolve_canonical_bootstrap_servers_only`, and
+  singular `group_rebalance_strategy` (use `group_rebalance_strategies`).
+- **Kubernetes enrichment:** remove `deployment_name_from_replicaset` entirely,
+  even when set to false; unknown keys prevent startup. Deployment names use the
+  ReplicaSet-name heuristic. If informer-based behavior matters, verify the
+  extraction options and RBAC against the pinned processor documentation.
+- **HTTP keepalive migration:** move client `idle_conn_timeout`, `max_idle_conns`,
+  and `max_idle_conns_per_host` under `keepalive`; map `disable_keep_alives: true`
+  to `keepalive.enabled: false`. Move server `idle_timeout` under `keepalive` and
+  map `keep_alives_enabled: false` to `keepalive.enabled: false`. Old settings
+  still work with warnings; mixing old and new sections is an error.
+- **Prometheus labels:** `resource_to_telemetry_conversion` is deprecated in
+  favor of `resource_constant_labels`. Use an explicit `included` allowlist,
+  not `["*"]`; verify counter producer identity and existing datapoint dimensions.
+- **Monitoring:** Kubernetes processor telemetry format gates now default to
+  the new format. Validate dashboard/alert queries against actual output; see
+  [monitoring.md](monitoring.md#kubernetes-processor-and-operator-upgrades).
+
+Sources: [Core 0.160](https://github.com/open-telemetry/opentelemetry-collector/releases/tag/v0.160.0),
+[Contrib 0.160](https://github.com/open-telemetry/opentelemetry-collector-contrib/releases/tag/v0.160.0).
+The Kubernetes attributes processor remains Beta for traces, metrics, and logs
+in the 0.160 release metadata; an announcement or feature-gate promotion does
+not establish component stability.
 
 ### `cmd/builder` — New `init` Subcommand (Experimental)
 
@@ -820,25 +854,40 @@ This decouples the ingest tier (agents) from the processing tier (gateways), ena
 
 ### Agent Configuration (Kafka Exporter)
 
+Optional buffering topology, validated with Contrib 0.160. Kafka is not required
+for Python or AI telemetry; direct OTLP export is the default. The receiver
+below is node-local; configure ingress TLS/auth when exposing it across hosts.
+
 ```yaml
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 127.0.0.1:4317
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 128
+  batch: {}
 exporters:
   kafka:
     brokers:
       - kafka-broker-1.example.com:9092
       - kafka-broker-2.example.com:9092
-    topic: otel.traces          # dedicated topic per signal type
-    encoding: otlp_proto        # use OTLP binary encoding (recommended)
+    traces:
+      topic: otel.traces        # dedicated topic per signal type
+      encoding: otlp_proto
     producer:
       compression: snappy       # good balance of speed and ratio
-      required_acks: wait_for_all  # durability: all ISR replicas must ack
+      required_acks: -1  # durability: all ISR replicas must ack
       max_message_bytes: 1000000   # 1 MB max message size
     auth:
       sasl:
         username: ${env:KAFKA_USERNAME}
         password: ${env:KAFKA_PASSWORD}
         mechanism: SCRAM-SHA-512
-      tls:
-        insecure: false
+    tls:
+      insecure: false
     retry_on_failure:
       enabled: true
       initial_interval: 5s
@@ -857,22 +906,36 @@ service:
 
 ### Gateway Configuration (Kafka Receiver)
 
+Mount a writable, per-replica volume at the storage directory. The example only
+buffers/forwards telemetry; add stateful sampling separately with an explicit
+trace-affinity design, as described in [sampling.md](sampling.md).
+
 ```yaml
+extensions:
+  file_storage:
+    directory: /var/lib/otelcol/filestore
+    create_directory: true
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 128
+  batch: {}
 receivers:
   kafka:
     brokers:
       - kafka-broker-1.example.com:9092
       - kafka-broker-2.example.com:9092
-    topic: otel.traces
+    traces:
+      topics: [otel.traces]
+      encoding: otlp_proto
     group_id: otel-gateway-consumer-group  # enables consumer group parallelism
-    encoding: otlp_proto
     auth:
       sasl:
         username: ${env:KAFKA_USERNAME}
         password: ${env:KAFKA_PASSWORD}
         mechanism: SCRAM-SHA-512
-      tls:
-        insecure: false
+    tls:
+      insecure: false
     initial_offset: latest          # or "earliest" for replay
 
 exporters:
@@ -888,7 +951,7 @@ service:
   pipelines:
     traces:
       receivers: [kafka]
-      processors: [memory_limiter, k8s_attributes, tail_sampling, batch]
+      processors: [memory_limiter, batch]
       exporters: [otlp]
 ```
 

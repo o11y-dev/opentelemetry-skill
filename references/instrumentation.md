@@ -81,6 +81,10 @@ java -javaagent:opentelemetry-javaagent.jar \
 
 #### Python (opentelemetry-instrument)
 
+For versioned setup, framework ownership, Python 1.44 migration, and async/streaming
+GenAI examples, read [python-instrumentation.md](python-instrumentation.md). Choose
+one SDK/bootstrap owner; do not combine this launcher with duplicate manual setup.
+
 ```bash
 pip install opentelemetry-distro opentelemetry-exporter-otlp
 
@@ -270,22 +274,31 @@ span.set_attribute(SpanAttributes.SERVER_PORT, 5432)
 
 ### GenAI Semantic Conventions
 
-The `gen_ai/` namespace covers Generative AI operations (LLM calls, embeddings, etc.):
+The `gen_ai.*` namespace covers Generative AI operations (LLM calls, embeddings, etc.).
+These conventions are **Development** and now live in the dedicated
+[GenAI repository](https://github.com/open-telemetry/semantic-conventions-genai).
+For native Python instrumentors, async/streaming lifetimes, agent/tool parentage,
+and content controls, see [Python GenAI guidance](python-instrumentation.md#async-streaming-and-tool-calls).
+Use a manual span only when another instrumentor does not already cover the call:
 
 ```python
 # Instrumenting an LLM API call (e.g., OpenAI Chat Completions)
-with tracer.start_as_current_span("chat.completion") as span:
+from opentelemetry.trace import SpanKind
+
+model = "gpt-4o"
+with tracer.start_as_current_span(f"chat {model}", kind=SpanKind.CLIENT) as span:
     span.set_attribute("gen_ai.provider.name", "openai")     # model/provider identity
     span.set_attribute("gen_ai.operation.name", "chat")     # "chat", "text_completion", "embeddings"
-    span.set_attribute("gen_ai.request.model", "gpt-4o")    # requested model
+    span.set_attribute("gen_ai.request.model", model)    # requested model
     span.set_attribute("gen_ai.request.max_tokens", 1024)
     span.set_attribute("gen_ai.request.temperature", 0.7)
 
     response = client.chat.completions.create(...)
 
     span.set_attribute("gen_ai.response.model", response.model)     # actual model used
-    span.set_attribute("gen_ai.usage.input_tokens", response.usage.prompt_tokens)
-    span.set_attribute("gen_ai.usage.output_tokens", response.usage.completion_tokens)
+    if response.usage is not None:  # unavailable usage is unknown, not zero
+        span.set_attribute("gen_ai.usage.input_tokens", response.usage.prompt_tokens)
+        span.set_attribute("gen_ai.usage.output_tokens", response.usage.completion_tokens)
     span.set_attribute("gen_ai.response.finish_reasons", [response.choices[0].finish_reason])
 ```
 
@@ -313,23 +326,31 @@ with tracer.start_as_current_span("chat.completion") as span:
 
 ⚠️ **Cardinality warning**: `gen_ai.request.model` has bounded cardinality (~10-50 models) and is safe as a metric dimension. Do NOT use `gen_ai.request.messages` or response content as metric dimensions.
 
-**Token cost metrics**:
+**Token usage metrics (Development)**:
+
+The standard `gen_ai.client.token.usage` instrument is a **Histogram**, not a
+Counter. Only add manual metrics when the selected instrumentor does not already
+emit them. Record reported input/output counts separately; do not emit a second
+`total` series that a dashboard might sum with its components.
+
 ```python
-# Use metrics to track token usage for cost attribution
-token_counter = meter.create_counter(
-    "gen_ai.client.token.usage",
-    unit="{token}",
-    description="Number of tokens used in GenAI operations",
+token_usage = meter.create_histogram(
+    "gen_ai.client.token.usage", unit="{token}",
+    description="Number of input and output tokens used",
+    explicit_bucket_boundaries_advisory=[1, 4, 16, 64, 256, 1024, 4096, 16384,
+                                        65536, 262144, 1048576, 4194304, 16777216, 67108864],
 )
-token_counter.add(
-    response.usage.total_tokens,
-    {
-        "gen_ai.provider.name": "openai",
-        "gen_ai.operation.name": "chat",
-        "gen_ai.token.type": "total",  # Common values include total/input/output; cache/reasoning buckets may appear as semantic conventions evolve
-    }
-)
+if response.usage is not None:
+    for token_type, value in [("input", response.usage.prompt_tokens),
+                              ("output", response.usage.completion_tokens)]:
+        if value is not None:
+            token_usage.record(value, {
+                "gen_ai.provider.name": "openai", "gen_ai.operation.name": "chat",
+                "gen_ai.request.model": model, "gen_ai.token.type": token_type,
+            })
 ```
+
+Source: [GenAI metric definitions](https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-metrics.md).
 
 > ⚠️ **Do not hard-code GenAI metrics to only `input` / `output` token classes.** The GenAI semantic conventions are expanding to cover finer-grained token accounting (for example cache-hit and reasoning tokens). Preserve unknown `gen_ai.token.type` values in telemetry pipelines and handle grouping in dashboards or collector transforms instead of dropping new categories.
 
@@ -345,41 +366,32 @@ When an SDK is initialized from **declarative configuration**, there is not yet 
 
 ### Events Semantic Conventions (v1.32.0+)
 
-**Events** are a specialized log sub-type with a required `event.name` attribute, used for structured domain events (as distinct from free-text log messages).
+Events are named log records. In **Python 1.44+**, use `LogRecord.event_name`;
+setting only `attributes["event.name"]` does not populate that OTLP field.
 
 ```python
-# Using the Python logging bridge (recommended pattern for events)
-import logging
-from opentelemetry.sdk.logs import LoggerProvider
-from opentelemetry.sdk.logs.export import BatchLogRecordProcessor
+from opentelemetry._logs import LogRecord
+from opentelemetry.sdk._logs import LoggerProvider
+from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
 
-# Configure logger provider
 logger_provider = LoggerProvider()
-logger_provider.add_log_record_processor(
-    BatchLogRecordProcessor(OTLPLogExporter())
-)
-
-# Get an OTel-aware logger
+logger_provider.add_log_record_processor(BatchLogRecordProcessor(OTLPLogExporter()))
 otel_logger = logger_provider.get_logger("my-service", version="1.0.0")
-
-# Emit a structured event: set event.name as a structured attribute
-# The standard way to emit events varies by SDK version.
-# Use the OTTL transform processor in the collector to normalize
-# custom log records to events by adding event.name:
+try:
+    # Emit while the application's intended span is current to capture its IDs.
+    otel_logger.emit(LogRecord(event_name="user.login", attributes={"auth.method": "oauth2"}))
+finally:
+    logger_provider.force_flush(timeout_millis=5000)
+    logger_provider.shutdown()
 ```
 
-```yaml
-# Collector: promote structured log records to events via transform
-processors:
-  transform:
-    log_statements:
-      - context: log
-        statements:
-          # Any log record with a "type" attribute becomes an event
-          - set(attributes["event.name"], attributes["type"]) where attributes["type"] != nil
-          - delete_key(attributes, "type") where attributes["event.name"] != nil
-```
+Own providers at application lifetime, not per request. See the
+[executable trace-correlated example](../examples/python_telemetry.py) and
+[Python migration notes](python-instrumentation.md#python-144-migration-notes).
+For legacy producers, map event names to the actual log event-name field only
+when supported by the target Collector/backend; an attribute alias is not a
+substitute for checking serialized OTLP.
 
 **Alternative: Java SDK Event API (SDK 1.40.0+)**
 
@@ -403,7 +415,7 @@ emitter.emit("user.login",                // event.name
 ```
 
 **Key Event rules**:
-- `event.name` is **required** and must be a low-cardinality, dot-separated namespace string (e.g., `user.login`, `order.placed`, `payment.failed`)
+- The event name is **required** (`event_name` in Python/OTLP); use a low-cardinality, dot-separated namespace string (e.g., `user.login`, `order.placed`, `payment.failed`)
 - Event names follow the `<domain>.<action>` pattern
 - Events are **not** free-text log messages — use structured attributes for all data
 - Events are correlated to traces via the active span context (trace_id, span_id)

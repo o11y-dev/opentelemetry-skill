@@ -4,7 +4,9 @@
   "frequencies": {
     "daily": [
       "open-telemetry/semantic-conventions",
-      "open-telemetry/opentelemetry-collector-contrib"
+      "open-telemetry/opentelemetry-collector-contrib",
+      "open-telemetry/semantic-conventions-genai",
+      "open-telemetry/opentelemetry-python-genai"
     ],
     "weekly": [
       "open-telemetry/opentelemetry-collector",
@@ -28,7 +30,8 @@
       "anthropics/skills",
       "QwenLM/qwen-code",
       "microsoft/vscode-copilot-chat",
-      "badlogic/pi-mono"
+      "badlogic/pi-mono",
+      "open-telemetry/opentelemetry-python-contrib"
     ],
     "monthly": [
       "open-telemetry/opentelemetry-specification",
@@ -36,7 +39,6 @@
       "open-telemetry/opentelemetry-helm-charts",
       "open-telemetry/opentelemetry-demo",
       "open-telemetry/opentelemetry-java-instrumentation",
-      "open-telemetry/opentelemetry-python-contrib",
       "open-telemetry/opentelemetry-js-contrib",
       "open-telemetry/opentelemetry-dotnet-contrib",
       "open-telemetry/opentelemetry-go-instrumentation",
@@ -62,17 +64,43 @@
         "homepage": "https://opentelemetry.io/blog/",
         "lookback_days": 14,
         "max_posts": 8,
-        "skills": ["references/playbooks.md"]
+        "skills": [
+          "references/playbooks.md"
+        ]
       },
       {
-        "name": "CNCF blog — OpenTelemetry",
+        "name": "CNCF blog \u2014 OpenTelemetry",
         "url": "https://www.cncf.io/feed/",
         "homepage": "https://www.cncf.io/blog/",
-        "include_any": ["OpenTelemetry", "Open Telemetry", "OTel"],
+        "include_any": [
+          "OpenTelemetry",
+          "Open Telemetry",
+          "OTel"
+        ],
         "lookback_days": 14,
         "max_posts": 8,
-        "skills": ["references/playbooks.md"]
+        "skills": [
+          "references/playbooks.md"
+        ]
       }
     ]
-  }
+  },
+  "package_release_repos": [
+    "open-telemetry/opentelemetry-python-contrib",
+    "open-telemetry/opentelemetry-python-genai"
+  ],
+  "telemetry_issue_repos": [
+    "github/copilot-cli",
+    "Aider-AI/aider",
+    "anysphere/cursor-wiki",
+    "anomalyco/opencode",
+    "DEVtheOPS/opencode-plugin-otel",
+    "openai/codex",
+    "google-gemini/gemini-cli",
+    "anthropics/claude-code",
+    "anthropics/skills",
+    "QwenLM/qwen-code",
+    "microsoft/vscode-copilot-chat",
+    "badlogic/pi-mono"
+  ]
 }

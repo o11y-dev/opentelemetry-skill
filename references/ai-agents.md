@@ -28,7 +28,7 @@ This file is automatically flagged for review when changes occur in:
 
 | Agent | Vendor | Native OTel | Traces | Metrics | Logs/Events | GenAI SemConv | Hooks Support | Config Method | Config File / Env Vars | Protocol | Official Docs |
 |-------|--------|-------------|--------|---------|-------------|---------------|---------------|---------------|------------------------|----------|---------------|
-| **Claude Code** | Anthropic | ⚠️ metrics/logs + traces beta | ⚠️ beta | ✅ | ✅ | ❌ (custom `claude_code.*`) | ✅ governance wrapper | Env vars or managed settings | `CLAUDE_CODE_ENABLE_TELEMETRY`, `OTEL_*` | OTLP gRPC/HTTP | [docs](https://code.claude.com/docs/en/monitoring-usage) |
+| **Claude Code** | Anthropic | ⚠️ metrics/logs + traces beta | ⚠️ beta | ✅ | ✅ | ⚠️ selected `gen_ai.*`; native `claude_code.*` | ✅ governance wrapper | Env vars or managed settings | `CLAUDE_CODE_ENABLE_TELEMETRY`, `OTEL_*` | OTLP gRPC/HTTP | [docs](https://code.claude.com/docs/en/monitoring-usage) |
 | **Gemini CLI** | Google | ✅ full | ✅ | ✅ | ✅ | ✅ (`gen_ai.*`) | ✅ governance wrapper | `.gemini/settings.json` or env vars | `GEMINI_TELEMETRY_*` | OTLP gRPC | [docs](https://geminicli.com/docs/cli/telemetry/) |
 | **GitHub Copilot VS Code** | Microsoft | ✅ full | ✅ | ✅ | ✅ | ✅ (`gen_ai.*`) | ⚠️ launcher wrapper only | VS Code `settings.json` or env var | `COPILOT_OTEL_ENABLED` | OTLP HTTP | [docs](https://code.visualstudio.com/docs/copilot/guides/monitoring-agents) |
 | **GitHub Copilot CLI** | Microsoft | ✅ full | ✅ | ✅ | ✅ | ✅ (`gen_ai.*`) | ✅ governance wrapper | Same span model as VS Code | `COPILOT_OTEL_ENABLED` | OTLP HTTP | [docs](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference) |
@@ -56,7 +56,11 @@ This file is automatically flagged for review when changes occur in:
 
 ### 2.1 Claude Code
 
-Claude Code emits **metrics** and **logs/events**, with **traces available as a beta feature**. Telemetry is opt-in.
+Claude Code emits **metrics** and **logs/events**, with **traces available as a beta feature**. Telemetry is opt-in. Native beta tool spans include selected GenAI fields such as
+`gen_ai.tool.call.id` alongside `tool_use_id`; this is partial alignment, not full
+schema compliance. Keep `OTEL_LOG_TOOL_DETAILS` and `OTEL_LOG_TOOL_CONTENT` disabled
+unless content collection is explicitly intended.
+See [official monitoring documentation](https://code.claude.com/docs/en/monitoring-usage).
 
 **Minimum config (env vars):**
 
@@ -159,7 +163,7 @@ Copilot now emits three attribute namespaces: `gen_ai.*` for standard fields,
 `github.copilot.*` as the preferred Copilot-specific namespace, and legacy
 `copilot_chat.*` fields for compatibility. New dashboards and transforms should
 prefer `github.copilot.*` while retaining legacy aliases when existing
-consumers depend on them. Tool spans use the stable span name `execute_tool`;
+consumers depend on them. Current Development GenAI tool spans use `execute_tool {gen_ai.tool.name}`;
 the actual tool name belongs in `gen_ai.tool.name`.
 
 ---
@@ -273,16 +277,24 @@ Even when native OpenTelemetry exists, hooks are useful above the agent as a lig
 
 A single OTel Collector instance can receive telemetry from all agents simultaneously on standard OTLP ports. Prefer **OTLP gRPC** end-to-end when agents and backends support it; keep **OTLP HTTP** enabled where an agent, managed ingress, or backend only exposes HTTP or gRPC is not possible.
 
+This example uses an explicit resource-label allowlist, requiring Contrib 0.160+.
+It does not remove dimensions already emitted on metric datapoints. Disable or
+filter session/user IDs at the source or with a targeted metric transform, and
+verify producer identity survives backend mapping before aggregating counters.
+For Python AI applications rather than coding-agent products, see
+[python-instrumentation.md](python-instrumentation.md).
+
 ```yaml
 # otel-collector-ai-agents.yaml
-# Production-ready config for multi-agent AI coding observability
-# Tested with OTel Collector v0.153.0+
+# Topology example: configure TLS/auth and writable per-replica storage for production
+# Requires OTel Collector Contrib v0.160.0+ for resource_constant_labels
 
 extensions:
   health_check:
     endpoint: localhost:13133
   file_storage:
     directory: /var/lib/otelcol/filestore
+    create_directory: true
 
 receivers:
   otlp:
@@ -322,8 +334,8 @@ exporters:
   prometheus:
     endpoint: 0.0.0.0:8889
     namespace: ai_agent
-    resource_to_telemetry_conversion:
-      enabled: true
+    resource_constant_labels:
+      included: [service.name, service.namespace, deployment.environment.name, telemetry.source.type]
 
   # OTLP HTTP exporter example — use when the backend or ingress only accepts OTLP HTTP
   otlphttp/loki:
@@ -415,7 +427,7 @@ Do not generate `gen_ai.user.message`, `gen_ai.assistant.message`, `gen_ai.tool.
 | Agent | Span Name | Kind | Key Attributes | Child Spans |
 |-------|-----------|------|----------------|-------------|
 | GenAI inference | `{gen_ai.operation.name} {gen_ai.request.model}` | `CLIENT` (usually) | `gen_ai.provider.name`, `gen_ai.operation.name`, `gen_ai.request.model` | tool call spans |
-| GenAI tool execution | `execute_tool` | `INTERNAL` | `gen_ai.operation.name=execute_tool`, `gen_ai.tool.name`, `gen_ai.tool.call.id` | none |
+| GenAI tool execution (Development) | `execute_tool {gen_ai.tool.name}` | `INTERNAL` | `gen_ai.operation.name=execute_tool`, `gen_ai.tool.name`, `gen_ai.tool.call.id` | none |
 
 > **Note**: Claude Code traces are beta. If traces are disabled or unavailable, use native `prompt.id` correlation across log events as a fallback.
 
@@ -563,13 +575,13 @@ not establish uniform distributed-trace coverage across interactive, `exec`, and
 
 ### 7.6 GenAI SemConv Coverage
 
-**Current execute-tool convention**: Set `gen_ai.operation.name` to `execute_tool`, populate `gen_ai.tool.name`, and use the stable span name `execute_tool`. Keep the actual tool name in `gen_ai.tool.name`; do not encode unbounded or vendor-specific tool names into span names.
+**Current execute-tool convention (Development)**: Set `gen_ai.operation.name` to `execute_tool`, populate `gen_ai.tool.name`, and name manually generated spans `execute_tool {gen_ai.tool.name}`. Use the registered tool name, never arguments, file paths, or request IDs. Preserve vendor-native span names. See the [current convention](https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md#execute-tool-span).
 
 | Agent | Uses `gen_ai.*` | Custom Prefix | Notes |
 |-------|----------------|---------------|-------|
 | Gemini CLI | ✅ Full | — | Verify emitted fields against the agent version and Development GenAI conventions |
 | GitHub Copilot | ✅ Full | — | Verify emitted fields against the agent version and Development GenAI conventions |
-| Claude Code | ❌ | `claude_code.*` | Preserve the vendor schema and identify the agent with `service.name` |
+| Claude Code | ⚠️ selected fields | `claude_code.*` | Beta tool spans emit `gen_ai.tool.call.id`; preserve native names and identify the agent with `service.name` |
 | Codex CLI | ❌ | `codex.*` | Custom event names, metrics/log events, and partial mode coverage |
 | Qwen Code | ⚠️ partial | `qwen-code.*` | v0.16.1 dual-emits selected `gen_ai.*` attributes (`gen_ai.request.model`, `gen_ai.usage.*`, `gen_ai.server.time_to_first_token`); private names remain authoritative |
 

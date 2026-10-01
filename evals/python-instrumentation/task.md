@@ -1,0 +1,1 @@
+A Python 3.12 FastAPI service already creates an OTel SDK provider and may have native telemetry middleware enabled. Plan its instrumentation upgrade to SDK 1.44, show how to emit a trace-correlated user.login event, and explain how to verify that requests are not instrumented twice. Deployment uses OTEL_CONFIG_FILE plus existing OTEL_PYTHON_* variables.
