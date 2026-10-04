@@ -1,0 +1,1 @@
+Instrument a Python async AI assistant that streams model output and then executes a lookup tool. Sometimes the user cancels halfway through and the provider omits token usage. We already have framework instrumentation in some deployments. Show the tracing design and a concise Python pattern without recording prompts, responses, tool arguments, or results.

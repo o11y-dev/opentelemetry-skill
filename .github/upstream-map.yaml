@@ -1,23 +1,11 @@
 # Skill-to-upstream mapping.
 #
-# Binds skill reference files in this repository to upstream paths in the
-# OpenTelemetry organization. When the upstream watcher workflows see a change
-# to a path in `watches[].paths`, the corresponding skill entry is flagged for
-# review.
-#
-# Schema:
-#   version:        integer schema version
-#   mappings[]:
-#     skill:        path to the skill reference file (relative to repo root)
-#     topics:       optional free-form tags surfaced in digests
-#     priority:     optional ("critical" elevates into the Tier-0 lane)
-#     watches[]:
-#       repo:       "owner/name" of the upstream repository
-#       paths:      list of glob patterns (minimatch syntax) to match against
-#                   the per-commit compare file list
-#
-# Globs are matched with minimatch defaults plus `matchBase: true` so a pattern
-# like `CHANGELOG.md` matches at any depth.
+# Repository-level ownership hints for stateless release/issue digests.
+# `paths` documents relevant upstream areas; no commit/path diff is performed.
+# `priority: critical` includes every watched repo in daily polling as well as
+# its configured frequency. Repositories are deduplicated within each run.
+# Schema: mappings[] has skill, optional topics/priority, and watches[] with
+# repo and informational paths. Repository/feed membership lives in repos.json.
 
 version: 1
 mappings:
@@ -75,6 +63,8 @@ mappings:
     priority: critical
     topics: [gen_ai, agents, llm]
     watches:
+      - repo: open-telemetry/opentelemetry-python-genai
+        paths: ["instrumentation/**", "util/**", "README.md"]
       - repo: open-telemetry/semantic-conventions-genai
         paths:
           - "model/**"
@@ -189,9 +179,35 @@ mappings:
           - "kubernetes/**"
           - "docker-compose.yml"
 
+  - skill: references/python-instrumentation.md
+    topics: [python, sdk, gen_ai, async, instrumentation]
+    watches:
+      - repo: open-telemetry/opentelemetry-python
+        paths: ["opentelemetry-sdk/**", "opentelemetry-api/**", "CHANGELOG.md"]
+      - repo: open-telemetry/opentelemetry-python-contrib
+        paths: ["instrumentation/**", "instrumentation-genai/**", "CHANGELOG.md"]
+      - repo: open-telemetry/opentelemetry-python-genai
+        paths: ["instrumentation/**", "util/**", "README.md"]
+      - repo: open-telemetry/semantic-conventions-genai
+        paths: ["docs/**", "model/**"]
+
+  - skill: references/compatibility.md
+    topics: [python, compatibility, gen_ai]
+    watches:
+      - repo: open-telemetry/opentelemetry-python
+        paths: ["CHANGELOG.md"]
+      - repo: open-telemetry/opentelemetry-python-contrib
+        paths: ["CHANGELOG.md"]
+      - repo: open-telemetry/opentelemetry-python-genai
+        paths: ["README.md", "instrumentation/**"]
+
   - skill: references/instrumentation.md
     topics: [instrumentation, sdks, auto-instrumentation, language-sdks]
     watches:
+      - repo: open-telemetry/semantic-conventions-genai
+        paths: ["docs/**", "model/**"]
+      - repo: open-telemetry/opentelemetry-python-genai
+        paths: ["instrumentation/**", "util/**", "README.md"]
       - repo: open-telemetry/opentelemetry-go
         paths:
           - "CHANGELOG.md"

@@ -195,23 +195,23 @@
 
 ### Expected WITHOUT skill (RED baseline)
 
-- May use tool-specific span names or `execute_tool {tool}`
+- May use argument-dependent names or omit the registered tool name
 - May omit `gen_ai.tool.name`
-- Likely misses the stable `execute_tool` span name or fails to preserve the tool name in `gen_ai.tool.name`
+- Likely misses the Development-convention `execute_tool {gen_ai.tool.name}` span name or fails to preserve the tool name in `gen_ai.tool.name`
 
 ### Expected WITH skill (GREEN target)
 
-- ✅ Uses the stable `execute_tool` span name
+- ✅ Uses the Development-convention `execute_tool {gen_ai.tool.name}` span name
 - ✅ Preserves `gen_ai.tool.name` on each tool span
 - ✅ Keeps the actual tool name in `gen_ai.tool.name`
-- ✅ Avoids encoding unbounded or vendor-specific tool names into span names
+- ✅ Uses registered tool names without arguments, paths, or request IDs
 
 ### Compliance Check
 
-- [ ] Response uses the stable `execute_tool` span name
+- [ ] Response uses the Development-convention `execute_tool {gen_ai.tool.name}` span name
 - [ ] Response includes `gen_ai.tool.name`
 - [ ] Response keeps the actual tool name in `gen_ai.tool.name`
-- [ ] Response avoids encoding unbounded tool names into span names
+- [ ] Response excludes arguments, paths, and request IDs from span names
 
 ---
 
@@ -225,4 +225,4 @@ Document observed agent rationalizations and counter-guidance here as they are d
 | "You can use session.id as a metric label to track per-user costs" | session.id is unbounded cardinality. Use log queries with distinct count instead. |
 | "Qwen Code telemetry is still planned but not shipped" | Qwen Code ships native OTel. As of v0.16.1 it also dual-emits selected `gen_ai.*` attributes, but the private `qwen-code.*` fields remain authoritative while the schema settles. |
 | "Codex CLI telemetry works the same in every mode" | The documented OTel surface and mode coverage must be verified independently for the installed release. |
-| "Put every tool name into the span name" | Use the stable `execute_tool` span name and put the actual tool name in `gen_ai.tool.name`. |
+| "Include the full shell command in the tool span name" | Use the Development-convention `execute_tool {gen_ai.tool.name}` span name and put the actual tool name in `gen_ai.tool.name`. |

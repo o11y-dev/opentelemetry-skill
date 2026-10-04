@@ -1,5 +1,5 @@
 {
-  "name": "opentelemetry-skill",
+  "name": "o11y-dev/opentelemetry-skill",
   "mode": "vendored",
   "dependencies": {}
 }
