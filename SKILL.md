@@ -1,6 +1,6 @@
 ---
 name: opentelemetry-skill
-description: "Configure, review, and troubleshoot OpenTelemetry (OTel) collectors and application instrumentation for tracing, metrics, and logs. Use for OTLP pipelines, Kubernetes/Helm or container deployments, SDK setup, sampling, metric cardinality, OTTL transforms, telemetry security, collector monitoring, and AI coding-agent observability (Claude Code, Codex, Gemini CLI, GitHub Copilot)."
+description: "Build OpenTelemetry collector configs, instrument services, transform telemetry with OTTL, and debug missing traces, metrics, or logs. Use for OTel/otelcol collector config, OTLP export, SDK instrumentation, sampling, cardinality, TLS/PII controls, Kubernetes/Helm values.yaml deployments, collector health and alerts, and AI coding-agent telemetry (Claude Code, Codex, Gemini CLI, GitHub Copilot)."
 metadata:
   author: o11y.dev
   version: 0.5.3
@@ -32,7 +32,7 @@ metadata:
 
 1. **Scope the request.** Identify the signals, deployment target, Collector/SDK version, backend protocol, expected volume, outage tolerance, and trust boundaries from the supplied files or context. Ask only for missing details that change the design; state assumptions for a draft.
 2. **Load relevant references.** Use the trigger table below. For version-sensitive settings, check [compatibility.md](references/compatibility.md) and the upstream documentation for the installed release.
-3. **Choose the work mode.** For an existing configuration, apply the review checks below and report concrete contradictions before editing. For a new pipeline or instrumentation, adapt the relevant example to the user's environment. For missing or dropped telemetry, follow [validation.md](references/validation.md) from source through Collector to backend.
+3. **Choose the work mode.** For existing configuration, apply the review checks below before editing. For a new Collector pipeline, load [production-baseline.md](references/production-baseline.md) and the platform setup guide; adapt their examples to the user's environment. For instrumentation, load the matching SDK/agent reference. For missing or dropped telemetry, follow [validation.md](references/validation.md) from source through Collector to backend.
 4. **Validate and correct.** For Collector changes, run `otelcol validate --config <path>` with the target distribution/version; render Helm values before validating the resulting config. For SDK changes, exercise a representative request and inspect emitted telemetry. Fix reported failures and repeat the affected check; if blocked, report the exact failure and remaining verification.
 5. **Deliver the result.** Include the findings or changed config/code, reasons for consequential choices, and checks performed with their results. Separate configuration validity from observed end-to-end delivery; do not claim live recovery from parsing or a health endpoint alone.
 
@@ -43,7 +43,8 @@ metadata:
 - **Transport:** default to OTLP gRPC (4317); use OTLP HTTP (4318) when the client, proxy, browser, or backend requires it.
 - **Security:** redact PII; use TLS and authentication across trust boundaries, with mTLS where mutual peer identity is required. Keep health/debug endpoints private; never expose pprof or zpages publicly.
 - **Conventions and stability:** prefer OpenTelemetry Semantic Conventions; verify component stability for the selected release and warn about non-stable production dependencies.
-- **Routing:** use stable keys (`traceID` for tail sampling, `tenant_id` or `cluster` for tenant/shard routing); normalize non-string attributes first. For Kubernetes tail sampling, use a Gateway Deployment tier behind `load_balancing` with `routing_key: traceID` and a Headless Service (`clusterIP: None`). For a keep-errors-plus-10% request, include error and probabilistic policies. Explicitly warn that `tail_sampling` is Beta in Collector 0.160; check the target release before claiming a different stability level.
+- **Routing:** use stable keys (`traceID` for tail sampling, `tenant_id` or `cluster` for tenant/shard routing); normalize non-string attributes first.
+- **Kubernetes tail sampling:** use a Gateway Deployment behind `load_balancing` with `routing_key: traceID` and a Headless Service (`clusterIP: None`). For keep-errors-plus-10%, include error and probabilistic policies. Explicitly warn that `tail_sampling` is Beta in Collector 0.160; recheck stability for other releases.
 
 ## AI Agent Instrumentation
 
@@ -55,7 +56,7 @@ For coding-agent requests, load [ai-agents.md](references/ai-agents.md) and appl
 
 ## Existing Configuration Review Mode
 
-Audit these interactions together; a configuration that parses can still lose or corrupt telemetry:
+Check these interactions, beyond configuration syntax:
 
 1. **Memory vs pod limit** — compare the limiter's actual ceiling with the pod limit, not just the configured percentage.
 2. **Stateful processing vs scaling** — `tail_sampling`, `span_metrics`, and `service_graph` need sticky routing above one replica.
@@ -69,10 +70,16 @@ Audit these interactions together; a configuration that parses can still lose or
 
 ## Progressive Disclosure: Context Triggers
 
-Load detailed reference documentation only when the user's request matches a trigger. This keeps context lean.
+Load only the references matching the request:
 
 | Trigger keywords | Load | Key topics |
 |---|---|---|
+| New Collector pipeline, baseline config | [production-baseline.md](references/production-baseline.md) | Complete OTLP config, required substitutions, storage and listener setup |
+| Choose deployment platform | [setup-index.md](references/setup-index.md) | Platform decision matrix |
+| Deploy to Kubernetes, Helm values.yaml | [setup-kubernetes.md](references/setup-kubernetes.md) | DaemonSet, Gateway and sidecar manifests |
+| Deploy to ECS, Fargate | [setup-ecs.md](references/setup-ecs.md) | Task definitions, IAM and secrets |
+| Deploy to Docker, Compose | [setup-docker.md](references/setup-docker.md) | Container networking, resources and volumes |
+| Deploy to VM, EC2, systemd, Windows service | [setup-vm.md](references/setup-vm.md) | Service lifecycle and host setup |
 | Kubernetes, Helm, values.yaml, audit, review, DaemonSet, Sidecar, Gateway, Scaling, Load Balancing | [architecture.md](references/architecture.md) | DaemonSet vs Gateway vs Sidecar, Target Allocator, HPA, rollout consistency |
 | Pipeline, Receiver, Processor, Exporter, Queue, Batch, Memory, Extensions, existing config | [collector.md](references/collector.md) | Processor ordering, memory_limiter, file_storage, config audit heuristics, temporality/state audits, stability levels |
 | Python, FastAPI, Starlette, asyncio, Python GenAI, Python SDK events | [python-instrumentation.md](references/python-instrumentation.md) | Initialization ownership, duplicate instrumentation, SDK 1.44 migration, streaming, GenAI packages |
@@ -87,75 +94,3 @@ Load detailed reference documentation only when the user's request matches a tri
 | validate, dry-run, startup error, pipeline error, dropped data, queue full, recovery | [validation.md](references/validation.md) | Config validation commands, live checks, symptom→cause→fix recovery guidance |
 | playbook, production playbook, blog, developer observability, local OTel viewer, real world | [playbooks.md](references/playbooks.md) | Production and developer patterns from OpenTelemetry and CNCF blogs |
 | anti-pattern, common mistake, what to avoid, pitfall | [anti-patterns.md](references/anti-patterns.md) | Full annotated anti-pattern catalogue: pipeline, metrics, Kubernetes, AI agents, OTTL |
-
-## Production Baseline Configuration
-
-Start from this local receiver baseline, then adapt it to the confirmed deployment. Before use, replace `your-backend:4317` with a TLS-enabled backend, supply its authentication as required, and mount a writable persistent queue directory. Network-facing receivers need explicit bind addresses, TLS/authentication, and network access controls from [security.md](references/security.md).
-
-```yaml
-extensions:
-  health_check:
-    endpoint: "127.0.0.1:13133"
-  file_storage/queue:
-    directory: /var/lib/otelcol/queue
-    timeout: 10s
-    compaction:
-      on_start: true
-      on_rebound: false
-
-receivers:
-  otlp:
-    protocols:
-      grpc:
-        endpoint: "127.0.0.1:4317"
-      http:
-        endpoint: "127.0.0.1:4318"
-
-processors:
-  memory_limiter:
-    check_interval: 1s
-    limit_percentage: 80
-    spike_limit_percentage: 20
-  batch:
-    timeout: 10s
-    send_batch_size: 1024
-
-exporters:
-  otlp:
-    endpoint: "your-backend:4317"
-    sending_queue:
-      enabled: true
-      storage: file_storage/queue
-      num_consumers: 4
-      queue_size: 1024
-    retry_on_failure:
-      enabled: true
-      initial_interval: 1s
-      max_interval: 30s
-      max_elapsed_time: 300s
-  # otlphttp:                        # HTTP exporter — use when backend requires HTTP
-  #   endpoint: "https://your-backend:4318"
-  #   sending_queue: { enabled: true, storage: file_storage/queue }
-
-service:
-  extensions: [health_check, file_storage/queue]
-  pipelines:
-    traces:
-      receivers: [otlp]
-      processors: [memory_limiter, batch]
-      exporters: [otlp]
-    metrics:
-      receivers: [otlp]
-      processors: [memory_limiter, batch]
-      exporters: [otlp]
-    logs:
-      receivers: [otlp]
-      processors: [memory_limiter, batch]
-      exporters: [otlp]
-```
-
-Deployment notes:
-
-- `batch` reduces exporter network calls.
-- `file_storage` preserves queues across restarts only on the same host/volume. In Kubernetes, back `/var/lib/otelcol/queue` with a `ReadWriteOnce` block-backed PVC, not RWX/network storage.
-- Loopback listeners are reachable only within the same network namespace. For Kubernetes HTTP probes or remote clients, bind the required endpoint to the pod interface and restrict access; otherwise the probe/client cannot connect.
