@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - Restore weekly RSS monitoring for OpenTelemetry posts and OTel-related CNCF posts, with bounded parsing, visible feed failures, and regression tests
-- Add Collector Contrib 0.162/Operator Kubernetes upgrade evaluation and OpenTelemetry JS 3.0 readiness checklist/scanner
+- Add Collector Contrib 0.162/Operator Kubernetes upgrade evaluation and OpenTelemetry JS 3.0 readiness guidance
 - Add developer-local observability routing for OTel Desktop Viewer, `otel-tui`, and OTel Front
 - Add scaled `signal_to_metrics` correctness guidance and regression coverage for producer identity, backend resource mapping, temporality, and dashboard aggregation
 

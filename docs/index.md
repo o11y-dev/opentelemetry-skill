@@ -37,7 +37,6 @@ The authoritative Tessl-facing eval assets live in `evals/`. The `tests/` docume
 - [Tail sampling setup task](../evals/tail-sampling-setup/task.md)
 - [Claude Code telemetry task](../evals/claude-code-telemetry/task.md)
 - [Collector 0.162 upgrade task](../evals/collector-0162-upgrade/task.md)
-- [JavaScript OTel 3.0 readiness task](../evals/javascript-otel3-readiness/task.md)
 
 ### Supporting test methodology
 

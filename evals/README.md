@@ -14,7 +14,6 @@ This directory contains evaluation scenarios for the OpenTelemetry skill, design
 - `python-genai-streaming/`: async parentage, complete stream lifetimes, privacy, and unknown usage.
 - `collector-0160-upgrade/`: removed settings, selective labels, and release-specific validation.
 - `collector-0162-upgrade/`: renamed components, selector migration, Prometheus labels, profile compatibility, and Operator/Kubernetes CRD checks.
-- `javascript-otel3-readiness/`: Node runtime, removed package/import, and custom instrumentation migration checks.
 
 These task/criteria pairs assess generated answers. They are separate from the
 executable Python and Collector checks run by CI; passing those checks does not
@@ -43,10 +42,6 @@ the executable scenarios are the subdirectories containing `task.md` and
 Run behavioral evaluations manually when needed using the commands above.
 CI runs executable validation checks and the existing `Tessl Skill Report`
 quality review. Neither establishes a behavioral evaluation score.
-
-The JavaScript 3.0 readiness scanner is a static source audit; run
-`node .github/scripts/scan-js-otel3-readiness.mjs [path]` from the repository
-root. Its findings require manual verification against the stable migration guide.
 
 ## Expected Behavior
 

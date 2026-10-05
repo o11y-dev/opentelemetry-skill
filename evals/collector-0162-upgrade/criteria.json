@@ -14,13 +14,18 @@
     },
     {
       "name": "Updates adaptive tail-sampling selectors",
-      "max_score": 15,
+      "max_score": 10,
       "description": "Replaces bare `root.attributes[...]` with an explicit supported origin, such as `root.span.attributes[...]` for root-span attributes; distinguishes `root.resource.` and `root.any.` semantics."
     },
     {
       "name": "Checks Prometheus label compatibility",
-      "max_score": 15,
+      "max_score": 10,
       "description": "Explains that permissive label sanitization is enabled by default in 0.162 and `_foo` no longer receives the previous `key_` prefix; audits dashboards, alerts, and queries for changed label names and describes the feature-gate rollback only as a temporary compatibility option."
+    },
+    {
+      "name": "Checks Prometheus scope attribute changes",
+      "max_score": 15,
+      "description": "Identifies that the `IgnoreScopeInfoMetric` feature gate is stable and cannot be disabled: `otel_scope_info` no longer supplies extracted scope attributes; `otel_scope_`-prefixed metric labels populate scope attributes instead. Audits emitted OTLP scope attributes and downstream queries/dashboards for reliance on the old behavior, without conflating scope with resource attributes or Prometheus labels."
     },
     {
       "name": "Protects profiling delivery to Elasticsearch",
@@ -34,7 +39,7 @@
     },
     {
       "name": "Audits saved-query references without fabricating changes",
-      "max_score": 15,
+      "max_score": 10,
       "description": "Searches dashboards, alerts, and saved queries for affected label names, exporter/profile index assumptions, and selector-derived results; states that no saved-query migration is documented in the tagged release notes if none is found, and recommends regression checks against the deployed backend."
     }
   ]

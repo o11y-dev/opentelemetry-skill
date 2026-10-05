@@ -14,16 +14,6 @@ Use this checklist to assess applications, libraries, and custom instrumentation
 - [ ] Review custom instrumentation separately. Code using only the stable `@opentelemetry/api` is expected to remain compatible; instrumentation authors and packages that depend on SDK classes, removed utilities, or `@opentelemetry/instrumentation` internals require explicit source review and tests. Do not infer compatibility from an API-only guarantee.
 - [ ] Run unit/integration tests on the minimum supported Node version and verify context propagation, span export, instrumentation patching, and graceful shutdown.
 
-## Lightweight repository scanner
-
-Run the dependency/source scanner from the repository root:
-
-```bash
-node .github/scripts/scan-js-otel3-readiness.mjs [path]
-```
-
-It reports Node version declarations in package manifests, version-manager files, GitHub Actions workflows, and Dockerfiles; dependencies on packages listed for removal; imports from the split tracing SDK packages; and custom instrumentation references for manual compatibility review. The scanner is a static aid: it does not fully resolve semver, prove runtime compatibility, or replace checking the stable migration guide and running tests.
-
 ## Upstream references
 
 - [OpenTelemetry JS 3.x announcement](https://github.com/open-telemetry/opentelemetry-js/blob/main/doc/3.x/announcement.md)

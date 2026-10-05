@@ -78,7 +78,7 @@ The skill now includes **5 platform-specific setup guides** (`setup-kubernetes.m
 ### 📊 **Content Overview**
 
 - **Packaged reference docs** for architecture, collector design, instrumentation, security, sampling, AI agents, and compatibility
-- **JavaScript OTel 3.0 readiness checklist** with a dependency and import scanner
+- **JavaScript OTel 3.0 readiness checklist** for runtime, package, tracing SDK, and instrumentation migrations
 - **Platform-specific setup guides** for Kubernetes (EKS/GKE/AKS/OpenShift/Autopilot/Fargate), AWS ECS (EC2/Fargate), Docker/Compose, and standalone VMs
 - **AI coding agent coverage** tracked with upstream monitoring  
 - **Production-tested** configurations with validation commands and 20+ comprehensive evaluation scenarios
