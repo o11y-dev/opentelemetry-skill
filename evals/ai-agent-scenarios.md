@@ -35,13 +35,13 @@ Review the native OpenTelemetry support for Google Antigravity and recommend an 
 
 ### Expected Response (Key Points)
 - Verifies native telemetry, configuration, and privacy behavior using first-party documentation for the installed Antigravity version
-- Does not carry over legacy Gemini CLI environment variables, config files, or support claims
+- Does not carry over legacy Google CLI environment variables, config files, or support claims
 - Marks unsupported or undocumented native signals as unknown rather than inventing options
 - Recommends process-level instrumentation only when invocation-level coverage is sufficient and a supported wrapper can be used
 - Warns that captured stdout/stderr may include prompts, source code, or secrets
 
 ### Failure Modes
-- Presents Gemini CLI settings as Antigravity settings
+- Presents legacy Google CLI settings as Antigravity settings
 - Claims native traces, metrics, logs, or GenAI conventions without version-specific evidence
 - Implies process-level hooks expose model calls or token counts
 - Omits privacy considerations for captured output

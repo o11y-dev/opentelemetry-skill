@@ -29,7 +29,7 @@ This file is automatically flagged for review when changes occur in:
 | Agent | Vendor | Native OTel | Traces | Metrics | Logs/Events | GenAI SemConv | Hooks Support | Config Method | Config File / Env Vars | Protocol | Official Docs |
 |-------|--------|-------------|--------|---------|-------------|---------------|---------------|---------------|------------------------|----------|---------------|
 | **Claude Code** | Anthropic | ⚠️ metrics/logs + traces beta | ⚠️ beta | ✅ | ✅ | ⚠️ selected `gen_ai.*`; native `claude_code.*` | ✅ governance wrapper | Env vars or managed settings | `CLAUDE_CODE_ENABLE_TELEMETRY`, `OTEL_*` | OTLP gRPC/HTTP | [docs](https://code.claude.com/docs/en/monitoring-usage) |
-| **Google Antigravity** | Google | ? verify | ? | ? | ? | ? | ⚠️ verify process wrapper | Verify version-specific docs | Do not reuse Gemini CLI settings | Verify | — |
+| **Google Antigravity** | Google | ? verify | ? | ? | ? | ? | ⚠️ verify process wrapper | Verify version-specific docs | Do not reuse legacy CLI settings | Verify | — |
 | **GitHub Copilot VS Code** | Microsoft | ✅ full | ✅ | ✅ | ✅ | ✅ (`gen_ai.*`) | ⚠️ launcher wrapper only | VS Code `settings.json` or env var | `COPILOT_OTEL_ENABLED` | OTLP HTTP | [docs](https://code.visualstudio.com/docs/copilot/guides/monitoring-agents) |
 | **GitHub Copilot CLI** | Microsoft | ✅ full | ✅ | ✅ | ✅ | ✅ (`gen_ai.*`) | ✅ governance wrapper | Same span model as VS Code | `COPILOT_OTEL_ENABLED` | OTLP HTTP | [docs](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference) |
 | **OpenAI Codex CLI** | OpenAI | ⚠️ partial | ⚠️ verify per release/mode | ✅ | ✅ | ❌ (custom event names) | ✅ gap-filler + governance | `~/.codex/config.toml` `[otel]` section | `~/.codex/config.toml` | OTLP gRPC | [docs](https://developers.openai.com/codex/config-advanced) |
@@ -106,7 +106,7 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 
 ### 2.2 Google Antigravity
 
-Do not treat historical Gemini CLI telemetry settings or support claims as Antigravity documentation. Verify native OTel signals, configuration, protocol, privacy defaults, and semantic-convention coverage against first-party documentation for the installed Antigravity version. Until verified, mark native support as unknown rather than assuming that the former Gemini CLI environment variables or `.gemini/settings.json` work.
+Do not treat historical Google CLI telemetry settings or support claims as Antigravity documentation. Verify native OTel signals, configuration, protocol, privacy defaults, and semantic-convention coverage against first-party documentation for the installed Antigravity version. Until verified, mark native support as unknown rather than assuming former environment variables or configuration files work.
 
 If process-boundary visibility is sufficient and the installed CLI can be launched through a wrapper, use [opentelemetry-hooks](https://github.com/o11y-dev/opentelemetry-hooks) to record invocation-level duration and exit status. Review stdout/stderr capture carefully: it can contain prompts, source code, or secrets. A process wrapper does not provide in-process model, token, or tool-call spans.
 
@@ -229,7 +229,7 @@ otel-hooks --service-name cursor --otlp-endpoint http://localhost:4317 -- cursor
 | Agent | Native OTel | Hooks Role | Recommended Usage |
 |-------|-------------|------------|-------------------|
 | **Claude Code** | ⚠️ metrics/logs + traces beta | Governance wrapper | Prefer native metrics/logs; evaluate beta traces separately, and add hooks when you need standardized start/stop audit events, resource attributes, or launch-time controls across agents. |
-| **Google Antigravity** | ? verify | Verify process wrapper | Check first-party docs for native signals and supported configuration; do not reuse Gemini CLI settings. Use a process wrapper only for invocation-level coverage when appropriate. |
+| **Google Antigravity** | ? verify | Verify process wrapper | Check first-party docs for native signals and supported configuration; do not reuse legacy CLI settings. Use a process wrapper only for invocation-level coverage when appropriate. |
 | **GitHub Copilot CLI** | ✅ full | Governance wrapper | Use native telemetry for primary observability; add hooks when you need consistent launch policies, ownership tags, or process-boundary audit signals across multiple CLI agents. |
 | **GitHub Copilot VS Code** | ✅ full | Limited launcher wrapper | Prefer native telemetry. Hooks can wrap the editor launch, but they provide only outer-process coverage because most agent activity occurs inside the desktop process after startup. |
 | **OpenAI Codex CLI** | ⚠️ partial | Gap-filler + governance | Use native OTel where available, especially interactive mode. Add hooks to cover outer invocation telemetry, standardize controls, and partially bridge `exec`/`mcp-server` gaps. |

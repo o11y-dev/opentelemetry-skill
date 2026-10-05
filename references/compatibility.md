@@ -17,7 +17,7 @@ Use this document for version-sensitive guidance that changes more frequently th
 ## AI agent telemetry compatibility
 
 - **Claude Code**: current release emits metrics plus logs/events and beta traces with selected GenAI attributes (for example `gen_ai.tool.call.id`), not full schema alignment; `OTEL_METRICS_INCLUDE_ENTRYPOINT=true` adds optional bounded `app.entrypoint`
-- **Google Antigravity**: verify native OTel signals and configuration against first-party documentation for the installed product version. Do not reuse historical Gemini CLI settings or claim signal support without verification.
+- **Google Antigravity**: verify native OTel signals and configuration against first-party documentation for the installed product version. Do not reuse legacy Google CLI settings or claim signal support without verification.
 - **GitHub Copilot**: latest stable / Insiders builds expose traces, metrics, and events with GenAI semantic conventions
 - **Codex CLI**: current documentation describes structured log events and metrics for API requests, tool calls, `exec`, and sessions; verify trace support and mode-specific behavior in the installed release
 - **Qwen Code**: v0.16.1+ emits traces, metrics, and logs with partial `gen_ai.*` dual-emit layered on top of authoritative `qwen-code.*` fields

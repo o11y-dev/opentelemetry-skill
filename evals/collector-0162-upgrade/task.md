@@ -6,3 +6,5 @@ Review this upgrade plan for a production OpenTelemetry deployment:
 - Find and update any saved dashboards, alerts, or queries affected by the upgrade.
 
 Identify configuration changes that can break startup or alter telemetry, explain the Operator/Kubernetes compatibility checks and CRD migration, and propose a release-specific validation plan. Distinguish changes confirmed in the tagged release notes from compatibility checks that still need to be performed; do not invent saved-query changes if upstream does not document any.
+
+Upstream references: [Contrib v0.162.0 changelog](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.162.0/CHANGELOG.md), [Operator v0.160.0 changelog](https://github.com/open-telemetry/opentelemetry-operator/blob/v0.160.0/CHANGELOG.md), and [Operator CRD migration guide](https://github.com/open-telemetry/opentelemetry-operator/blob/v0.160.0/docs/reference/crd-changelog.md).

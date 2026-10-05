@@ -57,7 +57,7 @@
 
 - Likely generates two separate, disconnected configs
 - No normalization of `service.name` across agents
-- Assumes Antigravity has Gemini CLI's former native telemetry or configuration
+- Assumes Antigravity has a former Google CLI's native telemetry or configuration
 - Treats unsupported Antigravity signal/protocol details as facts
 - No resource processor to add a bounded common source label
 - Proposes mapping native `claude_code.*` fields into `gen_ai.*`
@@ -69,7 +69,7 @@
 - ✅ Prefers OTLP gRPC by default, but explains when OTLP HTTP is the right fallback
 - ✅ `memory_limiter` as first processor in every pipeline
 - ✅ `resource` processor adds `telemetry.source.type: ai-coding-agent` without overwriting each agent's identity
-- ✅ Marks Antigravity native telemetry and protocol as unverified; does not reuse Gemini CLI settings
+- ✅ Marks Antigravity native telemetry and protocol as unverified; does not reuse legacy Google CLI settings
 - ✅ Uses a process wrapper only for invocation-level signals where appropriate, and warns about stdout/stderr privacy
 - ✅ Preserves vendor-native Claude Code fields and does not synthesize deprecated `gen_ai.system`
 - ✅ Separate pipelines for metrics, logs, traces
@@ -82,7 +82,7 @@
 - [ ] Response prefers OTLP gRPC but allows OTLP HTTP when needed for supported senders
 - [ ] `memory_limiter` is first processor
 - [ ] `resource` processor adds a bounded source label without overwriting agent identity
-- [ ] Does not assume Antigravity supports Gemini CLI's former telemetry settings or signals
+- [ ] Does not assume Antigravity supports legacy Google CLI telemetry settings or signals
 - [ ] Explains process-level wrapper limitations and output privacy
 - [ ] Separate metrics/logs/traces pipelines
 - [ ] Notes Claude Code trace support is beta
@@ -105,7 +105,7 @@
 
 ### Expected WITH skill (GREEN target)
 
-- ✅ Google Antigravity: native OTel support is unverified; check first-party docs for the installed version and do not infer Gemini CLI compatibility
+- ✅ Google Antigravity: native OTel support is unverified; check first-party docs for the installed version and do not infer compatibility from earlier Google CLI behavior
 - ✅ GitHub Copilot (VS Code + CLI): full traces ✅, follows `gen_ai.*` SemConv
 - ✅ Claude Code: beta traces plus metrics/logs; use `prompt.id` correlation when traces are unavailable
 - ✅ Codex CLI: documented OTel surface is metrics/log events; verify trace support and mode-specific behavior

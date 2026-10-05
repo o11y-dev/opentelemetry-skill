@@ -15,10 +15,9 @@ test('finds old runtime declarations, removed dependencies, tracing imports, and
       dependencies: { '@opentelemetry/sdk-trace-node': '^2.0.0', '@opentelemetry/shim-opentracing': '^1.0.0' },
     }));
     await writeFile(path.join(root, '.nvmrc'), '22.15.0\n');
-    await writeFile(path.join(root, 'src/tracing.ts'), `
-      import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
-      import { InstrumentationBase } from '@opentelemetry/instrumentation';
-    `);
+    const traceImport = ['import { NodeTracerProvider } from ', "'", '@opentelemetry/sdk-trace-node', "';"].join('');
+    const instrumentationImport = ['import { InstrumentationBase } from ', "'", '@opentelemetry/instrumentation', "';"].join('');
+    await writeFile(path.join(root, 'src/tracing.ts'), `${traceImport}\n${instrumentationImport}\n`);
 
     const result = await scanProject(root);
     assert.equal(result.nodeDeclarations.length, 2);
