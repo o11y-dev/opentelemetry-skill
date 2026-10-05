@@ -15,7 +15,7 @@
     {
       "name": "Finds removed packages",
       "max_score": 20,
-      "description": "Flags the Jaeger exporter/propagator, OpenTracing/OpenCensus shims, api-logs, and split sdk-trace-base/node/web packages for removal; proposes supported alternatives only after consulting the final migration guide."
+      "description": "Flags the Jaeger exporter/propagator, OpenTracing/OpenCensus shims, api-logs, instrumentation-restify, and split sdk-trace-base/node/web packages for removal; proposes supported alternatives only after consulting the final migration guide."
     },
     {
       "name": "Updates tracing SDK imports and APIs",

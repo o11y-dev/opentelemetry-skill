@@ -8,6 +8,7 @@ const REMOVED_PACKAGES = [
   '@opentelemetry/shim-opentracing',
   '@opentelemetry/shim-opencensus',
   '@opentelemetry/api-logs',
+  '@opentelemetry/instrumentation-restify',
   '@opentelemetry/sdk-trace-base',
   '@opentelemetry/sdk-trace-node',
   '@opentelemetry/sdk-trace-web',
@@ -46,7 +47,14 @@ async function walk(root) {
 
 function nodeDeclarationNeedsReview(value) {
   const normalized = String(value).trim().replace(/^v/, '');
-  return !/(?:^|\|\||\s)(?:\^|>=?|~)?\s*22\.15(?:\.0)?(?:$|\s|[<|])/.test(normalized);
+  const branches = normalized.split('||').map((branch) => branch.trim());
+  return branches.some((branch) => {
+    const match = branch.match(/^(?:\^|~|>=?|=)?\s*v?(\d+)(?:\.(\d+|x|\*))?/i);
+    if (!match || match[2] === 'x' || match[2] === '*') return true;
+    const major = Number(match[1]);
+    const minor = Number(match[2] ?? 0);
+    return major < 22 || (major === 22 && minor < 15);
+  });
 }
 
 export async function scanProject(root) {
@@ -90,6 +98,27 @@ export async function scanProject(root) {
       if (version) result.nodeDeclarations.push({ file: relative, version, needsReview: nodeDeclarationNeedsReview(version) });
     }
 
+    if (path.basename(file) === '.tool-versions') {
+      const contents = await readFile(file, 'utf8');
+      for (const match of contents.matchAll(/^nodejs\s+(\S+)/gm)) {
+        result.nodeDeclarations.push({ file: relative, version: match[1], needsReview: nodeDeclarationNeedsReview(match[1]) });
+      }
+    }
+
+    if (['.yml', '.yaml'].includes(path.extname(file))) {
+      const contents = await readFile(file, 'utf8');
+      for (const match of contents.matchAll(/^\s*node-version:\s*['"]?([^'"#\s]+)['"]?/gm)) {
+        result.nodeDeclarations.push({ file: relative, version: match[1], needsReview: nodeDeclarationNeedsReview(match[1]) });
+      }
+    }
+
+    if (/^Dockerfile(?:\..*)?$/i.test(path.basename(file))) {
+      const contents = await readFile(file, 'utf8');
+      for (const match of contents.matchAll(/^\s*FROM\s+(?:--platform=\S+\s+)?(?:[\w.-]+\/)?node:(\d+(?:\.\d+)?(?:\.\d+)?)/gim)) {
+        result.nodeDeclarations.push({ file: relative, version: match[1], needsReview: nodeDeclarationNeedsReview(match[1]) });
+      }
+    }
+
     if (SOURCE_EXTENSIONS.has(path.extname(file))) {
       const source = await readFile(file, 'utf8');
       for (const name of TRACE_SDK_PACKAGES) {
@@ -103,7 +132,7 @@ export async function scanProject(root) {
     }
   }
 
-  result.nodeDeclarations.sort((a, b) => a.file.localeCompare(b.file));
+  result.nodeDeclarations.sort((a, b) => `${a.file}:${a.version}`.localeCompare(`${b.file}:${b.version}`));
   result.removedPackages.sort((a, b) => `${a.file}:${a.package}`.localeCompare(`${b.file}:${b.package}`));
   result.legacyTracingImports.sort((a, b) => `${a.file}:${a.package}`.localeCompare(`${b.file}:${b.package}`));
   result.instrumentationReferences.sort();

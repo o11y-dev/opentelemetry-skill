@@ -412,7 +412,7 @@ Do not generate `gen_ai.user.message`, `gen_ai.assistant.message`, `gen_ai.tool.
 
 | Dashboard | Agents Covered | Stack | Link |
 |-----------|---------------|-------|------|
-| **ai-observer** | Claude Code, Codex CLI, and other OTLP-compatible agents | Any OTLP backend | [github.com/tobilg/ai-observer](https://github.com/tobilg/ai-observer) |
+| **ai-observer** | Claude Code + Codex CLI | Any OTLP backend | [github.com/tobilg/ai-observer](https://github.com/tobilg/ai-observer) |
 | **claude-code-otel** | Claude Code | Grafana + Prometheus | [github.com/ColeMurray/claude-code-otel](https://github.com/ColeMurray/claude-code-otel) |
 | **Honeycomb Claude Code template** | Claude Code | Honeycomb | Built-in board template (search "Claude Code" in Honeycomb) |
 
