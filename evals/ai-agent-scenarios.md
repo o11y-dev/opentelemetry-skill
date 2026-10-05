@@ -24,27 +24,27 @@ Configure OpenTelemetry monitoring for GitHub Copilot CLI to track usage pattern
 
 ---
 
-## Gemini CLI Telemetry
+## Google Antigravity Telemetry
 
-**ID**: gemini-cli-monitoring  
+**ID**: antigravity-telemetry-review  
 **Category**: AI Agents  
 **Difficulty**: Intermediate  
 
 ### Prompt
-Set up observability for Google Gemini CLI to monitor API calls and response latencies.
+Review the native OpenTelemetry support for Google Antigravity and recommend an observability approach for API calls and response latencies.
 
 ### Expected Response (Key Points)
-- Configures environment variables for Gemini telemetry export
-- Sets up proper OTLP endpoint configuration
-- Includes API rate limiting considerations
-- Mentions quota and billing correlation with telemetry
-- Warns about sensitive prompt data in telemetry
+- Verifies native telemetry, configuration, and privacy behavior using first-party documentation for the installed Antigravity version
+- Does not carry over legacy Gemini CLI environment variables, config files, or support claims
+- Marks unsupported or undocumented native signals as unknown rather than inventing options
+- Recommends process-level instrumentation only when invocation-level coverage is sufficient and a supported wrapper can be used
+- Warns that captured stdout/stderr may include prompts, source code, or secrets
 
 ### Failure Modes
-- Omits Gemini-specific configuration
-- Doesn't address API quota correlation
-- Missing privacy considerations for prompts
-- Generic setup without Gemini CLI specifics
+- Presents Gemini CLI settings as Antigravity settings
+- Claims native traces, metrics, logs, or GenAI conventions without version-specific evidence
+- Implies process-level hooks expose model calls or token counts
+- Omits privacy considerations for captured output
 
 ---
 

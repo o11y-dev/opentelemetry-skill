@@ -116,13 +116,6 @@ mappings:
           - "docs/**"
           - "src/**"
           - "Cargo.toml"
-      - repo: google-gemini/gemini-cli
-        paths:
-          - "README.md"
-          - "CHANGELOG.md"
-          - "docs/**"
-          - "src/**"
-          - "package.json"
       - repo: anthropics/claude-code
         paths:
           - "README.md"

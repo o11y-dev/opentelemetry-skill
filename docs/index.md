@@ -13,6 +13,7 @@ These are the deep-dive documents that the skill loads on demand:
 - [Compatibility](../references/compatibility.md)
 - [Connectors](../references/connectors.md)
 - [Instrumentation](../references/instrumentation.md)
+- [JavaScript OTel 3.0 readiness](../references/javascript-otel3-readiness.md)
 - [Monitoring](../references/monitoring.md)
 - [OTTL](../references/ottl.md)
 - [Platforms](../references/platforms.md)
@@ -35,6 +36,8 @@ The authoritative Tessl-facing eval assets live in `evals/`. The `tests/` docume
 - [Cardinality protection task](../evals/cardinality-protection/task.md)
 - [Tail sampling setup task](../evals/tail-sampling-setup/task.md)
 - [Claude Code telemetry task](../evals/claude-code-telemetry/task.md)
+- [Collector 0.162 upgrade task](../evals/collector-0162-upgrade/task.md)
+- [JavaScript OTel 3.0 readiness task](../evals/javascript-otel3-readiness/task.md)
 
 ### Supporting test methodology
 

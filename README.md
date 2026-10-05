@@ -66,7 +66,7 @@ Unlike loading the entire OpenTelemetry documentation into an AI's context (whic
 - 📈 **Scaling Strategies**: Load balancing with sticky sessions for tail sampling, resource management for high-throughput collectors
 - 🎯 **Sampling Intelligence**: Head vs tail sampling with statistical trade-off analysis
 - 🔍 **Meta-Monitoring**: Self-observability patterns for collector health
-- 🤖 **AI Agent Observability**: Configuration guides for monitoring AI coding agents including Claude Code, Gemini CLI, GitHub Copilot, Codex, Qwen Code, Pi Agent, and more via OpenTelemetry
+- 🤖 **AI Agent Observability**: Configuration guides for monitoring AI coding agents including Claude Code, Antigravity, GitHub Copilot, Codex, Qwen Code, Pi Agent, and more via OpenTelemetry
 - ✅ **Test & Validation Framework**: TDD-based testing methodology and 20+ comprehensive evaluation scenarios to ensure skill effectiveness
 
 ## Skill Structure
@@ -78,6 +78,7 @@ The skill now includes **5 platform-specific setup guides** (`setup-kubernetes.m
 ### 📊 **Content Overview**
 
 - **Packaged reference docs** for architecture, collector design, instrumentation, security, sampling, AI agents, and compatibility
+- **JavaScript OTel 3.0 readiness checklist** with a dependency and import scanner
 - **Platform-specific setup guides** for Kubernetes (EKS/GKE/AKS/OpenShift/Autopilot/Fargate), AWS ECS (EC2/Fargate), Docker/Compose, and standalone VMs
 - **AI coding agent coverage** tracked with upstream monitoring  
 - **Production-tested** configurations with validation commands and 20+ comprehensive evaluation scenarios

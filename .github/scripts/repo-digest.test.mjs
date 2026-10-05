@@ -31,6 +31,8 @@ test('configured Python and GenAI coverage includes both package repositories', 
   assert(cfg.frequencies.daily.includes('open-telemetry/semantic-conventions-genai'));
   assert(cfg.frequencies.weekly.includes('open-telemetry/opentelemetry-python-contrib'));
   assert(!cfg.frequencies.monthly.includes('open-telemetry/opentelemetry-python-contrib'));
+  assert(!cfg.frequencies.weekly.includes('google-gemini/gemini-cli'));
+  assert(!cfg.telemetry_issue_repos.includes('google-gemini/gemini-cli'));
   assert.equal(cfg.package_release_repos.length, 2);
 });
 

@@ -51,34 +51,39 @@
 ## Scenario 2: Multi-Agent Collector
 
 **Prompt**:
-> "I use Claude Code and Gemini CLI. Configure a single OTel Collector to receive telemetry from both."
+> "I use Claude Code and Google Antigravity. Configure an OTel Collector and explain what telemetry can be collected from each."
 
 ### Expected WITHOUT skill (RED baseline)
 
 - Likely generates two separate, disconnected configs
 - No normalization of `service.name` across agents
-- May not know Claude Code uses gRPC (4317) while Copilot uses HTTP (4318)
-- No resource processor to unify agent identifiers
-- No OTTL transform to map `claude_code.*` to `gen_ai.*`
+- Assumes Antigravity has Gemini CLI's former native telemetry or configuration
+- Treats unsupported Antigravity signal/protocol details as facts
+- No resource processor to add a bounded common source label
+- Proposes mapping native `claude_code.*` fields into `gen_ai.*`
 - `memory_limiter` may be missing or in wrong position
 
 ### Expected WITH skill (GREEN target)
 
-- ✅ Single OTLP receiver with both gRPC (4317) and HTTP (4318) protocols enabled
+- ✅ Single OTLP receiver with gRPC (4317) and HTTP (4318) protocols enabled for verified OTLP senders
 - ✅ Prefers OTLP gRPC by default, but explains when OTLP HTTP is the right fallback
 - ✅ `memory_limiter` as first processor in every pipeline
-- ✅ `resource` processor to tag `telemetry.source.type: ai-coding-agent`
+- ✅ `resource` processor adds `telemetry.source.type: ai-coding-agent` without overwriting each agent's identity
+- ✅ Marks Antigravity native telemetry and protocol as unverified; does not reuse Gemini CLI settings
+- ✅ Uses a process wrapper only for invocation-level signals where appropriate, and warns about stdout/stderr privacy
 - ✅ Preserves vendor-native Claude Code fields and does not synthesize deprecated `gen_ai.system`
 - ✅ Separate pipelines for metrics, logs, traces
-- ✅ Notes Claude Code traces are beta (traces pipeline remains useful for Gemini CLI)
+- ✅ Notes Claude Code traces are beta; only configures traces for agents with verified trace export
 - ✅ `batch` processor last before exporters
 
 ### Compliance Check
 
 - [ ] Single config with both gRPC and HTTP listeners
-- [ ] Response prefers OTLP gRPC but allows OTLP HTTP when needed
+- [ ] Response prefers OTLP gRPC but allows OTLP HTTP when needed for supported senders
 - [ ] `memory_limiter` is first processor
-- [ ] `resource` processor normalizes agent identity
+- [ ] `resource` processor adds a bounded source label without overwriting agent identity
+- [ ] Does not assume Antigravity supports Gemini CLI's former telemetry settings or signals
+- [ ] Explains process-level wrapper limitations and output privacy
 - [ ] Separate metrics/logs/traces pipelines
 - [ ] Notes Claude Code trace support is beta
 
@@ -100,17 +105,18 @@
 
 ### Expected WITH skill (GREEN target)
 
-- ✅ Gemini CLI: full traces ✅, follows `gen_ai.*` SemConv, v0.34.0+
+- ✅ Google Antigravity: native OTel support is unverified; check first-party docs for the installed version and do not infer Gemini CLI compatibility
 - ✅ GitHub Copilot (VS Code + CLI): full traces ✅, follows `gen_ai.*` SemConv
 - ✅ Claude Code: beta traces plus metrics/logs; use `prompt.id` correlation when traces are unavailable
 - ✅ Codex CLI: documented OTel surface is metrics/log events; verify trace support and mode-specific behavior
 - ✅ Qwen Code: partial native OTel ⚠️ with partial `gen_ai.*` dual-emit as of v0.16.1
 - ✅ OpenCode, Cursor, Windsurf, Aider: no native OTel ❌
-- ✅ Recommends Gemini CLI or Copilot if traces are a hard requirement
+- ✅ Recommends an agent with verified trace support if traces are a hard requirement; does not count Antigravity without version-specific evidence
 
 ### Compliance Check
 
-- [ ] Correctly identifies Gemini CLI and Copilot as trace-capable
+- [ ] Does not claim native Antigravity trace support without first-party version-specific evidence
+- [ ] Correctly identifies Copilot as trace-capable based on current reference guidance
 - [ ] Correctly states Claude Code traces are beta
 - [ ] Mentions Codex CLI's documented metrics/log-event surface and mode-specific limitation
 - [ ] Notes Qwen Code has partial native OTel and partial `gen_ai.*` dual-emit in v0.16.1

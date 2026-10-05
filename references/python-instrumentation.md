@@ -2,7 +2,7 @@
 
 Use this reference for Python SDK setup, framework instrumentation, async or
 streaming AI applications, and log-based events. For coding-agent products such
-as Claude Code or Gemini CLI, use [ai-agents.md](ai-agents.md).
+as Claude Code or Antigravity, use [ai-agents.md](ai-agents.md).
 
 ## Choose one initialization and instrumentation owner
 

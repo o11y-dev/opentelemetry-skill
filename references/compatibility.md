@@ -8,6 +8,7 @@ Use this document for version-sensitive guidance that changes more frequently th
 - **Core Semantic Conventions**: v1.40.0+
 - **GenAI Semantic Conventions**: follow the separate `open-telemetry/semantic-conventions-genai` repository; the signal definitions are Development and do not currently have a stable release floor
 - **Kubernetes**: native restartable sidecars are enabled by default from v1.29; ordinary multi-container Pods are a separate pattern
+- **OpenTelemetry JS 3.0**: see the [readiness checklist](javascript-otel3-readiness.md); verify stable release status and the final migration guide before upgrading
 - **Go SDK**: v1.24.0+
 - **Python SDK**: v1.41.0+ for unchanged examples; the new event/GenAI examples target v1.44.0 (instrumentation release train 0.65b0). See [Python guidance](python-instrumentation.md).
 - **Collector 0.160 examples**: selective Prometheus `resource_constant_labels` requires v0.160.0; custom builds require Go 1.26. The general canonical-ID floor remains v0.153.0.
@@ -16,7 +17,7 @@ Use this document for version-sensitive guidance that changes more frequently th
 ## AI agent telemetry compatibility
 
 - **Claude Code**: current release emits metrics plus logs/events and beta traces with selected GenAI attributes (for example `gen_ai.tool.call.id`), not full schema alignment; `OTEL_METRICS_INCLUDE_ENTRYPOINT=true` adds optional bounded `app.entrypoint`
-- **Gemini CLI**: v0.34.0+ emits traces, metrics, and logs with GenAI semantic conventions
+- **Google Antigravity**: verify native OTel signals and configuration against first-party documentation for the installed product version. Do not reuse historical Gemini CLI settings or claim signal support without verification.
 - **GitHub Copilot**: latest stable / Insiders builds expose traces, metrics, and events with GenAI semantic conventions
 - **Codex CLI**: current documentation describes structured log events and metrics for API requests, tool calls, `exec`, and sessions; verify trace support and mode-specific behavior in the installed release
 - **Qwen Code**: v0.16.1+ emits traces, metrics, and logs with partial `gen_ai.*` dual-emit layered on top of authoritative `qwen-code.*` fields
