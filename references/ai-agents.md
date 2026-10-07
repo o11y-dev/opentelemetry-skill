@@ -28,20 +28,20 @@ This file is automatically flagged for review when changes occur in:
 
 **Evidence rule (reviewed 2026-10-07):** a vendor-native feature is marked supported only when current first-party documentation or source establishes it. “Unknown” means not verified, not unsupported. Community hooks, plugins, importers, and backends are listed separately; their signals must not be attributed to the agent vendor.
 
-| Agent | Vendor | Native OTel | Traces | Metrics | Logs/Events | GenAI SemConv | Hooks Support | Config Method | Config File / Env Vars | Protocol | Official Docs |
+| Agent | Vendor | Native OTel | Traces | Metrics | Logs/Events | GenAI SemConv | Hooks Support | Config Method | Config File / Env Vars | Protocol | First-party Docs / Source |
 |-------|--------|-------------|--------|---------|-------------|---------------|---------------|---------------|------------------------|----------|---------------|
 | **Claude Code** | Anthropic | ⚠️ metrics/logs + traces beta | ⚠️ beta | ✅ | ✅ | ⚠️ selected `gen_ai.*`; native `claude_code.*` | ✅ governance wrapper | Env vars or managed settings | `CLAUDE_CODE_ENABLE_TELEMETRY`, `OTEL_*` | OTLP gRPC/HTTP | [docs](https://code.claude.com/docs/en/monitoring-usage) |
-| **Google Antigravity** | Google | ? not verified | ? | ? | ? | ? | ⚠️ manual workflow hook | Verify version-specific docs | Do not reuse legacy CLI settings | Verify | [hook workflow example](https://github.com/o11y-dev/opentelemetry-hooks/blob/main/examples/antigravity-workflow.example.md) |
-| **GitHub Copilot VS Code** | Microsoft | ✅ full | ✅ | ✅ | ✅ | ✅ (`gen_ai.*`) | ⚠️ launcher wrapper only | VS Code `settings.json` or env var | `COPILOT_OTEL_ENABLED` | OTLP HTTP | [docs](https://code.visualstudio.com/docs/copilot/guides/monitoring-agents) |
+| **Google Antigravity** | Google | ? not verified | ? | ? | ? | ? | ⚠️ manual workflow hook | Verify version-specific docs | Do not reuse legacy CLI settings | Verify | — |
+| **GitHub Copilot VS Code** | Microsoft | ✅ full | ✅ | ✅ | ✅ | ✅ (`gen_ai.*`) | ✅ community event hooks | VS Code `settings.json` or env var | `COPILOT_OTEL_ENABLED` | OTLP HTTP | [docs](https://code.visualstudio.com/docs/copilot/guides/monitoring-agents) |
 | **GitHub Copilot CLI** | Microsoft | ✅ full | ✅ | ✅ | ✅ | ✅ (`gen_ai.*`) | ✅ governance wrapper | Same span model as VS Code | `COPILOT_OTEL_ENABLED` | OTLP HTTP | [docs](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference) |
 | **OpenAI Codex CLI** | OpenAI | ✅ OTLP signals in current source | ✅ configurable | ✅ configurable | ✅ configurable | ⚠️ custom `codex.*` events | ✅ lifecycle/governance | `~/.codex/config.toml` `[otel]` section | `exporter`, `trace_exporter`, `metrics_exporter` | OTLP gRPC/HTTP | [config](https://developers.openai.com/codex/config-advanced), [OTel source](https://github.com/openai/codex/tree/main/codex-rs/otel) |
 | **Qwen Code** | Alibaba | ✅ traces, metrics, logs | ✅ | ✅ | ✅ | ⚠️ selected `gen_ai.*`; custom `qwen-code.*` | ✅ lifecycle/governance | `.qwen/settings.json`, env vars, CLI flags | `QWEN_TELEMETRY_*`, `OTEL_*` | OTLP gRPC/HTTP or file | [docs](https://qwenlm.github.io/qwen-code-docs/en/developers/development/telemetry/) |
-| **OpenCode** | Anomaly | ? verify first-party | ? | ? | ? | ? | ✅ community hook | Community plugin; OpenCode V2 plugin line is `2.x` (`plugins` key); V1 uses `1.x` branch (`plugin` key) | `OPENCODE_*` (plugin) | OTLP gRPC/HTTP | [community plugin](https://github.com/DEVtheOPS/opencode-plugin-otel) |
+| **OpenCode** | Anomaly | ? verify first-party | ? | ? | ? | ? | ✅ community hook | Community plugin; OpenCode V2 plugin line is `2.x` (`plugins` key); V1 uses `1.x` branch (`plugin` key) | `OPENCODE_*` (plugin) | OTLP gRPC/HTTP | — |
 | **Pi Agent** | open-source | ? not verified | ? | ? | ⚠️ JSONL documented | ? | ? | Check current project docs | — | — | [docs](https://pi.dev) |
 | **Cursor** | Anysphere | ? not verified | ? | ? | ? | ? | ✅ community hook | Native status/version-specific behavior requires first-party verification | — | — | [docs](https://cursor.com) |
 | **Windsurf** | Cognition | ? not verified | ? | ? | ? | ? | ✅ community hook | Native status/version-specific behavior requires first-party verification | — | — | [docs](https://docs.windsurf.com) |
 | **Amazon Q Developer CLI** | AWS | ? not verified | ? | ? | ? | ? | ? | CLI no longer actively maintained except critical security fixes; see vendor notice | — | — | [repository notice](https://github.com/aws/amazon-q-developer-cli) |
-| **Aider** | open-source | ? not verified | ? | ? | ? | ? | ✅ community hook | Native status/version-specific behavior requires first-party verification | — | — | [docs](https://aider.chat/docs/) |
+| **Aider** | open-source | ? not verified | ? | ? | ? | ? | ? verify hook compatibility | Native status/version-specific behavior requires first-party verification | — | — | [docs](https://aider.chat/docs/) |
 
 ### Legend
 
@@ -110,7 +110,7 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 
 Do not treat historical Google CLI telemetry settings or support claims as Antigravity documentation. Verify native OTel signals, configuration, protocol, privacy defaults, and semantic-convention coverage against first-party documentation for the installed Antigravity version. Until verified, mark native support as unknown rather than assuming former environment variables or configuration files work.
 
-If process-boundary visibility is sufficient and the installed CLI can be launched through a wrapper, use [opentelemetry-hooks](https://github.com/o11y-dev/opentelemetry-hooks) to record invocation-level duration and exit status. Review stdout/stderr capture carefully: it can contain prompts, source code, or secrets. A process wrapper does not provide in-process model, token, or tool-call spans.
+Antigravity has a community [runner-defined event-hook example](https://github.com/o11y-dev/opentelemetry-hooks/blob/main/examples/antigravity-workflow.example.md). Use it only when the installed runner supports the workflow/hook contract; it emits event-derived telemetry, not process duration/exit status or Antigravity-native signals. Verify the payloads and apply the privacy guidance in [§2.7](#27-hook-based-instrumentation-and-governance).
 
 ---
 
@@ -223,7 +223,7 @@ Antigravity uses a **manual, runner-defined workflow/hook command**, not an esta
 | **Claude Code** | ⚠️ metrics/logs + traces beta | Lifecycle/governance | Prefer native signals; add hook lifecycle events only when useful and reconcile duplicate session/activity data. |
 | **Google Antigravity** | ? not verified | Manual event hook | Verify first-party signals separately; the hook project documents a runner-defined manual workflow integration. |
 | **GitHub Copilot CLI** | ✅ full | Lifecycle/governance | Use native telemetry for agent signals; add hooks for supported lifecycle events only. |
-| **GitHub Copilot VS Code** | ✅ full | Lifecycle/governance | Prefer native telemetry; a hook reports only events exposed by its IDE integration, not generic process CPU/memory. |
+| **GitHub Copilot VS Code** | ✅ full | Community event hook | Prefer native telemetry; a hook reports only events exposed by its IDE integration, not generic process CPU/memory. |
 | **OpenAI Codex CLI** | ✅ OTLP signals in current source | Lifecycle/governance | Configure each native signal; hooks describe exposed event lifecycle and do not replace native spans/metrics. |
 | **Qwen Code** | ✅ traces/logs/metrics | Lifecycle/governance | Native OTel is available; review prompt/log privacy defaults and schema changes before adding redundant hooks. |
 | **OpenCode** | ? first-party status unverified | Community plugin + hooks | The plugin is a separate project; match plugin major line to OpenCode V1/V2. |
@@ -233,7 +233,7 @@ Antigravity uses a **manual, runner-defined workflow/hook command**, not an esta
 
 #### Hooks as a control and governance layer
 
-Even when native OpenTelemetry exists, hooks are useful above the agent as a lightweight control layer. Use them to attach standard resource attributes across all agents, enforce required environment/config before invocation, emit uniform start/stop audit events, apply pre-export filtering or redaction to stdout/stderr-derived logs, and add consistent ownership, cost-center, or environment tags. This creates organization-wide boundaries and policies that are independent of any single vendor's telemetry maturity.
+Even when native OpenTelemetry exists, event hooks can add lifecycle context and a consistent community-defined event schema across integrations. Use the hook's documented configuration for resource attributes and source-side content controls, then apply collector filtering/redaction and backend access controls. Do not assume the hook wraps the whole process, sees every event, or creates uniform start/stop events for each agent.
 
 > ⚠️ Hooks emit only events exposed by the agent/IDE hook API. They complement native telemetry, but do not imply coverage of hidden model calls, token counts, or other internal signals.
 
@@ -565,9 +565,9 @@ manual; it does not establish Antigravity-native OTel support. See
 
 ### 7.5 Cross-Agent Trace Correlation
 
-**Gap**: No W3C `traceparent` propagation exists between AI coding agents. If Claude Code calls a tool that triggers Antigravity (or vice versa via MCP), there is no automatic trace linkage unless the integration explicitly propagates context.
+**Caveat**: Trace-context support is agent- and integration-specific, not a fleet-wide guarantee. Current Qwen docs keep outbound `traceparent` propagation disabled by default; Codex exposes W3C trace-context helpers; and the OpenCode community plugin accepts caller context and can propagate it to selected providers. Antigravity's native support remains unverified.
 
-**Workaround**: Use a shared `session.id` or custom correlation attribute passed as metadata to link events across agents in log queries. True distributed tracing across agents is not possible today.
+**Action**: Explicitly verify both context extraction/parenting and outbound propagation for the installed versions. Do not send trace context to model providers unless that propagation is intended and approved. When any hop does not propagate context, use a shared session/correlation attribute for log or trace queries; do not describe that as a distributed trace.
 
 ### 7.6 GenAI SemConv Coverage
 

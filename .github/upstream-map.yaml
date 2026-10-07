@@ -109,6 +109,27 @@ mappings:
           - "CHANGELOG.md"
           - "src/**"
           - "package.json"
+      - repo: o11y-dev/opentelemetry-hooks
+        paths:
+          - "README.md"
+          - "CHANGELOG.md"
+          - "**/*.py"
+          - "plugin/**"
+          - "examples/**"
+      - repo: tobilg/ai-observer
+        paths:
+          - "README.md"
+          - "CHANGELOG.md"
+          - "docs/**"
+          - "**/*.go"
+      - repo: ColeMurray/claude-code-otel
+        paths:
+          - "README.md"
+          - "CLAUDE_OBSERVABILITY.md"
+          - "docker-compose.yml"
+          - "**/*.json"
+          - "**/*.yaml"
+          - "**/*.yml"
       - repo: openai/codex
         paths:
           - "README.md"

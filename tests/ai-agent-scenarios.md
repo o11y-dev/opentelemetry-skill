@@ -84,7 +84,8 @@
 - [ ] `memory_limiter` is first processor
 - [ ] `resource` processor adds a bounded source label without overwriting agent identity
 - [ ] Does not assume Antigravity supports legacy Google CLI telemetry settings or signals
-- [ ] Explains process-level wrapper limitations and output privacy
+- [ ] Explains that Antigravity hook output is event-derived, not a process wrapper or native exporter
+- [ ] Calls out MCP payload logging default and opt-in prompt masking
 - [ ] Separate metrics/logs/traces pipelines
 - [ ] Notes Claude Code trace support is beta
 
@@ -99,9 +100,10 @@
 
 - Vague or outdated answer based on training data
 - May incorrectly claim Claude Code supports traces
-- Likely misses Codex CLI partial support gaps
-- No mention that Qwen Code now has partial native OTel support
-- No mention of OpenCode/Cursor/Windsurf having no native OTel
+- May miss Codex CLI's current separate trace, metric, and log exporters
+- May use stale Qwen Code version/signal claims or omit its prompt-log default
+- May confuse OpenCode's community plugin with vendor-native support
+- May claim native support is absent for products without current first-party verification
 - No guidance on GenAI SemConv coverage
 
 ### Expected WITH skill (GREEN target)
@@ -189,7 +191,7 @@
 
 ### Compliance Check
 
-- [ ] References at least one community dashboard (ai-observer or ColeMurray)
+- [ ] References a community backend/dashboard and distinguishes it from vendor-native instrumentation
 - [ ] Lists token usage, cost, and latency panels with specific metric names
 - [ ] Warns about session.id as metric dimension
 - [ ] Suggests log-based queries for session/user counts
