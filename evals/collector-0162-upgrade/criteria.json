@@ -1,0 +1,46 @@
+{
+  "context": "Tests whether the response accurately reviews Collector Contrib 0.162.0 breaking changes and separately verifies Operator/Kubernetes compatibility, CRD migration, and saved-query impact without inventing release behavior.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Migrates removed Elasticsearch exporter fields",
+      "max_score": 20,
+      "description": "Removes `flush` and `num_workers`; maps worker concurrency to `sending_queue::num_consumers` and flush interval/bytes to the sending_queue batch settings. Notes byte-size semantics and validates the exact target configuration."
+    },
+    {
+      "name": "Updates renamed component identifiers",
+      "max_score": 10,
+      "description": "Renames `grafanacloud` to `grafana_cloud` and `awss3` to `aws_s3`, noting old IDs remain deprecated aliases rather than treating them as removed."
+    },
+    {
+      "name": "Updates adaptive tail-sampling selectors",
+      "max_score": 10,
+      "description": "Replaces bare `root.attributes[...]` with an explicit supported origin, such as `root.span.attributes[...]` for root-span attributes; distinguishes `root.resource.` and `root.any.` semantics."
+    },
+    {
+      "name": "Checks Prometheus label compatibility",
+      "max_score": 10,
+      "description": "Explains that permissive label sanitization is enabled by default in 0.162 and `_foo` no longer receives the previous `key_` prefix; audits dashboards, alerts, and queries for changed label names and describes the feature-gate rollback only as a temporary compatibility option."
+    },
+    {
+      "name": "Checks Prometheus scope attribute changes",
+      "max_score": 15,
+      "description": "Identifies that the `IgnoreScopeInfoMetric` feature gate is stable and cannot be disabled: `otel_scope_info` no longer supplies extracted scope attributes; `otel_scope_`-prefixed metric labels populate scope attributes instead. Audits emitted OTLP scope attributes and downstream queries/dashboards for reliance on the old behavior, without conflating scope with resource attributes or Prometheus labels."
+    },
+    {
+      "name": "Protects profiling delivery to Elasticsearch",
+      "max_score": 10,
+      "description": "Identifies that Elasticsearch OTel profile datastreams require 9.6.0+; for Elasticsearch 9.5 recommends restricting mapping modes to ECS and validating profile delivery to prevent index errors/data loss."
+    },
+    {
+      "name": "Verifies Operator and Kubernetes upgrade compatibility",
+      "max_score": 15,
+      "description": "Does not infer that Operator 0.160 bundles Contrib 0.162 (it bundles Collector/Contrib 0.160); checks a distribution/image that actually contains 0.162 and Kubernetes 1.37 support independently. Describes `v1alpha1` to `v1beta1` manifest/config migration, stored-version migration, and Target Allocator selector semantics (`null` selects none; `{}` selects all)."
+    },
+    {
+      "name": "Audits saved-query references without fabricating changes",
+      "max_score": 10,
+      "description": "Searches dashboards, alerts, and saved queries for affected label names, exporter/profile index assumptions, and selector-derived results; states that no saved-query migration is documented in the tagged release notes if none is found, and recommends regression checks against the deployed backend."
+    }
+  ]
+}

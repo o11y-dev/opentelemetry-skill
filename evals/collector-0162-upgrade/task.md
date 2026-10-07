@@ -1,0 +1,12 @@
+Review this upgrade plan for a production OpenTelemetry deployment:
+
+- Upgrade the Collector Contrib distribution to v0.162.0. Its Elasticsearch exporter uses `flush` and `num_workers`, the `grafanacloud` and `awss3` component IDs, adaptive tail-sampling selectors such as `root.attributes["service.name"]`, and Prometheus labels beginning with `_`. Prometheus receiver scope attributes currently depend on `otel_scope_info`.
+- Export profiles to Elasticsearch 9.5 using `mapping.mode: otel`.
+- Deploy through the OpenTelemetry Operator to Kubernetes 1.37. Existing manifests use `OpenTelemetryCollector` `v1alpha1`, a string-valued Collector config, and Target Allocator Prometheus CR selector maps.
+- Find and update any saved dashboards, alerts, or queries affected by the upgrade.
+
+Identify configuration changes that can break startup or alter telemetry, including attribute/label changes and their effect on downstream dashboards, alerts, and queries. Explain the Operator/Kubernetes compatibility checks and CRD migration, and propose a release-specific validation plan. Distinguish changes confirmed in the tagged release notes from compatibility checks that still need to be performed; do not invent saved-query changes if upstream does not document any.
+
+For the Prometheus receiver, specifically evaluate the `IgnoreScopeInfoMetric` gate becoming stable: 0.162 no longer extracts scope attributes from `otel_scope_info`; `otel_scope_`-prefixed metric labels populate scope attributes. Explain what to inspect in emitted OTLP scope data and downstream queries.
+
+Upstream references: [Contrib v0.162.0 changelog](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.162.0/CHANGELOG.md), [Operator v0.160.0 changelog](https://github.com/open-telemetry/opentelemetry-operator/blob/v0.160.0/CHANGELOG.md), and [Operator CRD migration guide](https://github.com/open-telemetry/opentelemetry-operator/blob/v0.160.0/docs/reference/crd-changelog.md).

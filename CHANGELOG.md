@@ -8,14 +8,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - Restore weekly RSS monitoring for OpenTelemetry posts and OTel-related CNCF posts, with bounded parsing, visible feed failures, and regression tests
+- Add Collector Contrib 0.162/Operator Kubernetes upgrade evaluation and OpenTelemetry JS 3.0 readiness guidance
 - Add developer-local observability routing for OTel Desktop Viewer, `otel-tui`, and OTel Front
 - Add scaled `signal_to_metrics` correctness guidance and regression coverage for producer identity, backend resource mapping, temporality, and dashboard aggregation
 
 ### Changed
+- Audit AI vendor/project telemetry guidance from current source: distinguish native OTel from community hooks/plugins/backends, correct Codex and Qwen signals/privacy, document OpenCode V1/V2 plugin changes, and add upstream monitoring for the reviewed integrations
 - Add the three developer-viewer repositories to monthly upstream monitoring and map them to the playbook reference
 - Replace upstream digest issue updates to overwrite issue body snapshots (instead of appending) while preserving idempotent no-op reruns on exact body matches
 - Update GenAI guidance for the separate conventions repository, provider-versus-agent identity, histogram token usage, current content attributes, and execute-tool span naming
-- Refresh AI-agent telemetry guidance from current upstream documentation: Claude Code beta traces, Gemini prompt/traces controls, Copilot namespace migration, and Codex mode-specific verification
+- Refresh AI-agent telemetry guidance from current upstream documentation: Claude Code beta traces, Google-agent telemetry verification, Copilot namespace migration, and Codex mode-specific verification
+- Replace legacy Google CLI telemetry guidance with Google Antigravity coverage that treats native OTel support as unverified
 - Add current OpenTelemetry blog playbooks for Go compile-time instrumentation v1, GenAI observability, and OTel blueprints
 - Update instrumentation guidance from deprecated `gen_ai.system` to `gen_ai.provider.name` and document stable Go compile-time instrumentation as an alternative to eBPF and manual SDK work
 - Migrate Collector examples and evaluations to canonical component IDs and raise the compatibility floor to v0.153.0

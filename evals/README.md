@@ -13,6 +13,7 @@ This directory contains evaluation scenarios for the OpenTelemetry skill, design
 - `python-instrumentation/`: SDK 1.44 events, declarative initialization, and framework ownership.
 - `python-genai-streaming/`: async parentage, complete stream lifetimes, privacy, and unknown usage.
 - `collector-0160-upgrade/`: removed settings, selective labels, and release-specific validation.
+- `collector-0162-upgrade/`: renamed components, selector migration, Prometheus labels, profile compatibility, and Operator/Kubernetes CRD checks.
 
 These task/criteria pairs assess generated answers. They are separate from the
 executable Python and Collector checks run by CI; passing those checks does not
@@ -27,7 +28,7 @@ From the repository root:
 tessl eval run evals --context . --wait
 
 # Run one scenario
-tessl eval run evals/python-genai-streaming --context . --wait
+tessl eval run evals/collector-0162-upgrade --context . --wait
 
 # Discover supported agents and models
 tessl eval run --list-agents
