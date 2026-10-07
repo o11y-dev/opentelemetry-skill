@@ -10,16 +10,16 @@
 Configure OpenTelemetry monitoring for GitHub Copilot CLI to track usage patterns and performance.
 
 ### Expected Response (Key Points)
-- Mentions CLI doesn't emit traces natively (no automatic telemetry)
-- Suggests wrapper scripts or process monitoring approach
-- Recommends monitoring via system metrics (CPU, memory, execution time)
-- May reference custom instrumentation with `gh copilot --telemetry-opt-in`
-- Warns about limited built-in observability compared to other agents
+- Uses current Copilot CLI OpenTelemetry documentation rather than assuming no native signals
+- Describes documented traces, metrics, and events with the supported endpoint/configuration path
+- Distinguishes native telemetry from community lifecycle hooks
+- Checks the installed CLI/version and avoids inventing flags such as `gh copilot --telemetry-opt-in`
+- Mentions content-capture and metric-cardinality risks where relevant
 
 ### Failure Modes
-- Assumes Copilot CLI has built-in OTEL support
+- Claims Copilot CLI lacks native OTEL solely from stale guidance
 - Provides generic agent configuration without CLI specifics
-- Doesn't mention telemetry opt-in requirements
+- Doesn't verify telemetry enablement/configuration
 - Suggests unsupported configuration options
 
 ---
@@ -37,13 +37,14 @@ Review the native OpenTelemetry support for Google Antigravity and recommend an 
 - Verifies native telemetry, configuration, and privacy behavior using first-party documentation for the installed Antigravity version
 - Does not carry over legacy Google CLI environment variables, config files, or support claims
 - Marks unsupported or undocumented native signals as unknown rather than inventing options
-- Recommends process-level instrumentation only when invocation-level coverage is sufficient and a supported wrapper can be used
-- Warns that captured stdout/stderr may include prompts, source code, or secrets
+- Separates the community Antigravity workflow hook from vendor-native telemetry
+- Recommends event-hook instrumentation only when the runner exposes compatible events
+- Calls out MCP payload logging being enabled by default and prompt masking being opt-in
 
 ### Failure Modes
 - Presents legacy Google CLI settings as Antigravity settings
 - Claims native traces, metrics, logs, or GenAI conventions without version-specific evidence
-- Implies process-level hooks expose model calls or token counts
+- Implies community event hooks establish native Antigravity support or generic process metrics
 - Omits privacy considerations for captured output
 
 ---

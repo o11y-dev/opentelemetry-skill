@@ -70,7 +70,8 @@
 - ✅ `memory_limiter` as first processor in every pipeline
 - ✅ `resource` processor adds `telemetry.source.type: ai-coding-agent` without overwriting each agent's identity
 - ✅ Marks Antigravity native telemetry and protocol as unverified; does not reuse legacy Google CLI settings
-- ✅ Uses a process wrapper only for invocation-level signals where appropriate, and warns about stdout/stderr privacy
+- ✅ Separates Antigravity's community runner-defined event hook from vendor-native telemetry
+- ✅ Notes hook payload/log privacy settings, including MCP payload logging enabled by default and prompt masking off by default
 - ✅ Preserves vendor-native Claude Code fields and does not synthesize deprecated `gen_ai.system`
 - ✅ Separate pipelines for metrics, logs, traces
 - ✅ Notes Claude Code traces are beta; only configures traces for agents with verified trace export
@@ -108,9 +109,10 @@
 - ✅ Google Antigravity: native OTel support is unverified; check first-party docs for the installed version and do not infer compatibility from earlier Google CLI behavior
 - ✅ GitHub Copilot (VS Code + CLI): full traces ✅, follows `gen_ai.*` SemConv
 - ✅ Claude Code: beta traces plus metrics/logs; use `prompt.id` correlation when traces are unavailable
-- ✅ Codex CLI: documented OTel surface is metrics/log events; verify trace support and mode-specific behavior
-- ✅ Qwen Code: partial native OTel ⚠️ with partial `gen_ai.*` dual-emit as of v0.16.1
-- ✅ OpenCode, Cursor, Windsurf, Aider: no native OTel ❌
+- ✅ Codex CLI: current source exposes separate OTLP trace, metric, and log exporters; verify installed release/mode and avoid claiming full GenAI SemConv alignment
+- ✅ Qwen Code: native traces/logs/metrics with selected `gen_ai.*` fields; current docs list prompt/request/response text logging enabled by default once telemetry is enabled
+- ✅ OpenCode's OTel plugin is community-maintained and version-specific (2.x for V2; 1.x on `v1` for V1)
+- ✅ Treat unverified vendor-native status as unknown rather than unsupported
 - ✅ Recommends an agent with verified trace support if traces are a hard requirement; does not count Antigravity without version-specific evidence
 
 ### Compliance Check
@@ -118,8 +120,10 @@
 - [ ] Does not claim native Antigravity trace support without first-party version-specific evidence
 - [ ] Correctly identifies Copilot as trace-capable based on current reference guidance
 - [ ] Correctly states Claude Code traces are beta
-- [ ] Mentions Codex CLI's documented metrics/log-event surface and mode-specific limitation
-- [ ] Notes Qwen Code has partial native OTel and partial `gen_ai.*` dual-emit in v0.16.1
+- [ ] Mentions Codex's separate signal exporters and mode-specific limitation
+- [ ] Notes Qwen telemetry without repeating the stale v0.16.1 boundary and calls out prompt-log default
+- [ ] Distinguishes OpenCode's community plugin and V1/V2 version split
+- [ ] Uses “unknown” rather than “unsupported” when native support is not verified
 - [ ] Suggests GenAI SemConv coverage as selection criterion
 
 ---
@@ -172,7 +176,7 @@
 
 ### Expected WITH skill (GREEN target)
 
-- ✅ References community dashboards: ai-observer, ColeMurray/claude-code-otel, Honeycomb template
+- ✅ Describes AI Observer as a backend/dashboard with file ingestion, and ColeMurray/claude-code-otel as a community Claude stack
 - ✅ Panel 1: Token usage by model/agent over time — NOT by session.id
 - ✅ Panel 2: Cost breakdown by agent and model
 - ✅ Panel 3: API latency percentiles (p50/p95/p99)
@@ -229,6 +233,8 @@ Document observed agent rationalizations and counter-guidance here as they are d
 |----------------|---------|
 | "Claude Code traces are production-stable" | Claude Code trace export is beta; validate signal shape and keep a metrics/log fallback. |
 | "You can use session.id as a metric label to track per-user costs" | session.id is unbounded cardinality. Use log queries with distinct count instead. |
-| "Qwen Code telemetry is still planned but not shipped" | Qwen Code ships native OTel. As of v0.16.1 it also dual-emits selected `gen_ai.*` attributes, but the private `qwen-code.*` fields remain authoritative while the schema settles. |
-| "Codex CLI telemetry works the same in every mode" | The documented OTel surface and mode coverage must be verified independently for the installed release. |
+| "Qwen Code telemetry is still planned but not shipped" | Qwen Code ships native OTel; current docs describe selected `gen_ai.*` fields alongside `qwen-code.*`. Check its prompt-log default and validate current schema instead of relying on an old version snapshot. |
+| "Codex CLI telemetry works the same in every mode" | Current Codex source exposes separate trace, metric, and log exporters; verify installed release and mode coverage independently. |
+| "OpenCode's OTel plugin is built in" | The plugin is a community project. Match 2.x with OpenCode V2 and 1.x on `v1` with V1; V2 no longer emits V1 session-diff lines-of-code metrics. |
+| "Antigravity has native OTel because an OTel hook supports it" | The hook integration is a runner-defined community workflow; it does not establish native Antigravity OTel support. |
 | "Include the full shell command in the tool span name" | Use the Development-convention `execute_tool {gen_ai.tool.name}` span name and put the actual tool name in `gen_ai.tool.name`. |
