@@ -111,7 +111,7 @@
 - ✅ Google Antigravity: native OTel support is unverified; check first-party docs for the installed version and do not infer compatibility from earlier Google CLI behavior
 - ✅ GitHub Copilot (VS Code + CLI): full traces ✅, follows `gen_ai.*` SemConv
 - ✅ Claude Code: beta traces plus metrics/logs; use `prompt.id` correlation when traces are unavailable
-- ✅ Codex CLI: current source exposes separate OTLP trace, metric, and log exporters; verify installed release/mode and avoid claiming full GenAI SemConv alignment
+- ✅ Codex CLI: current source exposes separate OTLP trace, metric, and log exporters; verify installed release/mode, note the Statsig metrics-exporter default, and avoid claiming full GenAI SemConv alignment
 - ✅ Qwen Code: native traces/logs/metrics with selected `gen_ai.*` fields; current docs list prompt/request/response text logging enabled by default once telemetry is enabled
 - ✅ OpenCode's OTel plugin is community-maintained and version-specific (2.x for V2; 1.x on `v1` for V1)
 - ✅ Treat unverified vendor-native status as unknown rather than unsupported
@@ -123,6 +123,7 @@
 - [ ] Correctly identifies Copilot as trace-capable based on current reference guidance
 - [ ] Correctly states Claude Code traces are beta
 - [ ] Mentions Codex's separate signal exporters and mode-specific limitation
+- [ ] Calls out Codex's current Statsig default for the metrics exporter
 - [ ] Notes Qwen telemetry without repeating the stale v0.16.1 boundary and calls out prompt-log default
 - [ ] Distinguishes OpenCode's community plugin and V1/V2 version split
 - [ ] Uses “unknown” rather than “unsupported” when native support is not verified
@@ -180,6 +181,7 @@
 
 - ✅ Describes AI Observer as a backend/dashboard with file ingestion, and ColeMurray/claude-code-otel as a community Claude stack
 - ✅ Panel 1: Token usage by model/agent over time — NOT by session.id
+- ✅ Uses Claude Code's documented `claude_code.token.usage` and `claude_code.cost.usage`; queries API/tool latency from the documented event attributes rather than inventing metric names
 - ✅ Panel 2: Cost breakdown by agent and model
 - ✅ Panel 3: API latency percentiles (p50/p95/p99)
 - ✅ Panel 4: Tool call success/failure rates

@@ -172,7 +172,7 @@ metrics_exporter = { otlp-http = { endpoint = "http://localhost:4318/v1/metrics"
 log_user_prompt = false
 ```
 
-`log_user_prompt` defaults to `false`; agent-response and Guardian-assessment log events are separately opt-in and may contain sensitive text. Codex's event names and attributes are product-specific (`codex.*`), not a claim of full GenAI semantic-convention alignment. The current integration is in the [Codex OTel crate](https://github.com/openai/codex/tree/main/codex-rs/otel).
+`log_user_prompt` defaults to `false`; agent-response and Guardian-assessment log events are separately opt-in and may contain sensitive text. The current Codex config source defaults `metrics_exporter` to Statsig, while trace/log exporters default to none; explicitly configure the metrics destination or set it to `none` rather than assuming an unset exporter disables metrics. Codex's event names and attributes are product-specific (`codex.*`), not a claim of full GenAI semantic-convention alignment. The current integration is in the [Codex OTel crate](https://github.com/openai/codex/tree/main/codex-rs/otel).
 
 ---
 
@@ -192,6 +192,8 @@ Qwen Code exposes traces, logs, and metrics via `.qwen/settings.json`, `QWEN_TEL
 ```
 
 > **Privacy:** current upstream docs list `logPrompts` as `true` by default; this includes prompts and API request/response text in telemetry logs. Set `QWEN_TELEMETRY_LOG_PROMPTS=false` (or the corresponding setting) unless that content is intentionally approved for the destination. `includeSensitiveSpanAttributes` defaults to `false`, but that does **not** suppress sensitive text in logs or other telemetry sinks. Metric `session.id` is excluded by default to limit cardinality.
+
+**Schema/migration watch:** current upstream migration notes rename `tool_output_truncated` to `qwen-code.tool_output_truncated`. Recheck dashboards and filters that use the old name. The same notes clarify that some previously documented `tool.call.latency` and file-operation attributes were never emitted; validate actual telemetry instead of relying on older attribute tables.
 
 ---
 
@@ -371,18 +373,18 @@ service:
 
 | Agent | Metric Name | Type | Unit | Key Attributes |
 |-------|-------------|------|------|----------------|
-| Claude Code | `claude_code.tokens.input` | Counter | `{token}` | `model`, `session.id` |
-| Claude Code | `claude_code.tokens.output` | Counter | `{token}` | `model`, `session.id` |
-| Claude Code | `claude_code.cost.usd` | Counter | `USD` | `model` |
-| Claude Code | `claude_code.api.request.duration` | Histogram | `ms` | `model`, `status` |
-| Claude Code | `claude_code.tool.call.count` | Counter | `{call}` | `tool.name`, `status` |
-| Claude Code | `claude_code.cache.read.tokens` | Counter | `{token}` | `model` |
+| Claude Code | `claude_code.session.count` | Counter | `count` | `session.id` (if enabled), `app.version` |
+| Claude Code | `claude_code.token.usage` | Counter | `tokens` | `type`, `model` |
+| Claude Code | `claude_code.cost.usage` | Counter | `USD` | `model` |
+| Claude Code | `claude_code.code_edit_tool.decision` | Counter | `count` | `tool`, `decision` |
 | GitHub Copilot | `gen_ai.client.token.usage` | Histogram | `{token}` | `gen_ai.provider.name`, `gen_ai.token.type`, `gen_ai.operation.name` |
 | GitHub Copilot | `gen_ai.client.operation.duration` | Histogram | `s` | `gen_ai.provider.name`, `gen_ai.operation.name`, `error.type` |
-| Codex CLI | `codex.tokens.used` | Counter | `{token}` | `model`, `direction` |
-| Codex CLI | `codex.request.latency` | Histogram | `ms` | `model`, `status` |
+| Codex CLI | `codex.api_request` | Counter | `1` | Verify attributes for installed release |
+| Codex CLI | `codex.api_request.duration_ms` | Histogram | `ms` | Verify attributes for installed release |
 
 > ⚠️ **Dashboard for evolving `gen_ai.token.type` values.** Do not assume GenAI token metrics are permanently limited to `input` and `output`. Newer semantic-convention work is adding finer-grained categories such as cache and reasoning tokens. Build charts and cost rollups so unknown token types are grouped, not discarded.
+
+Codex metric names above are from the current [Codex OTel source](https://github.com/openai/codex/blob/main/codex-rs/otel/src/metrics/names.rs); earlier names such as `codex.tokens.used` and `codex.request.latency` are not present in that source. Recheck names, types, and attributes against the installed version before building dashboards.
 
 **Current convention review**: GenAI conventions are now maintained in the separate [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai) repository and are still marked Development. Preserve `gen_ai.provider.name`, `gen_ai.agent.version`, `gen_ai.usage.cache_read.input_tokens`, and `gen_ai.usage.cache_creation.input_tokens` when emitted. `gen_ai.system` is deprecated; do not synthesize it in Collector transforms.
 
@@ -395,6 +397,13 @@ Current GenAI conventions model captured content with opt-in structured attribut
 | System instructions | `gen_ai.system_instructions` | Opt-in; may contain secrets or PII |
 | Input/chat history | `gen_ai.input.messages` | Opt-in; preserve message order and structured schema |
 | Model output | `gen_ai.output.messages` | Opt-in; one message per output choice/candidate |
+
+Vendor event examples (these are log events, not metric instruments):
+
+| Agent | Event | Useful attributes |
+|-------|-------|-------------------|
+| Claude Code | `claude_code.api_request` | `duration_ms`, `input_tokens`, `output_tokens`, `model` |
+| Claude Code | `claude_code.tool_result` | `duration_ms`, `success`, `name` |
 
 Do not generate `gen_ai.user.message`, `gen_ai.assistant.message`, `gen_ai.tool.message`, or `gen_ai.choice`; those event names are deprecated. Preserve vendor-native event names from Claude Code and Codex instead of relabeling them as standard GenAI events. Correlate with the native `prompt.id` or `session.id`, and use `gen_ai.conversation.id` when a GenAI-compatible source emits it.
 
@@ -425,21 +434,21 @@ These projects are not vendor-native instrumentation. Confirm supported input si
 Build these panels for a team-facing AI agent observability dashboard:
 
 1. **Token usage by agent/user/model over time**
-   - Metric: `claude_code.tokens.input` + `claude_code.tokens.output` (Claude Code); `gen_ai.client.token.usage` where the agent emits it
+   - Metric: `claude_code.token.usage` grouped by `type` (Claude Code); `gen_ai.client.token.usage` where the agent emits it
    - Dimensions: `service.name` (agent), `gen_ai.provider.name`, and model (NOT `session.id` — high cardinality)
    - Chart type: Stacked bar, 1h buckets
 
 2. **Cost breakdown by agent and model**
-   - Metric: `claude_code.cost.usd` (Claude Code); derived from token counts × model pricing for others
+   - Metric: `claude_code.cost.usage` (Claude Code); derived from token counts × model pricing for others
    - Dimensions: `service.name`, `gen_ai.provider.name`, and model
    - Chart type: Time series + running total stat panel
 
 3. **API request latency (p50/p95/p99)**
-   - Metric: `claude_code.api.request.duration` (Claude Code); `gen_ai.client.operation.duration` (GenAI SemConv agents)
+   - Source: `claude_code.api_request` log event `duration_ms` (Claude Code); `gen_ai.client.operation.duration` where a GenAI SemConv agent emits it
    - Chart type: Heatmap or percentile time series
 
 4. **Tool call success/failure rates**
-   - Metric: `claude_code.tool.call.count` with `status` dimension
+   - Source: `claude_code.tool_result` log event with `success` and `duration_ms`; use a counter/histogram only if the producer actually exports one
    - Trace query: filter spans where `gen_ai.operation.name = "execute_tool"`, grouped by `gen_ai.tool.name` and status; use the source's native event when traces are unavailable
    - Chart type: Success rate gauge + error rate alert
 
@@ -448,7 +457,7 @@ Build these panels for a team-facing AI agent observability dashboard:
    - Chart type: Unique session count per day/week/month
 
 6. **Cache hit ratio (Claude Code)**
-   - Metric: `claude_code.cache.read.tokens` / (`claude_code.tokens.input` + `claude_code.cache.read.tokens`)
+   - Metric: `claude_code.token.usage` grouped by token `type`; calculate cache-read share only after verifying whether `input` includes cache-read tokens in the deployed version
    - Chart type: Single stat percentage gauge
 
 ---
@@ -471,7 +480,7 @@ Build these panels for a team-facing AI agent observability dashboard:
 
 ### 6.2 Prompt Content Controls
 
-| Agent | Default | Opt-in for Content |
+| Agent | Default | Content control |
 |-------|---------|-------------------|
 | Claude Code | Prompts **redacted** | `OTEL_LOG_USER_PROMPTS=true` |
 | Codex CLI | Prompts **redacted** | `log_user_prompt = true` in config.toml |
