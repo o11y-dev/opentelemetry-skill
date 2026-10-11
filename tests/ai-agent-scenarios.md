@@ -33,16 +33,16 @@
 - ✅ Includes `CLAUDE_CODE_ENABLE_TELEMETRY=1` as prerequisite
 - ✅ Provides exact env vars: `OTEL_METRICS_EXPORTER=otlp`, `OTEL_LOGS_EXPORTER=otlp`
 - ✅ Shows managed-settings persistence, with `~/.claude/settings.json` as a concrete example
-- ✅ Sets `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative`
-- ✅ Warns about `OTEL_METRICS_INCLUDE_SESSION_ID` and cardinality risk
-- ✅ Mentions privacy controls are off by default
+- ✅ Matches temporality to the backend; selects cumulative for the Prometheus example and recognizes the documented default is delta
+- ✅ Notes the documented session-ID default is true and explicitly sets `OTEL_METRICS_INCLUDE_SESSION_ID=false` for bounded team metrics
+- ✅ Keeps prompt/tool content capture off; distinguishes these controls from the session-ID metric default
 - ✅ Notes Claude Code emits metrics + logs and that traces are beta
 
 ### Compliance Check
 
 - [ ] Response includes `CLAUDE_CODE_ENABLE_TELEMETRY=1`
 - [ ] Response includes managed-settings persistence, optionally with a `settings.json` example
-- [ ] Response mentions cumulative temporality preference
+- [ ] Response matches temporality to the backend without claiming the source is always cumulative
 - [ ] Response warns about session.id as metric dimension
 - [ ] Response notes traces are beta
 
@@ -51,7 +51,7 @@
 ## Scenario 2: Multi-Agent Collector
 
 **Prompt**:
-> "I use Claude Code and Google Antigravity. Configure an OTel Collector and explain what telemetry can be collected from each."
+> "I use Claude Code, Gemini CLI with paid API keys, and Antigravity CLI. Configure an OTel Collector and explain what telemetry can be collected from each."
 
 ### Expected WITHOUT skill (RED baseline)
 
@@ -69,9 +69,9 @@
 - ✅ Prefers OTLP gRPC by default, but explains when OTLP HTTP is the right fallback
 - ✅ `memory_limiter` as first processor in every pipeline
 - ✅ `resource` processor adds `telemetry.source.type: ai-coding-agent` without overwriting each agent's identity
-- ✅ Marks Antigravity native telemetry and protocol as unverified; does not reuse legacy Google CLI settings
-- ✅ Separates Antigravity's community runner-defined event hook from vendor-native telemetry
-- ✅ Notes hook payload/log privacy settings, including MCP payload logging enabled by default and prompt masking off by default
+- ✅ Configures supported Gemini CLI native telemetry with prompt logging explicitly disabled; distinguishes its settings from Antigravity CLI
+- ✅ Distinguishes Antigravity vendor callbacks and SDK tracing from unverified CLI/IDE OTLP export; requires verified payload mapping before recommending an OTel adapter
+- ✅ If a community adapter is selected, checks that package's payload/privacy settings; no package recommendation is required
 - ✅ Preserves vendor-native Claude Code fields and does not synthesize deprecated `gen_ai.system`
 - ✅ Separate pipelines for metrics, logs, traces
 - ✅ Notes Claude Code traces are beta; only configures traces for agents with verified trace export
@@ -84,8 +84,8 @@
 - [ ] `memory_limiter` is first processor
 - [ ] `resource` processor adds a bounded source label without overwriting agent identity
 - [ ] Does not assume Antigravity supports legacy Google CLI telemetry settings or signals
-- [ ] Explains that Antigravity hook output is event-derived, not a process wrapper or native exporter
-- [ ] Calls out MCP payload logging default and opt-in prompt masking
+- [ ] Preserves supported Gemini CLI coverage and distinguishes Antigravity callback availability from verified adapter/exporter behavior
+- [ ] Explains package-specific privacy defaults only if recommending that package
 - [ ] Separate metrics/logs/traces pipelines
 - [ ] Notes Claude Code trace support is beta
 
@@ -108,14 +108,15 @@
 
 ### Expected WITH skill (GREEN target)
 
-- ✅ Google Antigravity: native OTel support is unverified; check first-party docs for the installed version and do not infer compatibility from earlier Google CLI behavior
+- ✅ Gemini CLI: retains documented native telemetry for supported enterprise/API-key deployments
+- ✅ Antigravity: distinguish CLI/IDE export verification, documented vendor hooks, and SDK tracing; do not infer parity between products
 - ✅ GitHub Copilot (VS Code + CLI): full traces ✅, follows `gen_ai.*` SemConv
 - ✅ Claude Code: beta traces plus metrics/logs; use `prompt.id` correlation when traces are unavailable
 - ✅ Codex CLI: current source exposes separate OTLP trace, metric, and log exporters; verify installed release/mode, note the Statsig metrics-exporter default, and avoid claiming full GenAI SemConv alignment
 - ✅ Qwen Code: native traces/logs/metrics with selected `gen_ai.*` fields; current docs list prompt/request/response text logging enabled by default once telemetry is enabled
 - ✅ OpenCode's OTel plugin is community-maintained and version-specific (2.x for V2; 1.x on `v1` for V1)
 - ✅ Treat unverified vendor-native status as unknown rather than unsupported
-- ✅ Recommends an agent with verified trace support if traces are a hard requirement; does not count Antigravity without version-specific evidence
+- ✅ Recommends an agent with verified trace support if traces are a hard requirement; SDK tracing does not establish Antigravity CLI/IDE support
 
 ### Compliance Check
 
@@ -179,7 +180,7 @@
 
 ### Expected WITH skill (GREEN target)
 
-- ✅ Describes AI Observer as a backend/dashboard with file ingestion, and ColeMurray/claude-code-otel as a community Claude stack
+- ✅ Can use the user's existing backend; if suggesting AI Observer or ColeMurray/claude-code-otel, identifies their community backend/dashboard role
 - ✅ Panel 1: Token usage by model/agent over time — NOT by session.id
 - ✅ Uses Claude Code's documented `claude_code.token.usage` and `claude_code.cost.usage`; queries API/tool latency from the documented event attributes rather than inventing metric names
 - ✅ Panel 2: Cost breakdown by agent and model
@@ -193,8 +194,9 @@
 
 ### Compliance Check
 
-- [ ] References a community backend/dashboard and distinguishes it from vendor-native instrumentation
-- [ ] Lists token usage, cost, and latency panels with specific metric names
+- [ ] Does not require community software; any suggested backend/dashboard is distinguished from native instrumentation
+- [ ] Uses actual token/cost metrics and API/tool log-event attributes; does not invent a latency metric
+- [ ] Uses `tool_name` for Claude tool-result logs and code-edit decision metrics, rather than `name` or `tool`
 - [ ] Warns about session.id as metric dimension
 - [ ] Suggests log-based queries for session/user counts
 - [ ] Mentions cache hit ratio for Claude Code
@@ -231,6 +233,13 @@
 
 ## Anti-Rationalization Notes
 
+The executable Google product-boundary scenario is
+[google-agent-telemetry](../evals/google-agent-telemetry/task.md).
+For Node/JavaScript SDK migration requests, verify the dedicated routing row
+loads [javascript-otel3-readiness.md](../references/javascript-otel3-readiness.md)
+and evaluate the [JS readiness task](../evals/javascript-otel3-readiness/task.md).
+Forced-context evaluations assess answer behavior, not automatic skill selection.
+
 Document observed agent rationalizations and counter-guidance here as they are discovered during testing.
 
 | Rationalization | Counter |
@@ -240,5 +249,5 @@ Document observed agent rationalizations and counter-guidance here as they are d
 | "Qwen Code telemetry is still planned but not shipped" | Qwen Code ships native OTel; current docs describe selected `gen_ai.*` fields alongside `qwen-code.*`. Check its prompt-log default and validate current schema instead of relying on an old version snapshot. |
 | "Codex CLI telemetry works the same in every mode" | Current Codex source exposes separate trace, metric, and log exporters; verify installed release and mode coverage independently. |
 | "OpenCode's OTel plugin is built in" | The plugin is a community project. Match 2.x with OpenCode V2 and 1.x on `v1` with V1; V2 no longer emits V1 session-diff lines-of-code metrics. |
-| "Antigravity has native OTel because an OTel hook supports it" | The hook integration is a runner-defined community workflow; it does not establish native Antigravity OTel support. |
+| "Antigravity has native OTel because an OTel hook supports it" | Vendor callbacks require a verified OTel adapter; a workflow command does not establish compatibility. SDK tracing is a separate surface. |
 | "Include the full shell command in the tool span name" | Use the Development-convention `execute_tool {gen_ai.tool.name}` span name and put the actual tool name in `gen_ai.tool.name`. |

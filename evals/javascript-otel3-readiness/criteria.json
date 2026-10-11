@@ -1,0 +1,36 @@
+{
+  "context": "Tests release verification and concrete JavaScript SDK migration reasoning, not memorization of a dated npm snapshot.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Verifies the target release before upgrading",
+      "max_score": 20,
+      "description": "Checks official release tags, target package versions and npm metadata. Does not infer a stable release from a planned date or recommend a development/canary build as production stable. Distinguishes main-branch migration plans from tagged release behavior."
+    },
+    {
+      "name": "Updates runtime and package requirements deliberately",
+      "max_score": 15,
+      "description": "Identifies the documented SDK 3.0 Node >=22.15.0 floor for application and CI, while preserving the API/semantic-conventions exceptions and checking each installed package's engines."
+    },
+    {
+      "name": "Migrates tracing initialization and processors",
+      "max_score": 20,
+      "description": "Plans consolidation into @opentelemetry/sdk-trace, TracerProvider, explicit provider/context-manager/propagator registration, and the processor options-object form with exporter. Does not drop context propagation when replacing register()."
+    },
+    {
+      "name": "Preserves configuration and removes obsolete dependencies",
+      "max_score": 15,
+      "description": "Accounts for removed trace-SDK environment-variable fallbacks using explicit options or sdk-node. Checks the final migration guide for api-logs replacement and Jaeger-to-OTLP export instead of merely deleting imports."
+    },
+    {
+      "name": "Distinguishes API consumers from SDK-dependent instrumentation",
+      "max_score": 15,
+      "description": "Does not extend API compatibility guarantees to the custom instrumentation's SDK imports or patching internals. Requires review and tests of those dependencies."
+    },
+    {
+      "name": "Validates observable behavior before rollout",
+      "max_score": 15,
+      "description": "Proposes tests on the target minimum runtime for parent/child context propagation, exporter delivery, custom instrumentation patching, and shutdown flush. Keeps the existing deployment until those checks pass; compilation alone is insufficient."
+    }
+  ]
+}

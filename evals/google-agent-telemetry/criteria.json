@@ -1,0 +1,31 @@
+{
+  "context": "Evaluate product-specific evidence, supported Gemini coverage, Antigravity adapter validation, and privacy without rewarding a particular community package.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Preserves supported Gemini CLI deployments",
+      "max_score": 20,
+      "description": "Uses Google's transition notice to distinguish consumer migration from continued enterprise/API-key access. Retains Gemini's documented native telemetry instead of deleting or renaming its configuration."
+    },
+    {
+      "name": "Configures Gemini deliberately and privately",
+      "max_score": 20,
+      "description": "Uses documented Gemini telemetry controls, explicitly disables prompt logging because logPrompts defaults to true once enabled, keeps detailed trace-content capture off for this request, and checks received signals rather than treating configuration as delivery proof. Distinguishes the traces content flag from trace signal availability, and does not claim disabling prompt logs removes span content or all tool arguments."
+    },
+    {
+      "name": "Separates Antigravity product surfaces and evidence",
+      "max_score": 20,
+      "description": "Cites Google sources and distinguishes documented lifecycle hooks, SDK v0.1.5 tracing, and CLI/IDE OTLP export requiring independent verification. Does not treat Google's data-collection toggle, SDK tracing, or a community workflow as proof of native CLI OTLP export."
+    },
+    {
+      "name": "Requires an actual callback-to-OTel contract",
+      "max_score": 25,
+      "description": "Checks event identity, conversationId, nested toolCall.name/toolCall.args mapping, callback pairing and timing, and the required stdout response. Proposes representative success/failure callback fixtures and inspection of exported spans/attributes before claiming tool or API latency coverage. Invoking a command alone is insufficient."
+    },
+    {
+      "name": "Keeps tooling optional and verifies content minimization",
+      "max_score": 15,
+      "description": "Uses the existing OTLP backend, makes no community package or dashboard mandatory, and verifies prompts/arguments are absent from emitted signals. If recommending opentelemetry-hooks, addresses its MCP payload logging default and explicit capture controls; a correct first-party-only solution can earn full credit."
+    }
+  ]
+}

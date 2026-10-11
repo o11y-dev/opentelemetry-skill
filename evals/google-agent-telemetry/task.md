@@ -1,0 +1,3 @@
+Our enterprise team uses Gemini CLI with paid API keys and is piloting Antigravity CLI. We want traces and tool latency in our existing OTLP backend, without collecting prompts or tool arguments. Someone suggested replacing all Gemini telemetry settings with an Antigravity workflow that invokes `otel-hook`.
+
+Review that proposal using current first-party documentation. Explain which native signals/configuration we can rely on for each product, what still needs verification, and how we should validate any callback-to-OTel integration before adopting it. Keep existing supported deployments working. We do not need a new dashboard product.

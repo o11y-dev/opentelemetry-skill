@@ -1,6 +1,6 @@
 ---
 name: opentelemetry-skill
-description: "Build OpenTelemetry collector configs, instrument services, transform telemetry with OTTL, and debug missing traces, metrics, or logs. Use for OTel/otelcol collector config, OTLP export, SDK instrumentation, sampling, cardinality, TLS/PII controls, Kubernetes/Helm values.yaml deployments, collector health and alerts, and AI coding-agent telemetry (Claude Code, Codex, Antigravity, GitHub Copilot)."
+description: "Build OpenTelemetry collector configs, instrument services, transform telemetry with OTTL, and debug missing traces, metrics, or logs. Use for OTel/otelcol collector config, OTLP export, SDK instrumentation, sampling, cardinality, TLS/PII controls, Kubernetes/Helm values.yaml deployments, collector health and alerts, and AI coding-agent telemetry (Claude Code, Codex, Gemini CLI, Antigravity, GitHub Copilot)."
 metadata:
   author: o11y.dev
   version: 0.5.3
@@ -91,7 +91,7 @@ Load only the references matching the request:
 | Lambda, Azure Functions, GCP Functions, Serverless, FaaS, Mobile, Browser | [platforms.md](references/platforms.md) | FaaS patterns, Lambda extension layer, client-side apps |
 | OTTL, Transform, Transformation, Modify, Filter attributes, Parse, Extract | [ottl.md](references/ottl.md) | OTTL syntax, context types, built-in functions, error handling |
 | Connector, span_metrics, service_graph, signal_to_metrics, log-to-metric, span-to-metric, routing connector, failover connector | [connectors.md](references/connectors.md) | R.E.D. metrics, service graph, routing, failover, stickiness, generated-metric producer identity |
-| Claude Code, Codex, Antigravity, Copilot, AI agent, coding agent, MCP | [ai-agents.md](references/ai-agents.md) | Agent OTel support matrix, unified collector config, GenAI SemConv |
+| Claude Code, Codex, Gemini CLI, Antigravity, Copilot, AI agent, coding agent, MCP | [ai-agents.md](references/ai-agents.md) | Agent OTel support matrix, unified collector config, GenAI SemConv |
 | validate, dry-run, startup error, pipeline error, dropped data, queue full, recovery | [validation.md](references/validation.md) | Config validation commands, live checks, symptom→cause→fix recovery guidance |
 | playbook, production playbook, blog, developer observability, local OTel viewer, real world | [playbooks.md](references/playbooks.md) | Production and developer patterns from OpenTelemetry and CNCF blogs |
 | anti-pattern, common mistake, what to avoid, pitfall | [anti-patterns.md](references/anti-patterns.md) | Full annotated anti-pattern catalogue: pipeline, metrics, Kubernetes, AI agents, OTTL |

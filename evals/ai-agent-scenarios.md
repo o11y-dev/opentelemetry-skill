@@ -24,6 +24,28 @@ Configure OpenTelemetry monitoring for GitHub Copilot CLI to track usage pattern
 
 ---
 
+## Gemini CLI Telemetry
+
+**ID**: gemini-cli-monitoring
+**Category**: AI Agents
+**Difficulty**: Intermediate
+
+### Prompt
+Our enterprise team still uses Gemini CLI with paid API keys. Configure telemetry to our local Collector without exporting prompt text.
+
+### Expected Response (Key Points)
+- Preserves supported Gemini CLI deployment guidance and cites Google's transition notice
+- Uses documented Gemini telemetry settings and explicitly disables prompt logging
+- Keeps detailed trace-content capture off for this request, checks outfile overrides, and verifies received signals
+- Does not substitute Antigravity settings or require a community integration
+
+### Failure Modes
+- Claims all Gemini CLI access ended or refuses to configure it
+- Assumes prompt logging is off by default
+- Treats Gemini CLI and Antigravity as configuration-compatible
+
+---
+
 ## Google Antigravity Telemetry
 
 **ID**: antigravity-telemetry-review  
@@ -37,9 +59,9 @@ Review the native OpenTelemetry support for Google Antigravity and recommend an 
 - Verifies native telemetry, configuration, and privacy behavior using first-party documentation for the installed Antigravity version
 - Does not carry over legacy Google CLI environment variables, config files, or support claims
 - Marks unsupported or undocumented native signals as unknown rather than inventing options
-- Separates the community Antigravity workflow hook from vendor-native telemetry
-- Recommends event-hook instrumentation only when the runner exposes compatible events
-- Calls out MCP payload logging being enabled by default and prompt masking being opt-in
+- Separates documented vendor lifecycle hooks, unverified CLI/IDE OTLP export, and the SDK's documented tracing
+- Requires a verified adapter mapping for the vendor callback fields, event identity, pairing, and stdout contract before recommending hook-based telemetry
+- If selecting opentelemetry-hooks, explains its specific privacy defaults; a first-party-only answer need not recommend or discuss this package
 
 ### Failure Modes
 - Presents legacy Google CLI settings as Antigravity settings

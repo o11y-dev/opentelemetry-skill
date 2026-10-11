@@ -66,7 +66,7 @@ Unlike loading the entire OpenTelemetry documentation into an AI's context (whic
 - 📈 **Scaling Strategies**: Load balancing with sticky sessions for tail sampling, resource management for high-throughput collectors
 - 🎯 **Sampling Intelligence**: Head vs tail sampling with statistical trade-off analysis
 - 🔍 **Meta-Monitoring**: Self-observability patterns for collector health
-- 🤖 **AI Agent Observability**: Configuration guides for monitoring AI coding agents including Claude Code, Antigravity, GitHub Copilot, Codex, Qwen Code, Pi Agent, and more via OpenTelemetry
+- 🤖 **AI Agent Observability**: Configuration guides for monitoring AI coding agents including Claude Code, Gemini CLI, Antigravity, GitHub Copilot, Codex, Qwen Code, Pi Agent, and more via OpenTelemetry
 - ✅ **Test & Validation Framework**: TDD-based testing methodology and 20+ comprehensive evaluation scenarios to ensure skill effectiveness
 
 ## Skill Structure

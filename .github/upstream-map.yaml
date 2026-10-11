@@ -137,6 +137,11 @@ mappings:
           - "docs/**"
           - "src/**"
           - "Cargo.toml"
+      - repo: google-gemini/gemini-cli
+        paths:
+          - "README.md"
+          - "docs/cli/telemetry.md"
+          - "packages/core/src/telemetry/**"
       - repo: anthropics/claude-code
         paths:
           - "README.md"

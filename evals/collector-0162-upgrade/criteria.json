@@ -35,7 +35,7 @@
     {
       "name": "Verifies Operator and Kubernetes upgrade compatibility",
       "max_score": 15,
-      "description": "Does not infer that Operator 0.160 bundles Contrib 0.162 (it bundles Collector/Contrib 0.160); checks a distribution/image that actually contains 0.162 and Kubernetes 1.37 support independently. Describes `v1alpha1` to `v1beta1` manifest/config migration, stored-version migration, and Target Allocator selector semantics (`null` selects none; `{}` selects all)."
+      "description": "Does not infer that Operator 0.160 bundles Contrib 0.162 (it bundles Collector/Contrib 0.160); checks a distribution/image that actually contains 0.162, notes that Operator 0.160 documents Kubernetes 1.37 support, and verifies the deployed combination independently. Describes `v1alpha1` to `v1beta1` manifest/config migration, stored-version migration, and Target Allocator selector semantics (`null` selects none; `{}` selects all)."
     },
     {
       "name": "Audits saved-query references without fabricating changes",

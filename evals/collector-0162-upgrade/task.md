@@ -7,6 +7,4 @@ Review this upgrade plan for a production OpenTelemetry deployment:
 
 Identify configuration changes that can break startup or alter telemetry, including attribute/label changes and their effect on downstream dashboards, alerts, and queries. Explain the Operator/Kubernetes compatibility checks and CRD migration, and propose a release-specific validation plan. Distinguish changes confirmed in the tagged release notes from compatibility checks that still need to be performed; do not invent saved-query changes if upstream does not document any.
 
-For the Prometheus receiver, specifically evaluate the `IgnoreScopeInfoMetric` gate becoming stable: 0.162 no longer extracts scope attributes from `otel_scope_info`; `otel_scope_`-prefixed metric labels populate scope attributes. Explain what to inspect in emitted OTLP scope data and downstream queries.
-
 Upstream references: [Contrib v0.162.0 changelog](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.162.0/CHANGELOG.md), [Operator v0.160.0 changelog](https://github.com/open-telemetry/opentelemetry-operator/blob/v0.160.0/CHANGELOG.md), and [Operator CRD migration guide](https://github.com/open-telemetry/opentelemetry-operator/blob/v0.160.0/docs/reference/crd-changelog.md).
