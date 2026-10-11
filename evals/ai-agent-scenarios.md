@@ -83,7 +83,7 @@ Configure observability for a development environment using Claude Code, GitHub 
 ### Expected Response (Key Points)
 - Sets up service differentiation via `service.name` attributes
 - Configures separate OTEL endpoints or resource detection
-- Handles different telemetry capabilities per agent
+- Handles different telemetry capabilities per agent; Cursor Enterprise native export and optional hook tracing are evaluated in [cursor-enterprise-telemetry](cursor-enterprise-telemetry/task.md)
 - Includes correlation strategies for multi-tool workflows
 - Mentions resource attribution to prevent metric conflicts
 

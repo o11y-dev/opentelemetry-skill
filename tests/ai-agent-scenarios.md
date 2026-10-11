@@ -231,6 +231,10 @@
 
 ---
 
+## Cursor native export and optional hooks
+
+Use the [Cursor task](../evals/cursor-enterprise-telemetry/task.md) and its rubric. Verify that a Cursor-only request routes to `references/ai-agents.md`; inspect the response for native/hook signal boundaries and validated correlation. A passing skill-quality review is not a behavioral evaluation result.
+
 ## Anti-Rationalization Notes
 
 The executable Google product-boundary scenario is

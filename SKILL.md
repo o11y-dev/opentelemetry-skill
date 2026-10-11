@@ -1,6 +1,6 @@
 ---
 name: opentelemetry-skill
-description: "Build OpenTelemetry collector configs, instrument services, transform telemetry with OTTL, and debug missing traces, metrics, or logs. Use for OTel/otelcol collector config, OTLP export, SDK instrumentation, sampling, cardinality, TLS/PII controls, Kubernetes/Helm values.yaml deployments, collector health and alerts, and AI coding-agent telemetry (Claude Code, Codex, Gemini CLI, Antigravity, GitHub Copilot)."
+description: "Build OpenTelemetry collector configs, instrument services, transform telemetry with OTTL, and debug missing traces, metrics, or logs. Use for OTel/otelcol collector config, OTLP export, SDK instrumentation, sampling, cardinality, TLS/PII controls, Kubernetes/Helm values.yaml deployments, collector health and alerts, and AI coding-agent telemetry (Claude Code, Codex, Gemini CLI, Antigravity, GitHub Copilot, Cursor)."
 metadata:
   author: o11y.dev
   version: 0.5.3
@@ -50,7 +50,8 @@ metadata:
 
 For coding-agent requests, load [ai-agents.md](references/ai-agents.md) and apply these signal-specific constraints:
 
-- **Claude Code telemetry**: include `CLAUDE_CODE_ENABLE_TELEMETRY=1`, `OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative`, and managed-settings persistence; traces are beta, while metrics and logs/events remain the broadly documented signals. Keep prompt/tool-content capture disabled unless PII controls are explicit, and avoid `session.id` as a metric dimension.
+- **Claude Code telemetry**: include `CLAUDE_CODE_ENABLE_TELEMETRY=1` and managed-settings persistence; choose metric temporality for the backend (default delta, cumulative when required); traces are beta, while metrics and logs/events remain the broadly documented signals. Keep prompt/tool-content capture disabled unless PII controls are explicit, and avoid `session.id` as a metric dimension.
+- **Cursor telemetry**: distinguish Enterprise native metrics/logs from optional hook-derived traces; load the Cursor section before configuring export or combining the sources.
 - **AI agent tool-call tracing**: for agents using current `gen_ai.*` conventions, set `gen_ai.operation.name: execute_tool`, preserve `gen_ai.tool.name`, and use `execute_tool {gen_ai.tool.name}` for manually generated tool spans; keep the registered tool name in the attribute as well. These GenAI conventions are Development; preserve vendor-native spans.
 - **GenAI provider vs agent identity**: preserve `gen_ai.provider.name` for the model/provider (for example, `openai` or `gcp.gen_ai`); use `service.name` or a natively emitted agent attribute for the coding-agent identity rather than writing the agent name into the provider field.
 
@@ -91,7 +92,7 @@ Load only the references matching the request:
 | Lambda, Azure Functions, GCP Functions, Serverless, FaaS, Mobile, Browser | [platforms.md](references/platforms.md) | FaaS patterns, Lambda extension layer, client-side apps |
 | OTTL, Transform, Transformation, Modify, Filter attributes, Parse, Extract | [ottl.md](references/ottl.md) | OTTL syntax, context types, built-in functions, error handling |
 | Connector, span_metrics, service_graph, signal_to_metrics, log-to-metric, span-to-metric, routing connector, failover connector | [connectors.md](references/connectors.md) | R.E.D. metrics, service graph, routing, failover, stickiness, generated-metric producer identity |
-| Claude Code, Codex, Gemini CLI, Antigravity, Copilot, AI agent, coding agent, MCP | [ai-agents.md](references/ai-agents.md) | Agent OTel support matrix, unified collector config, GenAI SemConv |
+| Claude Code, Codex, Gemini CLI, Antigravity, Copilot, Cursor, AI agent, coding agent, MCP | [ai-agents.md](references/ai-agents.md) | Agent OTel support matrix, unified collector config, GenAI SemConv |
 | validate, dry-run, startup error, pipeline error, dropped data, queue full, recovery | [validation.md](references/validation.md) | Config validation commands, live checks, symptom→cause→fix recovery guidance |
 | playbook, production playbook, blog, developer observability, local OTel viewer, real world | [playbooks.md](references/playbooks.md) | Production and developer patterns from OpenTelemetry and CNCF blogs |
 | anti-pattern, common mistake, what to avoid, pitfall | [anti-patterns.md](references/anti-patterns.md) | Full annotated anti-pattern catalogue: pipeline, metrics, Kubernetes, AI agents, OTTL |

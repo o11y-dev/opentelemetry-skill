@@ -14,6 +14,7 @@ This directory contains evaluation scenarios for the OpenTelemetry skill, design
 - `python-genai-streaming/`: async parentage, complete stream lifetimes, privacy, and unknown usage.
 - `collector-0160-upgrade/`: removed settings, selective labels, and release-specific validation.
 - `collector-0162-upgrade/`: renamed components, selector migration, Prometheus labels, profile compatibility, and Operator/Kubernetes CRD checks.
+- `cursor-enterprise-telemetry/`: native export versus optional hook traces, accounting, correlation, privacy, and execution-surface coverage.
 - `google-agent-telemetry/`: supported Gemini deployments, Antigravity product boundaries, callback contracts, and private export to an existing backend.
 - `javascript-otel3-readiness/`: release verification, runtime/package migration, context propagation, and SDK-dependent instrumentation.
 

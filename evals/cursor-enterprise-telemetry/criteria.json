@@ -1,0 +1,31 @@
+{
+  "context": "Evaluate native Cursor export and optional hook instrumentation using source-backed signal, accounting, and correlation boundaries.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Native configuration and signal boundary",
+      "max_score": 20,
+      "description": "Uses official Cursor sources, Enterprise team-managed export, HTTPS OTLP/HTTP protobuf and metrics/logs pipelines. Does not invent native traces, desktop exporter settings, or gRPC support."
+    },
+    {
+      "name": "Usage accounting and delivery",
+      "max_score": 20,
+      "description": "Uses documented metric names and delta semantics; treats cost as an estimate with BYOK limits. Accounts for metric loss and log duplication, deduplication identity, and billing corrections rather than asserting complete invoice reconciliation."
+    },
+    {
+      "name": "Meaningful optional hooks",
+      "max_score": 20,
+      "description": "Explains callback-derived execution traces versus native usage. Distinguishes hook-script duration from tool duration. Does not require community software or promise hidden model-call coverage."
+    },
+    {
+      "name": "Correlation without duplicate accounting",
+      "max_score": 20,
+      "description": "Proposes validating conversation-ID mapping between sources, retains provenance, and avoids double-counting. Does not manufacture native trace context or use session IDs as metric dimensions."
+    },
+    {
+      "name": "Surface, privacy, and received-data validation",
+      "max_score": 20,
+      "description": "Checks desktop/CLI/cloud callback differences and installed adapter version. Keeps native conversation export and community payload capture disabled independently; verifies representative received signals, failures, and content absence. Does not present local unpublished changes or configuration alone as live coverage."
+    }
+  ]
+}

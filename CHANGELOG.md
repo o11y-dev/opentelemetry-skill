@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Add scaled `signal_to_metrics` correctness guidance and regression coverage for producer identity, backend resource mapping, temporality, and dashboard aggregation
 
 ### Changed
+- Document Cursor Enterprise native export and optional hook tracing from official sources; add a focused evaluation and align the Claude router with backend-specific temporality.
 - Audit AI vendor/project telemetry guidance from current source: distinguish native OTel from community hooks/plugins/backends, correct Codex and Qwen signals/privacy, document OpenCode V1/V2 plugin changes, and add upstream monitoring for the reviewed integrations
 - Add the three developer-viewer repositories to monthly upstream monitoring and map them to the playbook reference
 - Replace upstream digest issue updates to overwrite issue body snapshots (instead of appending) while preserving idempotent no-op reruns on exact body matches

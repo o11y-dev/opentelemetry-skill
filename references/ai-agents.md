@@ -7,7 +7,7 @@ This file is automatically flagged for review when changes occur in:
 - GitHub repositories: github/copilot-cli, Aider-AI/aider, openai/codex, google-gemini/gemini-cli, anthropics/claude-code, anthropics/skills, QwenLM/qwen-code, microsoft/vscode-copilot-chat, anysphere/cursor-wiki, anomalyco/opencode, DEVtheOPS/opencode-plugin-otel, o11y-dev/opentelemetry-hooks, tobilg/ai-observer, ColeMurray/claude-code-otel, badlogic/pi-mono
 - OpenTelemetry semantic conventions: open-telemetry/semantic-conventions (gen-ai model)
 - OpenTelemetry project governance tracker: open-telemetry/community (`projects/gen-ai.md`)
-- Manual monitoring recommended for official docs: docs.github.com/copilot/, aider.chat/docs/, developers.openai.com/codex/, code.claude.com/docs/, qwenlm.github.io/qwen-code-docs/, cursor.com, pi.dev, geminicli.com/docs/cli/telemetry/, antigravity.google/docs/hooks, antigravity.google/docs/changelog
+- Manual monitoring recommended for official docs: docs.github.com/copilot/, aider.chat/docs/, developers.openai.com/codex/, code.claude.com/docs/, qwenlm.github.io/qwen-code-docs/, cursor.com/docs/enterprise/opentelemetry-export/wire, cursor.com/docs/hooks, pi.dev, geminicli.com/docs/cli/telemetry/, antigravity.google/docs/hooks, antigravity.google/docs/changelog
 -->
 
 ---
@@ -39,7 +39,7 @@ This file is automatically flagged for review when changes occur in:
 | **Qwen Code** | Alibaba | ✅ traces, metrics, logs | ✅ | ✅ | ✅ | ⚠️ selected `gen_ai.*`; custom `qwen-code.*` | ✅ lifecycle/governance | `.qwen/settings.json`, env vars, CLI flags | `QWEN_TELEMETRY_*`, `OTEL_*` | OTLP gRPC/HTTP or file | [docs](https://qwenlm.github.io/qwen-code-docs/en/developers/development/telemetry/) |
 | **OpenCode** | Anomaly | ? verify first-party | ? | ? | ? | ? | ✅ community hook | Community plugin; OpenCode V2 plugin line is `2.x` (`plugins` key); V1 uses `1.x` branch (`plugin` key) | `OPENCODE_*` (plugin) | OTLP gRPC/HTTP | — |
 | **Pi Agent** | open-source | ? not verified | ? | ? | ⚠️ JSONL documented | ? | ? | Check current project docs | — | — | [docs](https://pi.dev) |
-| **Cursor** | Anysphere | ? not verified | ? | ? | ? | ? | ✅ community hook | Native status/version-specific behavior requires first-party verification | — | — | [docs](https://cursor.com) |
+| **Cursor** | Anysphere | ✅ Enterprise server-side export | ❌ | ✅ | ✅ | Custom `cursor.*` schema | ✅ vendor callbacks; optional community OTel adapter | Team Settings > OpenTelemetry Export | Team destination URL and auth headers | OTLP/HTTP protobuf | [export](https://cursor.com/docs/enterprise/opentelemetry-export), [wire](https://cursor.com/docs/enterprise/opentelemetry-export/wire) |
 | **Windsurf** | Cognition | ? not verified | ? | ? | ? | ? | ✅ community hook | Native status/version-specific behavior requires first-party verification | — | — | [docs](https://docs.windsurf.com) |
 | **Amazon Q Developer CLI** | AWS | ? not verified | ? | ? | ? | ? | ? | CLI no longer actively maintained except critical security fixes; see vendor notice | — | — | [repository notice](https://github.com/aws/amazon-q-developer-cli) |
 | **Aider** | open-source | ? not verified | ? | ? | ? | ? | ? verify hook compatibility | Native status/version-specific behavior requires first-party verification | — | — | [docs](https://aider.chat/docs/) |
@@ -50,7 +50,7 @@ This file is automatically flagged for review when changes occur in:
 - ⚠️ Partial support (see Known Gaps)
 - 🔜 Planned but not yet shipped
 - ❌ Confirmed unsupported by first-party source
-- **Native OTel** = telemetry emitted by the agent itself
+- **Native OTel** = telemetry exported by the vendor implementation, including server-side export where documented
 - **Hooks Support** = lifecycle callbacks or community integrations, as indicated; callback availability alone does not establish OTel export or adapter compatibility
 
 ---
@@ -259,7 +259,8 @@ For Antigravity, a community workflow command is not a verified adapter for Goog
 | **OpenAI Codex CLI** | ✅ OTLP signals in current source | Lifecycle/governance | Configure each native signal; hooks describe exposed event lifecycle and do not replace native spans/metrics. |
 | **Qwen Code** | ✅ traces/logs/metrics | Lifecycle/governance | Native OTel is available; review prompt/log privacy defaults and schema changes before adding redundant hooks. |
 | **OpenCode** | ? first-party status unverified | Community plugin + hooks | The plugin is a separate project; match plugin major line to OpenCode V1/V2. |
-| **Cursor / Windsurf** | ? not verified | Community event hooks | Do not claim desktop process or full-agent coverage; verify what event payloads the installed integration exposes. |
+| **Cursor** | ✅ Enterprise metrics/logs; no traces | Optional execution traces | Prefer native usage monitoring; add hooks for callback-derived execution context. See [§2.9](#29-cursor-enterprise-export-and-optional-hooks). |
+| **Windsurf** | ? not verified | Community event hooks | Verify installed callback coverage; do not claim full-agent or desktop-process coverage. |
 | **Amazon Q Developer CLI** | ? not verified | ? | CLI project is no longer actively maintained except critical security fixes; do not present it as a current supported integration. |
 | **Aider** | ? not verified | Community event hooks | Do not equate hook lifecycle spans with native model/tool telemetry. |
 
@@ -280,6 +281,22 @@ Review its privacy behavior before enabling it: full prompt text in **logs** is 
 [`AI Observer`](https://github.com/tobilg/ai-observer) is a local OTLP-compatible backend with its own dashboard, plus file import/watch modes for selected agent transcript formats. It is an ingestion/storage project, not instrumentation: file-import coverage is not equivalent to live OTLP traces, metrics, or logs. Follow its current guidance to avoid duplicate data when choosing between file-watch and OTLP modes.
 
 [`claude-code-otel`](https://github.com/ColeMurray/claude-code-otel) is a community Claude Code Collector/Grafana/Prometheus/Loki stack. Its dashboards and copied setup notes are third-party artifacts; use Anthropic's current documentation as the authority for Claude Code telemetry configuration.
+
+---
+
+### 2.9 Cursor Enterprise export and optional hooks
+
+[Cursor's export overview](https://cursor.com/docs/enterprise/opentelemetry-export) documents server-side Enterprise metrics/logs, without traces or OTel trace/span context. Configure a publicly reachable HTTPS base URL and auth headers in Team Settings; Cursor appends `/v1/metrics` and `/v1/logs`. Use OTLP/HTTP protobuf, not gRPC/JSON or desktop `OTEL_*` settings. Test the destination, then inspect received records. Metrics are at-most-once; logs are at-least-once, without historical backfill. Conversation content is opt-in and surface-specific; keep it disabled unless requested. Check current coverage before enabling it.
+
+The [wire reference](https://cursor.com/docs/enterprise/opentelemetry-export/wire) defines `service.name=cursor` and scope `cursor.telemetry`. Preserve the vendor schema:
+
+- `cursor.token.usage`, `cursor.tool.calls`, and `cursor.cost.usage` are delta sums; aggregate deltas by complete series identity. Cost is estimated, not invoiced spend; BYOK excludes provider spend.
+- Deduplicate logs by `cursor.event.id`. Use available `cursor.conversation.id` for session analysis and `cursor.usage_event.id` for billing corrections; metric datapoints lack these IDs. Do not add session IDs to metric labels.
+- `cursor.hook.execution_complete` reports the hook script's outcome and duration, not the observed tool's duration. `cursor.grok_bot.*` activity is surface-specific, not a guarantee of equivalent IDE/CLI events.
+
+Optional [opentelemetry-hooks](https://github.com/o11y-dev/opentelemetry-hooks) reconstructs traces from callbacks. Prefer native usage signals; add hooks when callback-level execution or cross-agent context is needed. Validate matching native `cursor.conversation.id` and hook `gen_ai.conversation.id` values before joining sessions. This is correlation, not shared trace context. Preserve hook provenance (`gen_ai.client.telemetry_source=hook`); do not sum native and hook-derived counts for the same activity. Token attributes present in a callback do not establish complete usage accounting.
+
+[Cursor's hooks contract](https://cursor.com/docs/hooks) varies by execution surface. Cloud agents load project hooks, not workstation user configuration; callbacks can be absent during read-only exploration. Check which lifecycle/MCP callbacks are available before claiming complete traces. Pin the adapter version and test representative success/failure payloads and received spans; unpublished local coverage is not released support. Apply the community privacy controls in §2.7 independently of native export settings.
 
 ---
 
