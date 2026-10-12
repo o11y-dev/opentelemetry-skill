@@ -1,5 +1,5 @@
 {
-  "context": "We use both VS Code Copilot Chat and Copilot CLI. Give separate native OTLP configurations and a validation plan. We have managed settings and local environment overrides, run concurrent sessions and subagents, and want reliable model/cost attribution without capturing content. Account for current open reports.",
+  "context": "We use both VS Code Copilot Chat and Copilot CLI. Give separate native OTLP configurations and a validation plan. We have managed settings and local environment overrides, run concurrent sessions and subagents, and want reliable model/cost attribution without capturing content. Include checks for incorrect parent-session model attribution after subagent calls and overlapping metric series from concurrent CLI processes.",
   "type": "weighted_checklist",
   "checklist": [
     {
@@ -13,9 +13,9 @@
       "description": "Explains surface-specific enablement, environment versus managed-setting precedence, and disables OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT. Tests resolved config rather than assuming managed settings always win."
     },
     {
-      "name": "Current reports",
+      "name": "Attribution and producer identity",
       "max_score": 25,
-      "description": "Flags CLI requested-model attribution after subagents (#4970) and concurrent metric producer identity (#5005) as version-specific open reports. Does not invent service.instance.id injection support or promise billing totals are complete merely because older issues closed."
+      "description": "Tests whether subagent calls change parent-session requested-model attribution, distinguishes requested from resolved model fields, and checks whether concurrent CLI processes produce overlapping metric series. Verifies available producer identity controls without inventing service.instance.id injection support. Does not equate telemetry cost attributes with complete billing totals."
     },
     {
       "name": "Validation",

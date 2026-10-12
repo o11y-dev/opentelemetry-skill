@@ -1,5 +1,5 @@
 {
-  "context": "Configure native telemetry for Codex 0.162.1 for our existing OTLP Collector. We disabled product analytics. We want logs, traces, and metrics but no prompt, response, or tool-result content in the shared backend. Explain which settings and emitted fields to validate, metric temporality, and how to assess the still-open analytics, timestamp, and event-name issues.",
+  "context": "Configure native telemetry for Codex 0.162.1 for our existing OTLP Collector. We disabled product analytics. We want logs, traces, and metrics but no prompt, response, or tool-result content in the shared backend. Explain which settings and emitted fields to validate, metric temporality, and how to investigate reports of missing telemetry when analytics is disabled, malformed timestamps, and inconsistent event names.",
   "type": "weighted_checklist",
   "checklist": [
     {
@@ -10,7 +10,7 @@
     {
       "name": "Version-aware analytics",
       "max_score": 15,
-      "description": "Uses tagged 0.162.1 implementation as evidence: analytics controls Statsig and does not disable explicitly configured OTLP. Treats older open issue #26271 as a report to reproduce, not a current universal blocker."
+      "description": "Uses version-matched evidence to explain that analytics controls Statsig and does not disable explicitly configured OTLP in 0.162.1. Reproduces reported interactions on the installed version instead of treating an issue report as a universal blocker."
     },
     {
       "name": "Privacy boundaries",
