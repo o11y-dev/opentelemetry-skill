@@ -101,11 +101,6 @@ exporter, and instrumentation dependencies when upgrading.
   GenAI package moves and removal of `kafka-python-ng` instrumentation require
   checking the installed package set, not simply bumping the SDK.
 
-Open reports about blocked resource detectors after fork, WSGI Unicode URLs,
-SQS processing-span leaks, and async Kafka coverage remain version-specific
-regression checks in the [digest ledger](../docs/upstream-review-2026-10-12.md).
-An issue's closed state alone does not establish the release containing a fix.
-
 ## Python AI instrumentation packages
 
 Python GenAI development now lives in [opentelemetry-python-genai][python-genai].

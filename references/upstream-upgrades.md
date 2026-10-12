@@ -1,10 +1,8 @@
 # Release-specific upgrade checks
 
-This is an October 12, 2026 review of changes relevant to the skill's examples.
-Versions below are evidence snapshots, not fleet-wide minimums or instructions to
-upgrade every dependency. Keep the deployed version, target version, and actual
-exported data in the review. The [audit ledger](../docs/upstream-review-2026-10-12.md)
-records the disposition of the open upstream digests.
+Use these checks when upgrading the listed components. Compare the deployed and
+target versions, then validate the configuration and exported data. The versions
+below do not raise every existing example's minimum version.
 
 ## Collector 0.162 and Kubernetes
 
@@ -59,7 +57,6 @@ not acquire new features merely because a chart release exists.
 | [Ruby logs SDK 0.7](https://github.com/open-telemetry/opentelemetry-ruby/releases/tag/opentelemetry-logs-sdk/v0.7.0) | Updates recorded-attribute accounting; it does not establish fixes in separately versioned exporters or metric SDKs. Verify those packages independently. |
 | [PHP package release relocation](https://github.com/open-telemetry/opentelemetry-php/releases/tag/has-been-moved) | Resolve versions from Packagist and the individual `opentelemetry-php` mirrors. `has-been-moved` is not a current SDK version. |
 | [Swift 2.5.1](https://github.com/open-telemetry/opentelemetry-swift/releases/tag/2.5.1) | Bounds HTTP log/metric flush semaphore waits. Test shutdown under a stalled backend; this is not a general durable-delivery guarantee. |
-| [Erlang SDK 1.7](https://github.com/open-telemetry/opentelemetry-erlang/releases/tag/opentelemetry/v1.7.0) | The release has no descriptive notes in the digest evidence. Retain existing guidance; inspect package changelog/source before asserting a behavior change. |
 
 ## Conventions, privacy, and portability
 
@@ -82,13 +79,11 @@ partial success, shutdown, and restarts.
 Open proposals for TLS-skip-verification environment variables, blocking batch
 queues, governance receipts, and custom propagation must not be emitted as
 portable configuration. Use supported TLS settings and the existing Collector
-durability pattern; the ledger retains these proposals as watch items.
+durability pattern.
 
-## Deployment and regression checks from issue reports
+## Deployment and regression checks
 
-Use the [item ledger](../docs/upstream-review-2026-10-12.md#item-ledger) to select
-checks relevant to the deployed component. These are test requirements motivated
-by reports, not assertions that the current release contains every reported bug.
+Select checks relevant to the deployed component and the upgrade path.
 
 | Boundary | Check before relying on telemetry |
 |---|---|

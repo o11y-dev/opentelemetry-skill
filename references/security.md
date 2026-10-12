@@ -669,8 +669,8 @@ producer/verifier versions before changing an audit pipeline. See the
 [tagged release](https://github.com/open-telemetry/opentelemetry-collector-contrib/releases/tag/v0.162.0)
 and [upgrade checks](upstream-upgrades.md).
 
-Dependency-audit and CVE issues in an upstream digest are investigation inputs.
-Match the affected dependency to the deployed artifact/SBOM, verify the advisory's
+For dependency vulnerabilities, match the affected dependency to the deployed
+artifact/SBOM, verify the advisory's
 fixed range and the release containing the fix, and scan the rebuilt artifact.
 Neither a closed issue nor a source dependency bump proves deployed remediation.
 This also applies to Lambda layers: verify region, architecture, layer ARN/version,

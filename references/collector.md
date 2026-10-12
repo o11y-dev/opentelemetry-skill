@@ -1,6 +1,6 @@
 # OpenTelemetry Collector: Pipeline Configuration & Components
 
-For the October 2026 release review, see [collector 0.162 and kubernetes](upstream-upgrades.md#collector-0162-and-kubernetes). Validate the deployed and target versions separately.
+For version-specific upgrade checks, see [collector 0.162 and kubernetes](upstream-upgrades.md#collector-0162-and-kubernetes). Validate the deployed and target versions separately.
 
 ## Overview
 

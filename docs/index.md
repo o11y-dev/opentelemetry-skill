@@ -44,7 +44,6 @@ The authoritative Tessl-facing eval assets live in `evals/`. The `tests/` docume
 - [JavaScript SDK 3.0 readiness task](../evals/javascript-otel3-readiness/task.md)
 - [Codex native telemetry task](../evals/codex-native-telemetry/task.md)
 - [Copilot native telemetry task](../evals/copilot-native-telemetry/task.md)
-- [Upstream digest triage task](../evals/upstream-digest-triage/task.md)
 
 ### Supporting test methodology
 

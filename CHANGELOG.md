@@ -8,8 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- October upstream review ledger covering all four open digest snapshots, with released changes, unresolved reports, and closure-readiness notes.
-- Release-specific Collector, Operator, SDK, security, and semantic-convention upgrade guidance; focused native-agent and digest-triage evaluation scenarios.
+- Release-specific Collector, Operator, SDK, security, and semantic-convention upgrade guidance; focused native-agent evaluation scenarios.
 - Restore weekly RSS monitoring for OpenTelemetry posts and OTel-related CNCF posts, with bounded parsing, visible feed failures, and regression tests
 - Add Collector Contrib 0.162/Operator Kubernetes upgrade evaluation and OpenTelemetry JS 3.0 readiness guidance
 - Add developer-local observability routing for OTel Desktop Viewer, `otel-tui`, and OTel Front

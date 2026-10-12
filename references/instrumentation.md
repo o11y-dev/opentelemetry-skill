@@ -1,6 +1,6 @@
 # OpenTelemetry Instrumentation & Semantic Conventions
 
-For the October 2026 release review, see [sdk and instrumentation changes](upstream-upgrades.md#sdk-and-instrumentation-changes). Validate the deployed and target versions separately.
+For version-specific upgrade checks, see [sdk and instrumentation changes](upstream-upgrades.md#sdk-and-instrumentation-changes). Validate the deployed and target versions separately.
 
 ## Overview
 
