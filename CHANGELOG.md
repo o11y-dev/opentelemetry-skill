@@ -7,12 +7,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+
+- October upstream review ledger covering all four open digest snapshots, with released changes, unresolved reports, and closure-readiness notes.
+- Release-specific Collector, Operator, SDK, security, and semantic-convention upgrade guidance; focused native-agent and digest-triage evaluation scenarios.
 - Restore weekly RSS monitoring for OpenTelemetry posts and OTel-related CNCF posts, with bounded parsing, visible feed failures, and regression tests
 - Add Collector Contrib 0.162/Operator Kubernetes upgrade evaluation and OpenTelemetry JS 3.0 readiness guidance
 - Add developer-local observability routing for OTel Desktop Viewer, `otel-tui`, and OTel Front
 - Add scaled `signal_to_metrics` correctness guidance and regression coverage for producer identity, backend resource mapping, temporality, and dashboard aggregation
 
 ### Changed
+
+- Refreshed all coding-agent support surfaces, including Codex signal/privacy controls, Cursor delta-window handling, Copilot protocol differences, and OpenCode native/plugin boundaries.
+- Updated Python 1.45/0.66b0 migration guidance and released GenAI package inventory; corrected Pi repository and Codex/OpenCode watcher paths.
 - Document Cursor Enterprise native export and optional hook tracing from official sources; add a focused evaluation and align the Claude router with backend-specific temporality.
 - Audit AI vendor/project telemetry guidance from current source: distinguish native OTel from community hooks/plugins/backends, correct Codex and Qwen signals/privacy, document OpenCode V1/V2 plugin changes, and add upstream monitoring for the reviewed integrations
 - Add the three developer-viewer repositories to monthly upstream monitoring and map them to the playbook reference

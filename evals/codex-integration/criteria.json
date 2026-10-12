@@ -15,12 +15,12 @@
     {
       "name": "Includes batch processor with reasonable timeout",
       "max_score": 15,
-      "description": "The configuration includes a batch processor with send_batch_timeout (1-10 seconds) and batch_size. Score zero if batch processor is missing."
+      "description": "The configuration includes a batch processor with timeout (1-10 seconds) and send_batch_size. Score zero if batch processor is missing."
     },
     {
       "name": "Configures exporter for backend system",
       "max_score": 15,
-      "description": "The configuration includes an exporter (e.g., otlp, logging) with appropriate endpoint configuration. Score zero if exporter is missing or malformed."
+      "description": "The configuration includes an exporter (e.g., otlp; debug only for local diagnostics) with appropriate endpoint configuration. Score zero if exporter is missing or malformed."
     },
     {
       "name": "Defines service section with pipelines",
@@ -30,7 +30,7 @@
     {
       "name": "Includes comments or follows naming conventions",
       "max_score": 15,
-      "description": "The configuration is readable with appropriate naming (e.g., 'batch', 'otlp', 'exporter_name') and ideally includes comments explaining sections. This demonstrates code quality awareness."
+      "description": "The configuration is readable with appropriate naming (e.g., 'batch', 'otlp', 'exporter_name') and provides any explanation outside the strict JSON document (JSON does not support comments). This demonstrates code quality awareness."
     }
   ]
 }

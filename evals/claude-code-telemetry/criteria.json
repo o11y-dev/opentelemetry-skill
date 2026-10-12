@@ -15,12 +15,12 @@
     {
       "name": "References ~/.claude/settings.json for persistent configuration",
       "max_score": 10,
-      "description": "The response mentions that environment variables can be persisted in ~/.claude/settings.json under an env block for consistent telemetry across sessions. Responses that only show environment variable exports without mentioning persistent config score zero on this criterion."
+      "description": "The response mentions that environment variables can be persisted in ~/.claude/settings.json under an env block for consistent telemetry across sessions. Responses that only show environment variable exports without mentioning persistent config score zero on this criterion. Repository settings cannot enable/change native telemetry destinations or content capture; distinguish user/shell from managed policy and verify precedence."
     },
     {
       "name": "Includes privacy controls for prompt and tool logging",
       "max_score": 20,
-      "description": "The response mentions both prompt and tool logging controls (OTEL_LOG_USER_PROMPTS and OTEL_LOG_TOOL_DETAILS), explains that prompts are redacted by default, and warns that either flag should stay off in shared or production environments unless PII controls are in place."
+      "description": "The response mentions both prompt and tool logging controls (OTEL_LOG_USER_PROMPTS and OTEL_LOG_TOOL_DETAILS), explains that prompts are redacted by default, and warns that either flag should stay off in shared or production environments unless PII controls are in place. Also keeps OTEL_LOG_TOOL_CONTENT and OTEL_LOG_RAW_API_BODIES false; raw API body capture has broader content implications and prompt redaction alone is insufficient."
     },
     {
       "name": "Warns about session.id cardinality in metrics",

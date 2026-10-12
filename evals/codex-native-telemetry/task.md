@@ -1,0 +1,1 @@
+Configure native telemetry for Codex 0.162.1 for our existing OTLP Collector. We disabled product analytics. We want logs, traces, and metrics but no prompt, response, or tool-result content in the shared backend. Explain which settings and emitted fields to validate, metric temporality, and how to assess the still-open analytics, timestamp, and event-name issues.

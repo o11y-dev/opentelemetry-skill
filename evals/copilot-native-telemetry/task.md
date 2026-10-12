@@ -1,0 +1,1 @@
+We use both VS Code Copilot Chat and Copilot CLI. Give separate native OTLP configurations and a validation plan. We have managed settings and local environment overrides, run concurrent sessions and subagents, and want reliable model/cost attribution without capturing content. Account for current open reports.

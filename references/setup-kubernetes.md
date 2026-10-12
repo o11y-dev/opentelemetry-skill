@@ -1,5 +1,7 @@
 # Kubernetes Collector Deployment Patterns
 
+For the October 2026 release review, see [collector 0.162 and kubernetes](upstream-upgrades.md#collector-0162-and-kubernetes). Validate the deployed and target versions separately.
+
 ## Overview
 
 Kubernetes is the preferred platform for deploying the OpenTelemetry Collector at scale. This guide covers three core patterns: Agent (DaemonSet), Gateway (Deployment), and Sidecar, along with platform-specific considerations for EKS, GKE, AKS, and OpenShift.

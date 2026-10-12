@@ -13,6 +13,8 @@ These are the deep-dive documents that the skill loads on demand:
 - [Compatibility](../references/compatibility.md)
 - [Connectors](../references/connectors.md)
 - [Instrumentation](../references/instrumentation.md)
+- [Python instrumentation and GenAI](../references/python-instrumentation.md)
+- [Release-specific upgrade checks](../references/upstream-upgrades.md)
 - [JavaScript OTel 3.0 readiness](../references/javascript-otel3-readiness.md)
 - [Monitoring](../references/monitoring.md)
 - [OTTL](../references/ottl.md)
@@ -40,6 +42,9 @@ The authoritative Tessl-facing eval assets live in `evals/`. The `tests/` docume
 - [Cursor Enterprise telemetry task](../evals/cursor-enterprise-telemetry/task.md)
 - [Google agent telemetry task](../evals/google-agent-telemetry/task.md)
 - [JavaScript SDK 3.0 readiness task](../evals/javascript-otel3-readiness/task.md)
+- [Codex native telemetry task](../evals/codex-native-telemetry/task.md)
+- [Copilot native telemetry task](../evals/copilot-native-telemetry/task.md)
+- [Upstream digest triage task](../evals/upstream-digest-triage/task.md)
 
 ### Supporting test methodology
 

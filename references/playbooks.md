@@ -22,6 +22,29 @@ Use this document when a user asks for:
   task
 - a **generic playbook** that should remain reusable as more blogs are added
 
+## October 2026 review additions
+
+- [Go compile-time instrumentation v1](https://opentelemetry.io/blog/2026/go-compile-time-instrumentation-v1/):
+  choose compile-time instrumentation separately from eBPF; verify build, library,
+  propagation, and shutdown support using [release checks](upstream-upgrades.md).
+- [OpenCensus compatibility deprecation](https://opentelemetry.io/blog/2026/deprecating-opencensus-compatibility/):
+  prefer native OTel for new work and plan existing shim migration. Deprecation is
+  not immediate artifact removal. The article was published June 23 and modified
+  September 28; the digest's feed timestamp is not its original publication date.
+- [Instrumentation ecosystem discovery](https://opentelemetry.io/blog/2026/exploring-instrumentation-ecosystem/)
+  and the [Prometheus interoperability survey](https://opentelemetry.io/blog/2026/otel-prometheus-interoperability/):
+  use these to discover options and compatibility questions. Verify support in
+  the selected package/backend; a directory listing or survey is not a release contract.
+- [Kafka/Flink incident-detection case study](https://www.cncf.io/blog/2026/09/30/from-40-seconds-to-under-10-rebuilding-incident-detection-on-opentelemetry-apache-kafka-and-apache-flink-on-kubernetes/):
+  route to [Collector](collector.md), [monitoring](monitoring.md), and
+  [architecture](architecture.md). Test replay with idempotent sink keys, monitor
+  telemetry freshness, and report detector recall separately from instrumentation
+  coverage. Case-study latency/cost results are not promised outcomes for another system.
+
+Conference tracks and election announcements in the weekly digest do not change
+configuration guidance. Every article has a disposition in the
+[review ledger](../docs/upstream-review-2026-10-12.md).
+
 ## Table of Contents
 
 1. [How to Use This Reference](#how-to-use-this-reference)

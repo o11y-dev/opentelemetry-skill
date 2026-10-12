@@ -1,5 +1,7 @@
 # OpenTelemetry Instrumentation & Semantic Conventions
 
+For the October 2026 release review, see [sdk and instrumentation changes](upstream-upgrades.md#sdk-and-instrumentation-changes). Validate the deployed and target versions separately.
+
 ## Overview
 
 Instrumentation is the process of adding observability to application code. This reference provides comprehensive guidance on auto vs manual instrumentation, semantic conventions enforcement, and the critical challenge of **cardinality management**—the #1 cost driver in observability systems.

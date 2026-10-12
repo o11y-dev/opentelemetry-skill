@@ -33,7 +33,7 @@
       "anthropics/skills",
       "QwenLM/qwen-code",
       "microsoft/vscode-copilot-chat",
-      "badlogic/pi-mono",
+      "earendil-works/pi",
       "open-telemetry/opentelemetry-python-contrib"
     ],
     "monthly": [
@@ -107,6 +107,6 @@
     "anthropics/skills",
     "QwenLM/qwen-code",
     "microsoft/vscode-copilot-chat",
-    "badlogic/pi-mono"
+    "earendil-works/pi"
   ]
 }

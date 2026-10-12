@@ -660,6 +660,29 @@ extensions:
 
 ---
 
+## Release-sensitive security checks
+
+Collector Contrib 0.162 changes the signing processor's typed-value
+canonicalization and adds `audit.integrity.signer`. Existing signatures can become
+invalid across versions. Test verification of old and new records with the exact
+producer/verifier versions before changing an audit pipeline. See the
+[tagged release](https://github.com/open-telemetry/opentelemetry-collector-contrib/releases/tag/v0.162.0)
+and [upgrade checks](upstream-upgrades.md).
+
+Dependency-audit and CVE issues in an upstream digest are investigation inputs.
+Match the affected dependency to the deployed artifact/SBOM, verify the advisory's
+fixed range and the release containing the fix, and scan the rebuilt artifact.
+Neither a closed issue nor a source dependency bump proves deployed remediation.
+This also applies to Lambda layers: verify region, architecture, layer ARN/version,
+runtime dependencies, and the Collector actually bundled in the layer.
+
+Do not invent a portable TLS-skip-verification environment variable from an open
+specification proposal. Use trusted CAs and supported exporter TLS settings.
+Agent prompt flags are not universal redaction switches: responses, raw API
+bodies, tool arguments/results, guardian assessments, and identity have separate
+controls. Inspect each signal's serialized payload before shared export; see
+[agent privacy controls](ai-agents.md).
+
 ## Reference Links
 
 - **Security Documentation**: https://opentelemetry.io/docs/specs/otel/protocol/exporter/#security

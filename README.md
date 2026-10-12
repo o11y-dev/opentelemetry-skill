@@ -227,7 +227,8 @@ Deep-dive guides are available in the `references/` directory:
 - **[ai-agents.md](references/ai-agents.md)**: AI agent observability patterns, per-agent setup guidance, dashboards, and operational caveats
 - **[architecture.md](references/architecture.md)**: Deployment patterns, load balancing, Target Allocator, and platform setup guide cross-links
 - **[collector.md](references/collector.md)**: Pipeline anatomy, processor ordering, memory management, and exporter configuration patterns
-- **[python-instrumentation.md](references/python-instrumentation.md)**: Python SDK 1.44 migration, framework ownership, GenAI package migration, async/streaming patterns, and executable telemetry examples
+- **[python-instrumentation.md](references/python-instrumentation.md)**: Python SDK 1.44/1.45 migration, FastAPI native/contrib ownership, GenAI packages, async/streaming patterns, and executable telemetry examples
+- **[upstream-upgrades.md](references/upstream-upgrades.md)**: Collector 0.162, Operator, SDK, security, and convention upgrade checks, linked to the item-level digest review
 - **[instrumentation.md](references/instrumentation.md)**: SDKs, semantic conventions, cardinality management, and collector deployment guidance
 - **[ottl.md](references/ottl.md)**: OpenTelemetry Transformation Language syntax, functions, patterns, and best practices
 - **[platforms.md](references/platforms.md)**: FaaS (Lambda, Azure, GCP), client-side apps, serverless best practices

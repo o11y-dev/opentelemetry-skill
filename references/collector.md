@@ -1,5 +1,7 @@
 # OpenTelemetry Collector: Pipeline Configuration & Components
 
+For the October 2026 release review, see [collector 0.162 and kubernetes](upstream-upgrades.md#collector-0162-and-kubernetes). Validate the deployed and target versions separately.
+
 ## Overview
 
 The OpenTelemetry Collector is a vendor-agnostic telemetry pipeline that receives, processes, and exports observability data. This reference provides deep technical guidance on pipeline anatomy, processor ordering, memory management, and production stability patterns.

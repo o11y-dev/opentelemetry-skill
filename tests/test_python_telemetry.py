@@ -2,6 +2,7 @@
 import asyncio
 import re
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -53,7 +54,10 @@ class PythonTelemetryTests(unittest.IsolatedAsyncioTestCase):
         from fastapi.testclient import TestClient
         from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
-        app = FastAPI()
+        # Providers/exporters are owned by this test. On FastAPI 0.142+, do not
+        # attach HTTP exporters from the developer's inherited OTEL_* settings.
+        # Older FastAPI accepts extra kwargs and has no native auto-configuration.
+        app = FastAPI(telemetry={"auto_configure": False})
 
         @app.get("/health")
         def health():
@@ -61,7 +65,9 @@ class PythonTelemetryTests(unittest.IsolatedAsyncioTestCase):
 
         FastAPIInstrumentor.instrument_app(app, tracer_provider=self.provider)
         try:
-            with TestClient(app) as client:
+            # A launch environment must not add network exporters to this
+            # explicitly owned in-memory pipeline (including native FastAPI).
+            with patch.dict("os.environ", {"OTEL_EXPORTER_OTLP_ENDPOINT": "http://127.0.0.1:1"}), TestClient(app) as client:
                 result = client.get("/health", headers={
                     "traceparent": "00-12345678901234567890123456789012-1234567890123456-01",
                 })

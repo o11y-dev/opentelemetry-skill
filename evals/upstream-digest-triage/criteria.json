@@ -1,0 +1,26 @@
+{
+  "context": "Review an upstream digest with: Collector 0.162, Python 1.45/0.66b0, Rust 0.33, an open TLS-skip-verification proposal, a closed exporter data-loss bug with no fixed release linked, OpenCode experimental.openTelemetry and plugin v2, DSPy/LlamaIndex GenAI packages, and Pi/Windsurf/Aider integrations. Produce an actionable update disposition. Can we close the rolling daily digest and claim native OTLP for all agents?",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Released migration facts",
+      "max_score": 25,
+      "description": "Identifies at least three relevant Collector changes (Elasticsearch queue fields, queue_batch, adaptive root origins, Prometheus labels/scope, removed gates), Python Logger.enabled/HTTP transport/request limit, and Rust API/SDK versus exporter stability. Keeps existing baselines distinct from upgrade targets."
+    },
+    {
+      "name": "Evidence and issue status",
+      "max_score": 25,
+      "description": "Assigns each item implemented, already covered, watch, not applicable or blocked with reason and evidence; deduplicates overlapping digests; does not equate closed with released fix. Does not invent TLS env var. Records a review snapshot rather than declaring a rolling digest permanently done."
+    },
+    {
+      "name": "Agent support boundaries",
+      "max_score": 25,
+      "description": "Distinguishes OpenCode partial AI SDK instrumentation from a complete native exporter and community plugin v2 compatibility. Keeps Pi extensions, Windsurf hooks, Aider analytics separate from verified native OTLP; unknown is not unsupported."
+    },
+    {
+      "name": "Packages and validation",
+      "max_score": 25,
+      "description": "Recognizes released beta DSPy/LlamaIndex versus Claude Agent SDK/CrewAI/Weaviate skeletons; validates selected package constraints. Separates source review, config validation, synthetic tests, behavioral scores, and real deployment/backend proof."
+    }
+  ]
+}

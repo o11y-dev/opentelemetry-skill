@@ -8,7 +8,7 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-IMAGE = "otel/opentelemetry-collector-contrib:0.160.0"
+IMAGES = [f"otel/opentelemetry-collector-contrib:{version}" for version in ("0.160.0", "0.162.0")]
 EXAMPLES = [
     ("references/ai-agents.md", "## 3. Unified Collector Config"),
     ("references/collector.md", "### Agent Configuration (Kafka Exporter)"),
@@ -17,6 +17,11 @@ EXAMPLES = [
 
 
 def main():
+    for image in IMAGES:
+        validate_image(image)
+
+
+def validate_image(image):
     for filename, heading in EXAMPLES:
         text = (ROOT / filename).read_text()
         section = text[text.index(heading):]
@@ -24,9 +29,9 @@ def main():
         result = subprocess.run([
             "docker", "run", "--rm", "-i", "--network", "none",
             "--env", "KAFKA_USERNAME=example", "--env", "KAFKA_PASSWORD=example",
-            IMAGE, "validate", "--config=file:/dev/stdin",
+            image, "validate", "--config=file:/dev/stdin",
         ], input=config, text=True, capture_output=True, timeout=180)
-        print(f"{filename}: {heading}: {'PASS' if result.returncode == 0 else 'FAIL'}", flush=True)
+        print(f"{image}: {filename}: {heading}: {'PASS' if result.returncode == 0 else 'FAIL'}", flush=True)
         if result.returncode:
             raise SystemExit(result.stdout + result.stderr)
 

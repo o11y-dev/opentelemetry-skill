@@ -1,5 +1,7 @@
 # OpenTelemetry Platforms & Serverless Best Practices
 
+For the October 2026 release review, see [sdk and instrumentation changes](upstream-upgrades.md#sdk-and-instrumentation-changes). Validate the deployed and target versions separately.
+
 ## Overview
 
 OpenTelemetry is available for a variety of platforms and environments, ensuring seamless observability in hybrid systems. This reference provides comprehensive guidance on deploying OpenTelemetry in different platform environments, with detailed focus on serverless functions (AWS Lambda, Azure Functions, GCP Cloud Functions) and client-side applications.

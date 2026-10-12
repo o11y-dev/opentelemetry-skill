@@ -68,6 +68,11 @@ jobs:
       - name: Test Python telemetry examples
         run: python -m unittest discover -s tests -p 'test_python_telemetry.py'
 
+      - name: Test Python 1.45 / 0.66b0 with native-capable FastAPI
+        run: |
+          pip install opentelemetry-sdk==1.45.0 opentelemetry-exporter-otlp-proto-grpc==1.45.0 opentelemetry-instrumentation-fastapi==0.66b0 fastapi==0.142.0
+          python -m unittest discover -s tests -p 'test_python_telemetry.py'
+
       - name: Validate documented Collector examples
         run: python tests/validate_collector_examples.py
 
