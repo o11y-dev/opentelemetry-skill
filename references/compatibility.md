@@ -11,7 +11,7 @@ Use this document for version-sensitive guidance that changes more frequently th
 - **OpenTelemetry JS 3.0**: see the [readiness checklist](javascript-otel3-readiness.md); verify stable release status and the final migration guide before upgrading
 - **Go SDK**: v1.24.0+
 - **Python SDK**: v1.41.0+ for unchanged examples; the new event/GenAI examples target v1.44.0 (instrumentation release train 0.65b0). See [Python guidance](python-instrumentation.md).
-- **Collector 0.160 examples**: selective Prometheus `resource_constant_labels` requires v0.160.0; custom builds require Go 1.26. The general canonical-ID floor remains v0.153.0.
+- **Collector 0.160 examples**: selective Prometheus `resource_constant_labels` requires v0.160.0; custom builds require Go 1.26. The general canonical-ID floor remains v0.153.0. See the [0.162 upgrade checks](collector.md#collector-0162-upgrade-checks) when crossing that release.
 - **Python GenAI packages**: migrated to `open-telemetry/opentelemetry-python-genai`; released beta versions and supported libraries are listed in [the Python reference](python-instrumentation.md#python-ai-instrumentation-packages). Do not substitute unreleased skeletons.
 
 ## AI agent telemetry compatibility
@@ -29,12 +29,6 @@ Use this document for version-sensitive guidance that changes more frequently th
 - **OpenCode plugin**: `@devtheops/opencode-plugin-otel` is community-maintained; `2.x` targets OpenCode V2 and `1.x` on branch `v1` targets V1. The V2 event API no longer exposes `session.diff`, so V1 lines-of-code metrics are not emitted by V2.
 - **AI Observer**: local OTLP-compatible backend/dashboard with selected file import/watch modes; ingestion is not agent instrumentation, and file import is not equivalent to live telemetry.
 - **Amazon Q Developer CLI**: upstream repository says maintenance is limited to critical security fixes; do not imply active integration support or infer its OTel signal status from this notice.
-
-## Release-specific checks
-
-See [release-specific upgrade checks](upstream-upgrades.md) for Collector 0.162,
-Operator 0.160, Python 1.45/0.66b0, and other SDK releases.
-These targets do not raise every existing example's minimum version.
 
 ## Maintenance guidance
 

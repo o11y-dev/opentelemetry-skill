@@ -1,7 +1,5 @@
 # OpenTelemetry Collector: Pipeline Configuration & Components
 
-For version-specific upgrade checks, see [collector 0.162 and kubernetes](upstream-upgrades.md#collector-0162-and-kubernetes). Validate the deployed and target versions separately.
-
 ## Overview
 
 The OpenTelemetry Collector is a vendor-agnostic telemetry pipeline that receives, processes, and exports observability data. This reference provides deep technical guidance on pipeline anatomy, processor ordering, memory management, and production stability patterns.
@@ -223,6 +221,30 @@ Sources: [Core 0.160](https://github.com/open-telemetry/opentelemetry-collector/
 The Kubernetes attributes processor remains Beta for traces, metrics, and logs
 in the 0.160 release metadata; an announcement or feature-gate promotion does
 not establish component stability.
+
+### Collector 0.162 upgrade checks
+
+Read both [Core 0.162](https://github.com/open-telemetry/opentelemetry-collector/releases/tag/v0.162.0)
+and [Contrib 0.162](https://github.com/open-telemetry/opentelemetry-collector-contrib/releases/tag/v0.162.0).
+Retain the [0.160 migration checks](#collector-0160-upgrade-checks) when
+crossing that version too.
+
+| Change | Required review |
+|---|---|
+| Elasticsearch removes `flush` and `num_workers` | Use `sending_queue.num_consumers` and `sending_queue.batch` with `flush_timeout`, `max_size`, and `sizer: bytes` for the old byte threshold. Validate with the target binary. |
+| Elasticsearch OTel profile datastreams require 9.6+ | For older backends, use `mapping.allowed_modes: [ecs]`; do not infer profile compatibility from successful trace/log export. |
+| `queuebatch` becomes `queue_batch` | Update the Core processor ID. Contrib `grafanacloud` → `grafana_cloud` and `awss3` → `aws_s3` retain deprecated aliases. |
+| Adaptive sampling selectors require an origin | Replace `root.attributes[...]` with `root.span.attributes[...]` for prior span-level behavior; use `root.resource.` or `root.any.` only when those are intended. |
+| Permissive Prometheus label sanitization defaults on | Audit queries using `key__foo`; `_foo` is now preserved. A temporary feature-gate rollback is not a permanent query migration. |
+| Prometheus scope extraction changes | `otel_scope_info` no longer supplies scope attributes; inspect `otel_scope_` labels. The stable `IgnoreScopeInfoMetric` gate cannot be disabled. |
+| `signal_to_metrics` defaults to `error_mode: ignore` | Set the intended mode explicitly and test conversion failures; ingest success alone does not prove every derived metric was produced. |
+| OTTL stable gates removed | Remove obsolete `ottl.PanicDuplicateName`, `ottl.contexts.enableOTelColContext`, and `processor.transform.defaultErrorModeIgnore` flags. |
+| Kafka metadata retry configuration is now honored | Review explicit `metadata.retry.max`; the effective default remains 20. `metadata.full` is deprecated and ineffective. |
+| Exporter queue batch partition limits | Review active partition cardinality and the new cache size/capacity metrics. The oversized-item splitting fix applies to logs, not automatically other signals. |
+
+Signing-processor canonicalization also changes in 0.162, invalidating older
+signatures. Verify the producer/verifier pair before upgrading an audit pipeline;
+see [security guidance](security.md#signed-telemetry).
 
 ### `cmd/builder` — New `init` Subcommand (Experimental)
 

@@ -2,6 +2,10 @@
 
 Use this checklist to assess applications, libraries, and custom instrumentation before adopting OpenTelemetry JS 3.0. The upstream announcement and main-branch migration guide describe the 3.x migration; a scheduled date or development package is not proof of a stable release. Verify the official release tag, npm `latest` dist-tag, and target package versions before upgrading.
 
+For applications remaining on [JS 2.11](https://github.com/open-telemetry/opentelemetry-js/releases/tag/v2.11.0),
+test context attach/disposal on the supported Node runtime and per-call flush
+timeouts. A stable 2.x update does not establish readiness for 3.x.
+
 ## Readiness checklist
 
 - [ ] Confirm the stable 3.x release and its release notes. Do not treat a development/canary version as a production release.

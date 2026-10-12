@@ -14,7 +14,6 @@ These are the deep-dive documents that the skill loads on demand:
 - [Connectors](../references/connectors.md)
 - [Instrumentation](../references/instrumentation.md)
 - [Python instrumentation and GenAI](../references/python-instrumentation.md)
-- [Release-specific upgrade checks](../references/upstream-upgrades.md)
 - [JavaScript OTel 3.0 readiness](../references/javascript-otel3-readiness.md)
 - [Monitoring](../references/monitoring.md)
 - [OTTL](../references/ottl.md)

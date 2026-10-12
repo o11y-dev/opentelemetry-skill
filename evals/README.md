@@ -12,7 +12,6 @@ This directory contains evaluation scenarios for the OpenTelemetry skill, design
 
 - `codex-native-telemetry/`: independent signals, analytics, privacy, and temporality in released Codex.
 - `copilot-native-telemetry/`: CLI/VS Code protocol, policy, parentage, and attribution differences.
-
 - `python-instrumentation/`: SDK 1.44/1.45 events, declarative initialization, HTTP export, and FastAPI ownership.
 - `python-genai-streaming/`: async parentage, complete stream lifetimes, privacy, and unknown usage.
 - `collector-0160-upgrade/`: removed settings, selective labels, and release-specific validation.

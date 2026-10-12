@@ -1,7 +1,5 @@
 # OpenTelemetry Instrumentation & Semantic Conventions
 
-For version-specific upgrade checks, see [sdk and instrumentation changes](upstream-upgrades.md#sdk-and-instrumentation-changes). Validate the deployed and target versions separately.
-
 ## Overview
 
 Instrumentation is the process of adding observability to application code. This reference provides comprehensive guidance on auto vs manual instrumentation, semantic conventions enforcement, and the critical challenge of **cardinality management**—the #1 cost driver in observability systems.
@@ -60,6 +58,12 @@ eBPF instrumentation:
 - Confirm the supported-library list and emitted semantic conventions for the
   installed release; coverage is intentionally narrower than the whole Go
   ecosystem and expands over time.
+
+[Go compile-time instrumentation 1.1](https://github.com/open-telemetry/opentelemetry-go-compile-instrumentation/releases/tag/v1.1.0): Non-streaming Anthropic instrumentation is not streaming coverage. Test SIGTERM flush and propagation in the rebuilt binary; do not assume eBPF has the same support contract.
+
+For eBPF probes, inspect resolved module versions and local `replace` directives
+before selecting offsets. For compile-time hooks, rebuild and test import cycles
+and emitted SDK resource attributes.
 
 See the [Go compile-time instrumentation v1 announcement](https://opentelemetry.io/blog/2026/go-compile-time-instrumentation-v1/)
 and the [supported libraries](https://opentelemetry.io/docs/zero-code/go/compile-time/supported-libraries/).
@@ -218,6 +222,14 @@ public class PaymentService {
 ## Semantic Conventions
 
 **Semantic Conventions** are the OpenTelemetry "type system"—standardized attribute names that ensure data consistency across languages and vendors.
+
+[SemConv 1.44](https://github.com/open-telemetry/semantic-conventions/releases/tag/v1.44.0)
+changes browser Web Vital field placement and Kubernetes paging metric names,
+and models memory usage as UpDownCounters. Audit emitted data and queries before
+renaming fields; the convention release does not upgrade an instrumentor.
+[Specification 1.61](https://github.com/open-telemetry/opentelemetry-specification/releases/tag/v1.61.0)
+adds View matching and nested attribute depth behavior and stabilizes Prometheus
+resource-label configuration. SDK implementation support must be checked separately.
 
 ### Why They Matter
 
@@ -810,6 +822,16 @@ app.use((req, res, next) => {
 
 ## Version-Specific Notes
 
+### Go SDK 1.47
+
+[Go 1.47](https://github.com/open-telemetry/opentelemetry-go/releases/tag/v1.47.0): Review nested attribute depth (default 64) and `PeriodicReader` batch-size configuration. Experimental probability sampling/binding APIs do not become stable through a core release.
+
+### Java SDK 1.66 and instrumentation 2.32
+
+[Java SDK 1.66](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v1.66.0): Test OTLP HTTP `Retry-After`, mTLS with platform trust stores, and avoid mixing a key manager with an explicit SSL context. Exporter-request suppression should prevent recursive instrumentation.
+
+[Java instrumentation 2.32](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v2.32.0): Targets SDK 1.66. Custom GenAI getters require `isRequestStreaming`; JMX SPI implementations require `getMetricNames()`. Review messaging-header selector and query-capture deprecations before a 3.x migration. A preview is not stable 3.x.
+
 ### Go SDK 1.40.0+
 
 ⚠️ **Non-Backward-Compatible Change**: Go SDK version 1.40.0 includes breaking changes to sampling and propagation behavior. If upgrading from an earlier version:
@@ -822,6 +844,9 @@ app.use((req, res, next) => {
 **Recommendation**: Pin dependencies to a specific minor version or upgrade all services together to 1.40.x+.
 
 ### Python SDK 1.40.0+
+
+For 1.44/1.45 migration, GenAI package selection, and FastAPI ownership, use the
+[Python reference](python-instrumentation.md).
 
 - **Logging bridge change**: `opentelemetry-sdk` now deprecates `LoggingHandler` in favor of `opentelemetry-instrumentation-logging`. Prefer the instrumentation package for stdlib logging bridge setups on new deployments.
 - **Pin GenAI packages together**: `opentelemetry-instrumentation-langchain` and `opentelemetry-semantic-conventions-ai` must be tested and pinned together. [semantic-conventions#3520](https://github.com/open-telemetry/semantic-conventions/issues/3520) reports import errors for mismatched versions (`0.53.0` + `0.4.15`).

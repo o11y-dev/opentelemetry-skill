@@ -22,24 +22,6 @@ Use this document when a user asks for:
   task
 - a **generic playbook** that should remain reusable as more blogs are added
 
-## Instrumentation and migration playbooks
-
-- [Go compile-time instrumentation v1](https://opentelemetry.io/blog/2026/go-compile-time-instrumentation-v1/):
-  choose compile-time instrumentation separately from eBPF; verify build, library,
-  propagation, and shutdown support using [release checks](upstream-upgrades.md).
-- [OpenCensus compatibility deprecation](https://opentelemetry.io/blog/2026/deprecating-opencensus-compatibility/):
-  prefer native OTel for new work and plan existing shim migration. Deprecation is
-  not immediate artifact removal.
-- [Instrumentation ecosystem discovery](https://opentelemetry.io/blog/2026/exploring-instrumentation-ecosystem/)
-  and the [Prometheus interoperability survey](https://opentelemetry.io/blog/2026/otel-prometheus-interoperability/):
-  use these to discover options and compatibility questions. Verify support in
-  the selected package/backend; a directory listing or survey is not a release contract.
-- [Kafka/Flink incident-detection case study](https://www.cncf.io/blog/2026/09/30/from-40-seconds-to-under-10-rebuilding-incident-detection-on-opentelemetry-apache-kafka-and-apache-flink-on-kubernetes/):
-  route to [Collector](collector.md), [monitoring](monitoring.md), and
-  [architecture](architecture.md). Test replay with idempotent sink keys, monitor
-  telemetry freshness, and report detector recall separately from instrumentation
-  coverage. Case-study latency/cost results are not promised outcomes for another system.
-
 ## Table of Contents
 
 1. [How to Use This Reference](#how-to-use-this-reference)
@@ -107,6 +89,10 @@ document.
 
 | Blog | Primary routing signals | Why it matters for the skill | Load next |
 | :--- | :--- | :--- | :--- |
+| [OpenCensus compatibility deprecation](https://opentelemetry.io/blog/2026/deprecating-opencensus-compatibility/) | OpenCensus, shim migration | Prefer native OTel for new work and plan shim migration; deprecation does not mean immediate artifact removal | [instrumentation][instrumentation-ref] |
+| [Instrumentation ecosystem discovery](https://opentelemetry.io/blog/2026/exploring-instrumentation-ecosystem/) | package selection, instrumentation coverage | Discover options, then verify the selected package's support contract | [instrumentation][instrumentation-ref] |
+| [Prometheus interoperability survey](https://opentelemetry.io/blog/2026/otel-prometheus-interoperability/) | OTLP, Prometheus, temporality | Use the survey to identify compatibility questions; test the actual backend and schema | [platforms][platforms-ref], [collector][collector-ref] |
+| [Kafka/Flink incident-detection case study](https://www.cncf.io/blog/2026/09/30/from-40-seconds-to-under-10-rebuilding-incident-detection-on-opentelemetry-apache-kafka-and-apache-flink-on-kubernetes/) | replay, idempotent sinks, telemetry freshness, detection coverage | Test replay without double-counting and measure recall separately from instrumentation coverage; published performance is not a portable guarantee | [collector][collector-ref], [monitoring][monitoring-ref], [architecture][architecture-ref] |
 | [The lazy developer's guide to observing your own code](https://www.cncf.io/blog/2026/08/25/the-lazy-developers-guide-to-observing-your-own-code/) | developer observability, local debugging, observability-driven development, zero-code plus manual instrumentation, OTel Desktop Viewer, `otel-tui`, OTel Front | Adds a practical local feedback loop for application instrumentation; keep its processor-free debug Collector and third-party viewers scoped to development, and verify current tool capabilities before use | [instrumentation][instrumentation-ref], [connectors][connectors-ref], [setup-docker][setup-docker-ref] |
 | [Kubernetes annotation-based discovery for the OpenTelemetry Collector](https://opentelemetry.io/blog/2025/otel-collector-k8s-discovery/) | `receiver_creator`, annotation-based discovery, Kubernetes self-service scraping, pod annotations | Strong playbook for self-service Collector onboarding with platform safety rails | [collector][collector-ref], [platforms][platforms-ref] |
 | [Observing Lambdas using the OpenTelemetry Collector Extension Layer](https://opentelemetry.io/blog/2025/observing-lambdas/) | Lambda, serverless, extension layer, `decouple` processor, delayed export | Covers ephemeral runtime constraints and decoupled export patterns | [platforms][platforms-ref], [collector][collector-ref], [monitoring][monitoring-ref] |
@@ -191,6 +177,8 @@ not production telemetry backends:
   [OTel Front](https://github.com/mesaglio/otel-front) are third-party projects;
   pin a release and verify current signal and protocol support in each upstream
   README before recommending one.
+- Test required signal types, late parents, duplicate exports, and metric temporality
+  against the chosen viewer release; keep local listeners private.
 - Choose one viewer for the developer's workflow instead of fanning out every
   signal to all of them unless the goal is an explicit comparison.
 - A Collector using only OTLP receivers, the `debug` exporter, and

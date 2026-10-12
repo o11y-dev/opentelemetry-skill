@@ -83,7 +83,6 @@ Load only the references matching the request:
 | Deploy to VM, EC2, systemd, Windows service | [setup-vm.md](references/setup-vm.md) | Service lifecycle and host setup |
 | Kubernetes, Helm, values.yaml, audit, review, DaemonSet, Sidecar, Gateway, Scaling, Load Balancing | [architecture.md](references/architecture.md) | DaemonSet vs Gateway vs Sidecar, Target Allocator, HPA, rollout consistency |
 | Pipeline, Receiver, Processor, Exporter, Queue, Batch, Memory, Extensions, existing config | [collector.md](references/collector.md) | Processor ordering, memory_limiter, file_storage, config audit heuristics, temporality/state audits, stability levels |
-| Collector 0.162, SDK upgrade, Operator upgrade | [upstream-upgrades.md](references/upstream-upgrades.md) | Released changes and version-specific compatibility checks |
 | Python, FastAPI, Starlette, asyncio, Python GenAI, Python SDK events | [python-instrumentation.md](references/python-instrumentation.md) | Initialization ownership, duplicate instrumentation, SDK 1.44/1.45 migration, streaming, GenAI packages |
 | JavaScript, Node.js, OTel JS 3.0, tracing SDK migration | [javascript-otel3-readiness.md](references/javascript-otel3-readiness.md) | Runtime floor, removed packages, tracing SDK imports, custom instrumentation review |
 | SDK, Instrumentation, Spans, Attributes, Semantic Conventions, Cardinality | [instrumentation.md](references/instrumentation.md) | Auto vs manual, SemConv, cardinality Rule of 100 |
