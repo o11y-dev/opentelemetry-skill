@@ -10,41 +10,64 @@
 Configure OpenTelemetry monitoring for GitHub Copilot CLI to track usage patterns and performance.
 
 ### Expected Response (Key Points)
-- Mentions CLI doesn't emit traces natively (no automatic telemetry)
-- Suggests wrapper scripts or process monitoring approach
-- Recommends monitoring via system metrics (CPU, memory, execution time)
-- May reference custom instrumentation with `gh copilot --telemetry-opt-in`
-- Warns about limited built-in observability compared to other agents
+- Uses current Copilot CLI OpenTelemetry documentation rather than assuming no native signals
+- Describes documented traces, metrics, and events with the supported endpoint/configuration path
+- Distinguishes native telemetry from community lifecycle hooks
+- Checks the installed CLI/version and avoids inventing flags such as `gh copilot --telemetry-opt-in`
+- Mentions content-capture and metric-cardinality risks where relevant
 
 ### Failure Modes
-- Assumes Copilot CLI has built-in OTEL support
+- Claims Copilot CLI lacks native OTEL solely from stale guidance
 - Provides generic agent configuration without CLI specifics
-- Doesn't mention telemetry opt-in requirements
+- Doesn't verify telemetry enablement/configuration
 - Suggests unsupported configuration options
 
 ---
 
 ## Gemini CLI Telemetry
 
-**ID**: gemini-cli-monitoring  
+**ID**: gemini-cli-monitoring
+**Category**: AI Agents
+**Difficulty**: Intermediate
+
+### Prompt
+Our enterprise team still uses Gemini CLI with paid API keys. Configure telemetry to our local Collector without exporting prompt text.
+
+### Expected Response (Key Points)
+- Preserves supported Gemini CLI deployment guidance and cites Google's transition notice
+- Uses documented Gemini telemetry settings and explicitly disables prompt logging
+- Keeps detailed trace-content capture off for this request, checks outfile overrides, and verifies received signals
+- Does not substitute Antigravity settings or require a community integration
+
+### Failure Modes
+- Claims all Gemini CLI access ended or refuses to configure it
+- Assumes prompt logging is off by default
+- Treats Gemini CLI and Antigravity as configuration-compatible
+
+---
+
+## Google Antigravity Telemetry
+
+**ID**: antigravity-telemetry-review  
 **Category**: AI Agents  
 **Difficulty**: Intermediate  
 
 ### Prompt
-Set up observability for Google Gemini CLI to monitor API calls and response latencies.
+Review the native OpenTelemetry support for Google Antigravity and recommend an observability approach for API calls and response latencies.
 
 ### Expected Response (Key Points)
-- Configures environment variables for Gemini telemetry export
-- Sets up proper OTLP endpoint configuration
-- Includes API rate limiting considerations
-- Mentions quota and billing correlation with telemetry
-- Warns about sensitive prompt data in telemetry
+- Verifies native telemetry, configuration, and privacy behavior using first-party documentation for the installed Antigravity version
+- Does not carry over legacy Google CLI environment variables, config files, or support claims
+- Marks unsupported or undocumented native signals as unknown rather than inventing options
+- Separates documented vendor lifecycle hooks, unverified CLI/IDE OTLP export, and the SDK's documented tracing
+- Requires a verified adapter mapping for the vendor callback fields, event identity, pairing, and stdout contract before recommending hook-based telemetry
+- If selecting opentelemetry-hooks, explains its specific privacy defaults; a first-party-only answer need not recommend or discuss this package
 
 ### Failure Modes
-- Omits Gemini-specific configuration
-- Doesn't address API quota correlation
-- Missing privacy considerations for prompts
-- Generic setup without Gemini CLI specifics
+- Presents legacy Google CLI settings as Antigravity settings
+- Claims native traces, metrics, logs, or GenAI conventions without version-specific evidence
+- Implies community event hooks establish native Antigravity support or generic process metrics
+- Omits privacy considerations for captured output
 
 ---
 
@@ -60,7 +83,7 @@ Configure observability for a development environment using Claude Code, GitHub 
 ### Expected Response (Key Points)
 - Sets up service differentiation via `service.name` attributes
 - Configures separate OTEL endpoints or resource detection
-- Handles different telemetry capabilities per agent
+- Handles different telemetry capabilities per agent; Cursor Enterprise native export and optional hook tracing are evaluated in [cursor-enterprise-telemetry](cursor-enterprise-telemetry/task.md)
 - Includes correlation strategies for multi-tool workflows
 - Mentions resource attribution to prevent metric conflicts
 

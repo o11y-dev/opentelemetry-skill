@@ -1,1 +1,1 @@
-Set up OpenTelemetry monitoring for Claude Code to track token usage and costs.
+Set up OpenTelemetry monitoring for our team's Claude Code sessions to track token usage and costs without prompt capture or per-session metric labels. Explain how to break down code-edit decisions and tool failures by tool using the emitted fields.
