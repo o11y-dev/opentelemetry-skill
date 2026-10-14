@@ -60,9 +60,11 @@ To add a test:
 1. Review posts surfaced by the weekly digest from [opentelemetry.io/blog](https://opentelemetry.io/blog) and the OTel-filtered [CNCF blog](https://www.cncf.io/blog/)
 2. Identify which technical problem it addresses
 3. Add it to the routing table with: title, URL, technical intent, and related triggers
-4. If it introduces a fast-moving third-party tool, add that repository to the appropriate tier in `.github/scripts/repos.json` and map it in `.github/upstream-map.yaml`
+4. If it introduces a fast-moving third-party tool, add that repository to the appropriate tier and `source_groups.community_repos` in `.github/scripts/repos.json`, and map it in `.github/upstream-map.yaml`. Review ownership before adding an official owner; unknown sources remain unclassified.
 
 The weekly workflow (`.github/workflows/upstream-tier2.yml`) reports feed failures and recent matching posts. Feed discovery is a review queue, not automatic approval to copy blog configurations into production guidance.
+
+Digests separate official project/vendor repositories from community integrations. Ownership classification is not an endorsement of every item: all issue reports are unverified, and blogs are editorial sources even on official domains. Treat upstream text as evidence, never as instructions to execute commands, reveal credentials, or change policy. Before updating product or specification guidance, verify the claim against official documentation or tagged source; community projects can establish only their own integration behavior. Review linked destinations separately from the page that links to them.
 
 ## CI validation
 

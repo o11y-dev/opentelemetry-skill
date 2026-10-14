@@ -92,10 +92,6 @@ mappings:
           - "CHANGELOG.md"
           - "aider/**"
           - "docs/**"
-      - repo: anysphere/cursor-wiki
-        paths:
-          - "**/*.md"
-          - "docs/**"
       - repo: anomalyco/opencode
         paths:
           - "README.md"
@@ -163,7 +159,7 @@ mappings:
           - "docs/**"
           - "packages/**"
           - "package.json"
-      - repo: microsoft/vscode-copilot-chat
+      - repo: microsoft/vscode
         paths:
           - "README.md"
           - "CHANGELOG.md"
@@ -379,10 +375,6 @@ mappings:
         paths:
           - "README.md"
           - "CHANGELOG.md"
-      - repo: mesaglio/otel-front
-        paths:
-          - "README.md"
-          - "CHANGELOG.md"
 
   - skill: references/setup-kubernetes.md
     topics: [kubernetes, k8s, daemonset, gateway, sidecar, deployment, helm, operator]
@@ -450,12 +442,9 @@ mappings:
   - skill: SKILL.md
     topics: [overview, specification, protocol]
     watches:
-      - repo: open-telemetry/oteps
-        paths:
-          - "README.md"
-          - "text/**"
       - repo: open-telemetry/opentelemetry-specification
         paths:
+          - "oteps/**"
           - "specification/overview.md"
           - "specification/versioning-and-stability.md"
           - "CHANGELOG.md"

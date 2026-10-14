@@ -93,6 +93,8 @@ test('renders selected posts and the owning skill reference in the digest', () =
 
   assert(lines.some((line) => line.includes('references/playbooks.md')));
   assert(lines.some((line) => line.includes('the-lazy-developers-guide-to-observing-your-own-code')));
+  assert(lines.some((line) => line.includes('Blog posts — editorial sources')));
+  assert(lines.some((line) => line.includes('Official hosting does not make a post a specification or its outbound links official')));
 });
 
 test('wraps Markdown link destinations that contain parentheses', () => {
@@ -130,7 +132,7 @@ test('configures feeds, viewer repositories, and their playbook ownership', asyn
   assert.deepEqual(cncfFeed.include_any, ['OpenTelemetry', 'Open Telemetry', 'OTel']);
 
   const monthlyRepos = new Set(config.frequencies.monthly);
-  const viewerRepos = ['CtrlSpice/otel-desktop-viewer', 'ymtdzzz/otel-tui', 'mesaglio/otel-front'];
+  const viewerRepos = ['CtrlSpice/otel-desktop-viewer', 'ymtdzzz/otel-tui'];
   for (const repo of viewerRepos) assert(monthlyRepos.has(repo));
 
   const playbooksMapping = upstreamMap.match(/  - skill: references\/playbooks\.md\n([\s\S]*?)(?=\n  - skill:)/)?.[1] ?? '';

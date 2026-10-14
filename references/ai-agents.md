@@ -3,8 +3,8 @@
 A guide to monitoring AI coding agents (Claude Code, Gemini CLI, Google Antigravity, GitHub Copilot, Codex CLI, and others) via OpenTelemetry.
 
 <!-- UPSTREAM MONITORING NOTE:
-This file is automatically flagged for review when changes occur in:
-- GitHub repositories: github/copilot-cli, Aider-AI/aider, openai/codex, google-gemini/gemini-cli, anthropics/claude-code, anthropics/skills, QwenLM/qwen-code, microsoft/vscode-copilot-chat, anysphere/cursor-wiki, anomalyco/opencode, DEVtheOPS/opencode-plugin-otel, o11y-dev/opentelemetry-hooks, tobilg/ai-observer, ColeMurray/claude-code-otel, badlogic/pi-mono
+The digest surfaces releases and recent issues from these repositories for review; it does not detect changes to the paths listed in the mapping:
+- GitHub repositories: github/copilot-cli, Aider-AI/aider, openai/codex, google-gemini/gemini-cli, anthropics/claude-code, anthropics/skills, QwenLM/qwen-code, microsoft/vscode, anomalyco/opencode, DEVtheOPS/opencode-plugin-otel, o11y-dev/opentelemetry-hooks, tobilg/ai-observer, ColeMurray/claude-code-otel, earendil-works/pi
 - OpenTelemetry semantic conventions: open-telemetry/semantic-conventions (gen-ai model)
 - OpenTelemetry project governance tracker: open-telemetry/community (`projects/gen-ai.md`)
 - Manual monitoring recommended for official docs: docs.github.com/copilot/, aider.chat/docs/, developers.openai.com/codex/, code.claude.com/docs/, qwenlm.github.io/qwen-code-docs/, cursor.com/docs/enterprise/opentelemetry-export/wire, cursor.com/docs/hooks, pi.dev, geminicli.com/docs/cli/telemetry/, antigravity.google/docs/hooks, antigravity.google/docs/changelog

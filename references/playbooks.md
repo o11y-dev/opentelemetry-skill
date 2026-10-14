@@ -172,11 +172,13 @@ constraints.
 Developer-local viewers shorten the instrumentation feedback loop, but they are
 not production telemetry backends:
 
-- [OTel Desktop Viewer](https://github.com/CtrlSpice/otel-desktop-viewer),
-  [otel-tui](https://github.com/ymtdzzz/otel-tui), and
-  [OTel Front](https://github.com/mesaglio/otel-front) are third-party projects;
+- [OTel Desktop Viewer](https://github.com/CtrlSpice/otel-desktop-viewer) and
+  [otel-tui](https://github.com/ymtdzzz/otel-tui) are third-party projects;
   pin a release and verify current signal and protocol support in each upstream
   README before recommending one.
+- [OTel Front](https://github.com/mesaglio/otel-front) is archived; its maintainers
+  direct ongoing development to OTel Desktop Viewer. Keep it as historical blog
+  context, not an active monitoring source or a new installation recommendation.
 - Test required signal types, late parents, duplicate exports, and metric temporality
   against the chosen viewer release; keep local listeners private.
 - Choose one viewer for the developer's workflow instead of fanning out every
