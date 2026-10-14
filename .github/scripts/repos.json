@@ -21,7 +21,6 @@
       "open-telemetry/opentelemetry.io",
       "github/copilot-cli",
       "Aider-AI/aider",
-      "anysphere/cursor-wiki",
       "anomalyco/opencode",
       "DEVtheOPS/opencode-plugin-otel",
       "o11y-dev/opentelemetry-hooks",
@@ -32,13 +31,12 @@
       "anthropics/claude-code",
       "anthropics/skills",
       "QwenLM/qwen-code",
-      "microsoft/vscode-copilot-chat",
-      "badlogic/pi-mono",
+      "microsoft/vscode",
+      "earendil-works/pi",
       "open-telemetry/opentelemetry-python-contrib"
     ],
     "monthly": [
       "open-telemetry/opentelemetry-specification",
-      "open-telemetry/oteps",
       "open-telemetry/opentelemetry-helm-charts",
       "open-telemetry/opentelemetry-demo",
       "open-telemetry/opentelemetry-java-instrumentation",
@@ -55,8 +53,7 @@
       "open-telemetry/opentelemetry-erlang",
       "open-telemetry/community",
       "CtrlSpice/otel-desktop-viewer",
-      "ymtdzzz/otel-tui",
-      "mesaglio/otel-front"
+      "ymtdzzz/otel-tui"
     ]
   },
   "feeds": {
@@ -95,7 +92,6 @@
   "telemetry_issue_repos": [
     "github/copilot-cli",
     "Aider-AI/aider",
-    "anysphere/cursor-wiki",
     "anomalyco/opencode",
     "DEVtheOPS/opencode-plugin-otel",
     "o11y-dev/opentelemetry-hooks",
@@ -106,7 +102,30 @@
     "anthropics/claude-code",
     "anthropics/skills",
     "QwenLM/qwen-code",
-    "microsoft/vscode-copilot-chat",
-    "badlogic/pi-mono"
-  ]
+    "microsoft/vscode",
+    "earendil-works/pi"
+  ],
+  "source_groups": {
+    "comment": "Ownership classification only, not a trust grant to issues, comments, proposals, or linked content. New owners and community repositories require review; unmatched sources render as unclassified.",
+    "official_owners": [
+      "open-telemetry",
+      "github",
+      "Aider-AI",
+      "anomalyco",
+      "openai",
+      "google-gemini",
+      "anthropics",
+      "QwenLM",
+      "microsoft",
+      "earendil-works"
+    ],
+    "community_repos": [
+      "DEVtheOPS/opencode-plugin-otel",
+      "o11y-dev/opentelemetry-hooks",
+      "tobilg/ai-observer",
+      "ColeMurray/claude-code-otel",
+      "CtrlSpice/otel-desktop-viewer",
+      "ymtdzzz/otel-tui"
+    ]
+  }
 }

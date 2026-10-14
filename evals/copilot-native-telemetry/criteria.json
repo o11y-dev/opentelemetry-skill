@@ -1,0 +1,26 @@
+{
+  "context": "We use both VS Code Copilot Chat and Copilot CLI. Give separate native OTLP configurations and a validation plan. We have managed settings and local environment overrides, run concurrent sessions and subagents, and want reliable model/cost attribution without capturing content. Include checks for incorrect parent-session model attribution after subagent calls and overlapping metric series from concurrent CLI processes.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Separate surfaces",
+      "max_score": 25,
+      "description": "Distinguishes VS Code native traces/metrics/logs from CLI documented traces/metrics without assuming CLI logs. VS Code uses COPILOT_OTEL_ENDPOINT or standard OTEL_EXPORTER_OTLP_ENDPOINT and HTTP/protobuf default; CLI uses HTTP/JSON default and documented protocol override. Does not use invented COPILOT_OTEL_OTLP_ENDPOINT."
+    },
+    {
+      "name": "Controls and privacy",
+      "max_score": 25,
+      "description": "Explains surface-specific enablement, environment versus managed-setting precedence, and disables OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT. Tests resolved config rather than assuming managed settings always win."
+    },
+    {
+      "name": "Attribution and producer identity",
+      "max_score": 25,
+      "description": "Tests whether subagent calls change parent-session requested-model attribution, distinguishes requested from resolved model fields, and checks whether concurrent CLI processes produce overlapping metric series. Verifies available producer identity controls without inventing service.instance.id injection support. Does not equate telemetry cost attributes with complete billing totals."
+    },
+    {
+      "name": "Validation",
+      "max_score": 25,
+      "description": "Checks headless/interactive modes, parent-child trace relationships, request/response model fields, billing attributes and units, metric series identity, actual content, and Collector/backend acceptance against exact installed versions."
+    }
+  ]
+}

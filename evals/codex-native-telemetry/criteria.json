@@ -1,0 +1,31 @@
+{
+  "context": "Configure native telemetry for Codex 0.162.1 for our existing OTLP Collector. We disabled product analytics. We want logs, traces, and metrics but no prompt, response, or tool-result content in the shared backend. Explain which settings and emitted fields to validate, metric temporality, and how to investigate reports of missing telemetry when analytics is disabled, malformed timestamps, and inconsistent event names.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Independent signals",
+      "max_score": 20,
+      "description": "Configures exporter, trace_exporter, and metrics_exporter separately under otel with correct protocol/endpoint. Distinguishes default Statsig from explicit OTLP and does not assume unset metrics disables telemetry."
+    },
+    {
+      "name": "Version-aware analytics",
+      "max_score": 15,
+      "description": "Uses tagged 0.162.1 initialization to explain that analytics.enabled=false selects no metrics exporter, including for explicit OTLP destinations; logs and traces are configured separately. Identifies that native metrics cannot satisfy the request while analytics remains disabled on this release, without silently enabling analytics. Rechecks the installed version before claiming a fix; issue state alone is insufficient evidence."
+    },
+    {
+      "name": "Privacy boundaries",
+      "max_score": 25,
+      "description": "Sets log_user_prompt, log_agent_responses, and log_guardian_assessments false. Explains independent content flags, tool output/argument exposure and truncation versus redaction. Requires inspection/filtering of payloads before shared export and does not claim prompt=false guarantees content-free telemetry."
+    },
+    {
+      "name": "Temporality and enrichment",
+      "max_score": 20,
+      "description": "States Codex OTLP metrics default delta with cumulative override through OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE; validates backend handling. Describes span_attributes and tracestate separately from resource attributes; avoids identifiers/content in metric dimensions."
+    },
+    {
+      "name": "Evidence and product boundaries",
+      "max_score": 20,
+      "description": "Requires actual received records for each signal, installed version/mode, units and timestamps/event names. Does not infer billing or uniform app/cloud/headless coverage from CLI source; open or closed issues alone do not establish released behavior."
+    }
+  ]
+}

@@ -3,8 +3,7 @@ name: Validate Skill
 on:
   pull_request:
     paths:
-      - 'SKILL.md'
-      - 'references/**/*.md'
+      - '**/*.md'
       - 'examples/**/*.py'
       - 'tests/test_*.py'
       - 'tests/validate_collector_examples.py'
@@ -15,13 +14,10 @@ on:
       - '.github/workflows/validate.yml'
       - '.claude-plugin/**'
       - '.cursor-plugin/**'
-      - 'README.md'
-      - 'CONTRIBUTING.md'
   push:
     branches: [master, main]
     paths:
-      - 'SKILL.md'
-      - 'references/**/*.md'
+      - '**/*.md'
       - 'examples/**/*.py'
       - 'tests/test_*.py'
       - 'tests/validate_collector_examples.py'
@@ -32,8 +28,6 @@ on:
       - '.github/workflows/validate.yml'
       - '.claude-plugin/**'
       - '.cursor-plugin/**'
-      - 'README.md'
-      - 'CONTRIBUTING.md'
   workflow_dispatch:
 
 jobs:
@@ -55,18 +49,23 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Dependencies
-        run: >-
-          pip install pyyaml opentelemetry-sdk==1.44.0
-          opentelemetry-exporter-otlp-proto-grpc==1.44.0
-          opentelemetry-instrumentation-fastapi==0.65b0
-          fastapi==0.116.1 httpx==0.28.1
+      - name: Install validation dependencies
+        run: python -m pip install pyyaml markdown-it-py==4.0.0
 
       - name: Test upstream watcher
         run: node --test .github/scripts/*.test.mjs
 
-      - name: Test Python telemetry examples
-        run: python -m unittest discover -s tests -p 'test_python_telemetry.py'
+      - name: Test Python telemetry baseline
+        run: |
+          python -m venv "$RUNNER_TEMP/otel-baseline"
+          "$RUNNER_TEMP/otel-baseline/bin/python" -m pip install opentelemetry-sdk==1.44.0 opentelemetry-exporter-otlp-proto-grpc==1.44.0 opentelemetry-instrumentation-fastapi==0.65b0 fastapi==0.116.1 httpx==0.28.1
+          "$RUNNER_TEMP/otel-baseline/bin/python" -m unittest discover -s tests -p 'test_python_telemetry.py'
+
+      - name: Test Python 1.45 / 0.66b0 with native-capable FastAPI
+        run: |
+          python -m venv "$RUNNER_TEMP/otel-upgrade"
+          "$RUNNER_TEMP/otel-upgrade/bin/python" -m pip install opentelemetry-sdk==1.45.0 opentelemetry-exporter-otlp-proto-grpc==1.45.0 opentelemetry-instrumentation-fastapi==0.66b0 fastapi==0.142.0 httpx==0.28.1
+          "$RUNNER_TEMP/otel-upgrade/bin/python" -m unittest discover -s tests -p 'test_python_telemetry.py'
 
       - name: Validate documented Collector examples
         run: python tests/validate_collector_examples.py
@@ -194,20 +193,10 @@ jobs:
             echo "ℹ️  No marketplace.json found, skipping validation"
           fi
 
-      - name: Check for Broken Links
+      - name: Check Markdown file links
         run: |
-          echo "🔍 Checking internal links..."
-          if grep -oP '\[.*?\]\(references/.*?\.md.*?\)' SKILL.md references/*.md 2>/dev/null | \
-             sed 's/.*(//' | sed 's/).*//' | sed 's/#.*//' | \
-             while read -r link; do
-               if [ ! -f "$link" ]; then
-                 echo "❌ ERROR: Broken link: $link"
-                 exit 1
-               fi
-             done
-          then
-            echo "✅ No broken links"
-          fi
+          python -m unittest discover -s tests -p 'test_markdown_links.py'
+          python .github/scripts/check_markdown_links.py
 
       - name: Lint Markdown
         uses: DavidAnson/markdownlint-cli2-action@v16

@@ -18,6 +18,10 @@ Security in observability systems is critical: telemetry data often contains sen
 
 ## Data Redaction & Sanitization
 
+Agent prompt flags do not cover every payload: responses, raw API bodies, tool
+arguments/results, guardian assessments, and identity have separate controls.
+Inspect each signal before shared export; see [agent privacy controls](ai-agents.md).
+
 ### The PII Problem
 
 Telemetry data frequently captures sensitive information:
@@ -586,6 +590,14 @@ spec:
 ---
 
 ## Compliance Patterns
+
+### Signed telemetry
+
+Collector Contrib 0.162 changes the signing processor's typed-value
+canonicalization and adds `audit.integrity.signer`. Existing signatures can become
+invalid across versions. Test verification of old and new records with the exact
+producer/verifier versions before changing an audit pipeline. See the
+[tagged release](https://github.com/open-telemetry/opentelemetry-collector-contrib/releases/tag/v0.162.0).
 
 ### GDPR Compliance
 

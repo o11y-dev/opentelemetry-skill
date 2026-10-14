@@ -17,12 +17,24 @@ as Claude Code, Gemini CLI, or Antigravity, use [ai-agents.md](ai-agents.md).
   middleware is active. Choose the native middleware or contrib instrumentor for
   the same HTTP server boundary; keep separate client/DB instrumentation.
 
-The upstream [FastAPI/Starlette coexistence issue][fastapi-issue] reports a risk
-of duplicate telemetry when native middleware and contrib instrumentation overlap.
-It does not establish native support in every released FastAPI/Starlette version.
+FastAPI [0.142.0](https://github.com/fastapi/fastapi/releases/tag/0.142.0) adds native
+OpenTelemetry support. This does not establish support in earlier FastAPI or every
+Starlette release. The [coexistence issue][fastapi-issue] and
+[native-support discussion](https://github.com/open-telemetry/opentelemetry-python-contrib/issues/5108)
+track integration with contrib; avoid assuming that two middleware layers are
+needed or that every combination behaves identically.
 Verify the installed versions and one exported SERVER span per request before
 claiming this combination works. ASGI send/receive child spans are not duplicate
 SERVER spans.
+
+With FastAPI 0.142, environment-driven export is a separate ownership concern:
+when your application or distro owns providers/exporters, use
+`FastAPI(telemetry={"auto_configure": False})`. Native startup can otherwise add
+HTTP exporters from `OTEL_*` endpoints; it does not deduplicate exporters owned
+by another component. Automatic export requires the relevant FastAPI extra.
+See the [tagged runtime](https://github.com/fastapi/fastapi/blob/0.142.0/fastapi/telemetry/_runtime.py).
+Verify both span ownership and exporter ownership; one SERVER span in memory does
+not rule out exporting that span twice.
 
 For an explicit Python 1.44 example baseline:
 
@@ -63,6 +75,32 @@ The [1.44.0 release][python-release] changes these application-facing behaviors:
   `OTEL_LOGRECORD_ATTRIBUTE_VALUE_LENGTH_LIMIT` on the environment path. These
   bound attributes, not arbitrary log bodies or sensitive-content exposure.
 
+## Python 1.45 upgrade checks
+
+The [1.45.0 / 0.66b0 release](https://github.com/open-telemetry/opentelemetry-python/releases/tag/v1.45.0)
+is a separate tested target from the 1.44 example baseline above. Align API, SDK,
+exporter, and instrumentation dependencies when upgrading.
+
+- Custom Logger implementations must implement `enabled()`. Exercise custom
+  subclasses and bridges, not only the default SDK logger.
+- OTLP HTTP/protobuf uses the new shared HTTP transport with urllib3 by default.
+  Recheck custom sessions, proxies, certificates, and timeouts. The default
+  `max_request_size` is 64 MiB of serialized data before compression; `0` disables
+  this limit. This is neither a content-redaction control nor a backend guarantee.
+- An explicit HTTP exporter `endpoint=` is the complete signal URL, including
+  `/v1/traces`, `/v1/metrics`, or `/v1/logs`; do not assume base-URL expansion.
+- Declarative environment substitution applies to parsed scalar values, not
+  comments or mapping keys. Missing variables become empty values; null results
+  can be skipped with a warning. Inspect the resulting configuration and resource
+  attributes before deployment, especially when secrets are missing.
+- Test View matching with mixed-case instrument names and custom aggregation.
+  Flush/shutdown remains required; the default log `force_flush` timeout is 30s.
+- [Contrib 0.66b0](https://github.com/open-telemetry/opentelemetry-python-contrib/releases/tag/v0.66b0)
+  promotes Python logging's `otel.event.name` into `LogRecord.event_name`.
+  Recheck backend mapping rather than duplicating the event-name attribute.
+  GenAI package moves and removal of `kafka-python-ng` instrumentation require
+  checking the installed package set, not simply bumping the SDK.
+
 ## Python AI instrumentation packages
 
 Python GenAI development now lives in [opentelemetry-python-genai][python-genai].
@@ -71,17 +109,22 @@ patches only. Read the destination package's README before replacing a package:
 names, imports, configuration, and emitted attributes can change. Do not install
 old and replacement instrumentors together.
 
-Inventory checked September 10, 2026; these are **beta**, not stability guarantees:
+Inventory checked October 12, 2026 against the upstream released-package table;
+these are **beta**, not stability guarantees:
 
 | Library/framework | Destination package | Released version | Supported library range |
 |---|---|---|---|
-| OpenAI Python | `opentelemetry-instrumentation-genai-openai` | 1.1b0 | `openai >=1.26.0,<4` |
-| Anthropic Python | `opentelemetry-instrumentation-genai-anthropic` | 1.1b1 | `anthropic >=0.51.0,<2` |
-| Google GenAI | `opentelemetry-instrumentation-google-genai` | 1.1b1 | `google-genai >=1.32.0,<3` |
-| LangChain | `opentelemetry-instrumentation-genai-langchain` | 1.1b1 | `langchain >=0.3.21,<2` |
-| OpenAI Agents | `opentelemetry-instrumentation-genai-openai-agents` | 1.1b0 | `openai-agents >=0.3.3,<1` |
+| OpenAI Python | `opentelemetry-instrumentation-genai-openai` | 1.2b0 | `openai >=1.26.0,<4` |
+| Anthropic Python | `opentelemetry-instrumentation-genai-anthropic` | 1.2b0 | `anthropic >=0.51.0,<2` |
+| Google GenAI | `opentelemetry-instrumentation-google-genai` | 1.2b0 | `google-genai >=1.32.0,<3` |
+| LangChain | `opentelemetry-instrumentation-genai-langchain` | 1.2b0 | `langchain >=0.3.21,<2` |
+| OpenAI Agents | `opentelemetry-instrumentation-genai-openai-agents` | 1.2b0 | `openai-agents >=0.3.3,<1` |
+| DSPy | `opentelemetry-instrumentation-genai-dspy` | 1.2b0 | `dspy >=3.3.0,<4` |
+| LlamaIndex | `opentelemetry-instrumentation-genai-llama-index` | 1.2b0 | `llama-index-core >=0.14.19,<1`; instrumentation `>=0.4.3,<1`; workflows `>=2.17.1,!=2.24.0,<3` |
 
-Upstream lists Claude Agent SDK, CrewAI, DSPy, and LlamaIndex instrumentations as
+Upstream also lists released Agno, Bedrock, Portkey, Qwen Agent, and Smolagents
+instrumentors; consult their package constraints before selecting them.
+Upstream lists Claude Agent SDK, CrewAI, and Weaviate instrumentations as
 unreleased skeletons at this snapshot. A folder in the repository is not proof of
 an installable implementation. Verify package release and supported library range
 when selecting instrumentation. The ranges above do not imply validation of every

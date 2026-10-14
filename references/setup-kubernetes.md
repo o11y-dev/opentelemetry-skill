@@ -346,7 +346,7 @@ spec:
     emptyDir: {}
 ```
 
-## Operator 0.158 networking changes
+## Operator networking and compatibility
 
 Operator 0.158 enables `operator.networkpolicy` and `operand.networkpolicy` by
 default, creating policies for the Operator, Collector, and Target Allocator.
@@ -365,6 +365,25 @@ correction and verify API/scrape/OTLP traffic afterward.
 Also review [telemetry naming changes](monitoring.md#kubernetes-processor-and-operator-upgrades)
 and Operator-managed `GOMEMLIMIT`/`GOMAXPROCS` when comparing generated pod settings.
 Source: [Operator 0.158 release](https://github.com/open-telemetry/opentelemetry-operator/releases/tag/v0.158.0).
+
+### Operator 0.160 and chart compatibility
+
+[Operator 0.160](https://github.com/open-telemetry/opentelemetry-operator/releases/tag/v0.160.0)
+disables generated network policies by default. Review the Operator and operand
+gates or per-resource `spec.networkPolicy.enabled`, including API-server access.
+The Operator ServiceAccount needs permissions it grants to Collectors, including
+Jobs/CronJobs enrichment. Inspect live CRD schemas, rendered RBAC, and admission
+behavior independently of the Collector image. Target Allocator reconciliation
+can revert manual edits and remove resources no longer requested.
+
+[Collector chart 0.174.1](https://github.com/open-telemetry/opentelemetry-helm-charts/releases/tag/opentelemetry-collector-0.174.1)
+restricts its profiling preset to Linux. Chart versions, image versions, Operator
+versions, and CRD versions are separate compatibility axes. Validate the rendered
+resources and actual image separately.
+
+The [kube-stack 0.20.6 schema fix](https://github.com/open-telemetry/opentelemetry-helm-charts/releases/tag/opentelemetry-kube-stack-0.20.6)
+allows `instrumentation.java.extensions` in chart values; validate the rendered
+Instrumentation resource and downloaded extension as separate steps.
 
 ## Common Gotchas & Solutions
 

@@ -98,6 +98,11 @@ Serverless functions have unique characteristics that affect observability:
 
 ### Setup: Using AWS OpenTelemetry Lambda Layer
 
+Resolve the actual layer artifact, architecture, runtime/protobuf dependencies,
+and regional ARN. The [0.23.0 Collector layer notes](https://github.com/open-telemetry/opentelemetry-lambda/releases/tag/layer-collector/0.23.0)
+identify Collector 0.157 but show a conflicting 0.22.0 ARN example; verify the
+artifact rather than copying that ARN or assuming Collector 0.162 support.
+
 #### Step 1: Add Lambda Layers
 
 **For Node.js**:
@@ -422,6 +427,10 @@ functions:
 
 ## Azure Functions
 
+[Python Azure detector 0.3.0](https://github.com/open-telemetry/opentelemetry-python-contrib/releases/tag/opentelemetry-resource-detector-azure%3D%3D0.3.0)
+adds AKS detection and process-dependent App Service/Functions detection: check
+the final resource per worker rather than sharing pre-fork detector results.
+
 ### Architecture
 
 Azure Functions supports OpenTelemetry through:
@@ -553,6 +562,8 @@ Client-side applications (mobile apps, web browsers, desktop apps) have unique c
 | **Performance** | Instrumentation must not impact UX | Async instrumentation, <1% CPU overhead, avoid blocking main thread |
 
 ### Mobile Apps (iOS, Android)
+
+[Swift 2.5.1](https://github.com/open-telemetry/opentelemetry-swift/releases/tag/2.5.1): Bounds HTTP log/metric flush semaphore waits. Test shutdown under a stalled backend; this is not a general durable-delivery guarantee.
 
 #### Critical Best Practices
 
