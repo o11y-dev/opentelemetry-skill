@@ -10,7 +10,7 @@
     {
       "name": "Version-aware analytics",
       "max_score": 15,
-      "description": "Uses version-matched evidence to explain that analytics controls Statsig and does not disable explicitly configured OTLP in 0.162.1. Reproduces reported interactions on the installed version instead of treating an issue report as a universal blocker."
+      "description": "Uses tagged 0.162.1 initialization to explain that analytics.enabled=false selects no metrics exporter, including for explicit OTLP destinations; logs and traces are configured separately. Identifies that native metrics cannot satisfy the request while analytics remains disabled on this release, without silently enabling analytics. Rechecks the installed version before claiming a fix; issue state alone is insufficient evidence."
     },
     {
       "name": "Privacy boundaries",
