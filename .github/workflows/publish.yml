@@ -28,10 +28,38 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Publish with automatic patch versioning
+        id: publish
         if: ${{ env.TESSL_API_TOKEN != '' }}
         uses: tesslio/patch-version-publish@v1
         with:
           token: ${{ env.TESSL_API_TOKEN }}
+
+      - name: Sync skill metadata after successful publish
+        if: ${{ success() && steps.publish.outputs.version != '' }}
+        env:
+          PUBLISHED_VERSION: ${{ steps.publish.outputs.version }}
+        run: |
+          python3 <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          version = json.loads(Path('tile.json').read_text())['version']
+          if version != os.environ['PUBLISHED_VERSION']:
+              raise SystemExit('Published version does not match tile.json')
+          path = Path('SKILL.md')
+          prefix, frontmatter, body = path.read_text().split('---', 2)
+          frontmatter, count = re.subn(r'(?m)^  version: [^\n]+$', f'  version: {version}', frontmatter)
+          if prefix or count != 1:
+              raise SystemExit('Expected one metadata.version in SKILL.md frontmatter')
+          path.write_text('---'.join((prefix, frontmatter, body)))
+          PY
+          git add SKILL.md
+          if ! git diff --cached --quiet; then
+            git commit -m "Sync skill metadata to $PUBLISHED_VERSION [skip ci]"
+            git push
+          fi
 
       - name: Skip publish when token is missing
         if: ${{ env.TESSL_API_TOKEN == '' }}
