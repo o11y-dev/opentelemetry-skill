@@ -3,6 +3,7 @@ name: opentelemetry-skill
 description: "Build OpenTelemetry collector configs, instrument services, transform telemetry with OTTL, and debug missing traces, metrics, or logs. Use for OTel/otelcol collector config, OTLP export, SDK instrumentation, sampling, cardinality, TLS/PII controls, Kubernetes/Helm values.yaml deployments, collector health and alerts, and AI coding-agent telemetry (Claude Code, Codex, Gemini CLI, Antigravity, GitHub Copilot, Cursor)."
 metadata:
   author: o11y.dev
+  version: 0.5.5
   license: Apache-2.0
   tags: "opentelemetry, otel, observability, telemetry, monitoring, tracing, metrics, logs, collector, otelcol, pipeline, instrumentation, kubernetes, ecs, docker, serverless, deployment, architecture, sampling, cardinality, security, ottl, transform, codex, ai-agent"
   signals: "traces, metrics, logs, profiles"
