@@ -3,6 +3,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Enabled-blueviolet)](https://opentelemetry.io/)
 [![Tessl Registry](https://img.shields.io/endpoint?url=https%3A%2F%2Fapi.tessl.io%2Fv1%2Fbadges%2Fo11y-dev%2Fopentelemetry-skill)](https://tessl.io/registry/o11y-dev/opentelemetry-skill)
+[![skills.sh](https://skills.sh/b/o11y-dev/opentelemetry-skill)](https://skills.sh/o11y-dev/opentelemetry-skill)
 
 ## Overview
 
@@ -11,6 +12,7 @@ The **opentelemetry-skill** is an AI assistant skill designed to help with OpenT
 This repository contains the source code for the **OpenTelemetry Skill** tile released by Tessl.
 
 - **Published versions**: https://tessl.io/registry/o11y-dev/opentelemetry-skill
+- **Skills directory**: [skills.sh](https://skills.sh/o11y-dev/opentelemetry-skill/opentelemetry-skill)
 - **Source code**: https://github.com/o11y-dev/opentelemetry-skill
 
 ## Key Features
@@ -85,6 +87,24 @@ The skill now includes **5 platform-specific setup guides** (`setup-kubernetes.m
 - **Current & updated** - automatically synced with latest OpenTelemetry releases
 
 ## Installation
+
+### skills.sh (Skills CLI)
+
+With Node.js 22.20 or newer and npm installed, run this from the project where you want to use the skill:
+
+```bash
+npx skills add o11y-dev/opentelemetry-skill --skill opentelemetry-skill
+```
+
+The CLI installs `SKILL.md` with its supporting reference files for your agent. To choose an agent explicitly, add `--agent claude-code`, `--agent codex`, or `--agent cursor`. Add `--global` to make the skill available across projects instead.
+
+To check discovery without installing:
+
+```bash
+npx skills add o11y-dev/opentelemetry-skill --list
+```
+
+The repository's root `SKILL.md` is the entrypoint; no skills.sh-specific manifest is required. See the [directory listing and security audits](https://skills.sh/o11y-dev/opentelemetry-skill/opentelemetry-skill) and [Skills CLI documentation](https://skills.sh/docs/cli).
 
 ### Tessl Registry
 
