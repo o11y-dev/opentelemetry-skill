@@ -1,5 +1,11 @@
 # OpenTelemetry Skill: A Cognitive Architecture for AI-Assisted Observability Engineering
 
+<p align="center">
+  <a href="https://opentelemetry.io/">
+    <img src="https://raw.githubusercontent.com/cncf/artwork/main/projects/opentelemetry/horizontal/color/opentelemetry-horizontal-color.svg" alt="OpenTelemetry" width="360">
+  </a>
+</p>
+
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Enabled-blueviolet)](https://opentelemetry.io/)
 [![Tessl Registry](https://img.shields.io/endpoint?url=https%3A%2F%2Fapi.tessl.io%2Fv1%2Fbadges%2Fo11y-dev%2Fopentelemetry-skill)](https://tessl.io/registry/o11y-dev/opentelemetry-skill)
@@ -348,6 +354,8 @@ Compatibility details move faster than the cognitive-router guidance in `SKILL.m
 This skill is licensed under the **Apache License 2.0**. See [LICENSE](LICENSE) for details.
 
 The OpenTelemetry project itself is a CNCF project licensed under Apache 2.0.
+
+The OpenTelemetry logo is unmodified [CNCF artwork](https://github.com/cncf/artwork/blob/main/projects/opentelemetry/horizontal/color/opentelemetry-horizontal-color.svg), subject to the [Linux Foundation trademark usage guidelines](https://www.linuxfoundation.org/trademark-usage/).
 
 ## Acknowledgments
 
