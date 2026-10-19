@@ -1,8 +1,19 @@
-# OpenTelemetry Skill: A Cognitive Architecture for AI-Assisted Observability Engineering
+<p align="center">
+  <a href="https://opentelemetry.io/">
+    <img src="https://raw.githubusercontent.com/cncf/artwork/main/projects/opentelemetry/horizontal/color/opentelemetry-horizontal-color.svg" alt="OpenTelemetry" width="320">
+  </a>
+</p>
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Enabled-blueviolet)](https://opentelemetry.io/)
-[![Tessl Registry](https://img.shields.io/endpoint?url=https%3A%2F%2Fapi.tessl.io%2Fv1%2Fbadges%2Fo11y-dev%2Fopentelemetry-skill)](https://tessl.io/registry/o11y-dev/opentelemetry-skill)
+<h1 align="center">OpenTelemetry Skill</h1>
+
+<p align="center">A Cognitive Architecture for AI-Assisted Observability Engineering</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a>
+  <a href="https://opentelemetry.io/"><img src="https://img.shields.io/badge/OpenTelemetry-Enabled-blueviolet" alt="OpenTelemetry"></a>
+  <a href="https://tessl.io/registry/o11y-dev/opentelemetry-skill"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fapi.tessl.io%2Fv1%2Fbadges%2Fo11y-dev%2Fopentelemetry-skill" alt="Tessl Registry"></a>
+  <a href="https://skills.sh/o11y-dev/opentelemetry-skill"><img src="https://skills.sh/b/o11y-dev/opentelemetry-skill" alt="skills.sh"></a>
+</p>
 
 ## Overview
 
@@ -11,6 +22,7 @@ The **opentelemetry-skill** is an AI assistant skill designed to help with OpenT
 This repository contains the source code for the **OpenTelemetry Skill** tile released by Tessl.
 
 - **Published versions**: https://tessl.io/registry/o11y-dev/opentelemetry-skill
+- **Skills directory**: [skills.sh](https://skills.sh/o11y-dev/opentelemetry-skill/opentelemetry-skill)
 - **Source code**: https://github.com/o11y-dev/opentelemetry-skill
 
 ## Key Features
@@ -85,6 +97,24 @@ The skill now includes **5 platform-specific setup guides** (`setup-kubernetes.m
 - **Current & updated** - automatically synced with latest OpenTelemetry releases
 
 ## Installation
+
+### skills.sh (Skills CLI)
+
+With Node.js 22.20 or newer and npm installed, run this from the project where you want to use the skill:
+
+```bash
+npx skills add o11y-dev/opentelemetry-skill --skill opentelemetry-skill
+```
+
+The CLI installs `SKILL.md` with its supporting reference files for your agent. To choose an agent explicitly, add `--agent claude-code`, `--agent codex`, or `--agent cursor`. Add `--global` to make the skill available across projects instead.
+
+To check discovery without installing:
+
+```bash
+npx skills add o11y-dev/opentelemetry-skill --list
+```
+
+The repository's root `SKILL.md` is the entrypoint; no skills.sh-specific manifest is required. See the [directory listing and security audits](https://skills.sh/o11y-dev/opentelemetry-skill/opentelemetry-skill) and [Skills CLI documentation](https://skills.sh/docs/cli).
 
 ### Tessl Registry
 
@@ -328,6 +358,8 @@ Compatibility details move faster than the cognitive-router guidance in `SKILL.m
 This skill is licensed under the **Apache License 2.0**. See [LICENSE](LICENSE) for details.
 
 The OpenTelemetry project itself is a CNCF project licensed under Apache 2.0.
+
+The OpenTelemetry logo is unmodified [CNCF artwork](https://github.com/cncf/artwork/blob/main/projects/opentelemetry/horizontal/color/opentelemetry-horizontal-color.svg), subject to the [Linux Foundation trademark usage guidelines](https://www.linuxfoundation.org/trademark-usage/).
 
 ## Acknowledgments
 
