@@ -1,15 +1,19 @@
-# OpenTelemetry Skill: A Cognitive Architecture for AI-Assisted Observability Engineering
-
 <p align="center">
   <a href="https://opentelemetry.io/">
-    <img src="https://raw.githubusercontent.com/cncf/artwork/main/projects/opentelemetry/horizontal/color/opentelemetry-horizontal-color.svg" alt="OpenTelemetry" width="360">
+    <img src="https://raw.githubusercontent.com/cncf/artwork/main/projects/opentelemetry/horizontal/color/opentelemetry-horizontal-color.svg" alt="OpenTelemetry" width="320">
   </a>
 </p>
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Enabled-blueviolet)](https://opentelemetry.io/)
-[![Tessl Registry](https://img.shields.io/endpoint?url=https%3A%2F%2Fapi.tessl.io%2Fv1%2Fbadges%2Fo11y-dev%2Fopentelemetry-skill)](https://tessl.io/registry/o11y-dev/opentelemetry-skill)
-[![skills.sh](https://skills.sh/b/o11y-dev/opentelemetry-skill)](https://skills.sh/o11y-dev/opentelemetry-skill)
+<h1 align="center">OpenTelemetry Skill</h1>
+
+<p align="center">A Cognitive Architecture for AI-Assisted Observability Engineering</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a>
+  <a href="https://opentelemetry.io/"><img src="https://img.shields.io/badge/OpenTelemetry-Enabled-blueviolet" alt="OpenTelemetry"></a>
+  <a href="https://tessl.io/registry/o11y-dev/opentelemetry-skill"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fapi.tessl.io%2Fv1%2Fbadges%2Fo11y-dev%2Fopentelemetry-skill" alt="Tessl Registry"></a>
+  <a href="https://skills.sh/o11y-dev/opentelemetry-skill"><img src="https://skills.sh/b/o11y-dev/opentelemetry-skill" alt="skills.sh"></a>
+</p>
 
 ## Overview
 
