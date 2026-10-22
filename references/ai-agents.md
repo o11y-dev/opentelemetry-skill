@@ -683,6 +683,13 @@ establishes native CLI/IDE export. See
 > not imply generic process metrics or access to internal token/model details
 > absent from those payloads.
 
+**OpenCode in-process plugin:** Because process-level hooks cannot see OpenCode's internal token usage, model metadata, or tool calls, the community plugin [opencode-plugin-otel](https://github.com/DEVtheOPS/opencode-plugin-otel) instruments OpenCode from inside the process to capture those signals. As of **v1.2.0**, set `OPENCODE_SPAN_ATTRIBUTES` to a comma-separated list of `key=value` pairs that the plugin attaches to every emitted span, log event, and metric data point — useful for filtering or grouping by team or environment in your backend. It is independent of `OPENCODE_RESOURCE_ATTRIBUTES`, which sets producer metadata on the OTel Resource.
+
+```bash
+# Tag every OpenCode span, log event, and metric point for filtering
+export OPENCODE_SPAN_ATTRIBUTES="team=platform,deployment.environment=production"
+```
+
 ### 7.5 Cross-Agent Trace Correlation
 
 **Caveat**: Trace-context support is agent- and integration-specific, not a fleet-wide guarantee. Current Qwen docs keep outbound `traceparent` propagation disabled by default; Codex exposes W3C trace-context helpers; and the OpenCode community plugin accepts caller context and can propagate it to selected providers. Antigravity CLI/IDE OTLP export and cross-agent context propagation remain unverified.
